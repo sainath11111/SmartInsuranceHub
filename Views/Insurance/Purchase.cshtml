@@ -1,0 +1,51 @@
+@model SmartInsuranceHub.Models.InsurancePlan
+@{
+    ViewData["Title"] = "Purchase Configuration";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-header bg-primary text-white p-4">
+                <h4 class="mb-0">Configure your Policy</h4>
+            </div>
+            <div class="card-body p-4">
+                <h5 class="text-dark mb-4 border-bottom pb-2">@Model.plan_name</h5>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Premium</span>
+                    <strong class="text-success fs-5">₹@Model.premium_amount / yr</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-4">
+                    <span class="text-muted">Coverage</span>
+                    <strong class="fs-5">₹@Model.coverage_amount</strong>
+                </div>
+                
+                <form method="post" action="/Insurance/ConfirmPurchase">
+                    <input type="hidden" name="plan_id" value="@Model.plan_id" />
+                    <input type="hidden" name="company_id" value="@Model.company_id" />
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Select Policy Duration</label>
+                        <select name="duration" class="form-select form-select-lg">
+                            <option value="12">1 Year</option>
+                            <option value="24">2 Years</option>
+                            <option value="36">3 Years</option>
+                            <option value="60">5 Years</option>
+                            <option value="120">10 Years</option>
+                        </select>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i> By continuing, you agree to the terms and conditions set by the insurance provider.
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold fs-5">Confirm & Buy Policy <i class="bi bi-check-circle ms-2"></i></button>
+                    <div class="text-center mt-3">
+                        <a href="/Customer/BrowsePlans" class="text-decoration-none text-muted">Go Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Customer Dashboard";
+}
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card dashboard-card bg-primary text-white h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-title text-white-50">My Policies</h6>
+                    <p class="card-text text-white display-6">@ViewBag.MyPolicies</p>
+                </div>
+                <i class="bi bi-shield-check fs-1 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card dashboard-card bg-success text-white h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-title text-white-50">Total Payments Done</h6>
+                    <p class="card-text text-white display-6">₹@ViewBag.TotalPayments</p>
+                </div>
+                <i class="bi bi-wallet2 fs-1 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card dashboard-card h-100 text-center p-4">
+            <i class="bi bi-search text-primary fs-1 mb-3"></i>
+            <h5>Find Great Plans</h5>
+            <p class="text-muted small">Compare and purchase insurance policies suitable for your needs.</p>
+            <a href="/Customer/BrowsePlans" class="btn btn-outline-primary mt-auto">Browse Plans</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card dashboard-card h-100 text-center p-4">
+            <i class="bi bi-shield-lock text-success fs-1 mb-3"></i>
+            <h5>Manage Policies</h5>
+            <p class="text-muted small">View your active policies and proceed with premium payments.</p>
+            <a href="/Customer/MyPolicies" class="btn btn-outline-success mt-auto">My Policies</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card dashboard-card h-100 text-center p-4">
+            <i class="bi bi-headset text-info fs-1 mb-3"></i>
+            <h5>Support & Queries</h5>
+            <p class="text-muted small">Need help with claims or general queries? Contact our team.</p>
+            <a href="/Customer/SubmitQuery" class="btn btn-outline-info text-dark mt-auto">Contact Us</a>
+        </div>
+    </div>
+</div>

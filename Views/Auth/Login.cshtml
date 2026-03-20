@@ -1,0 +1,101 @@
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_AuthLayout";
+}
+<div class="auth-card card">
+    <div class="auth-header">
+        <h3 class="mb-0"><i class="bi bi-shield-lock me-2"></i> Smart Insurance Hub</h3>
+        <p class="mt-2 text-white-50">Log in to your account</p>
+    </div>
+    <div class="card-body p-4">
+        @if(ViewBag.Error != null) {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+        <form method="post" action="/Auth/Login">
+            <div class="mb-3">
+                <label class="form-label text-muted">Sign in as</label>
+                <select name="role" id="roleSelect" class="form-select form-control-lg">
+                    <option value="Customer">Customer</option>
+                    <option value="Agent">Agent</option>
+                    <option value="Company">Insurance Company</option>
+                    <option value="Admin">Administrator</option>
+                </select>
+            </div>
+            
+            <div class="mb-3 d-none" id="companyContainer">
+                <label class="form-label">Select Company</label>
+                <select name="company_id" id="companyDropdown" class="form-select form-control-lg">
+                    <option value="">-- Select Your Company --</option>
+                    @if (ViewBag.Companies != null)
+                    {
+                        foreach (var company in ViewBag.Companies)
+                        {
+                            <option value="@company.company_id">@company.company_name</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3" id="emailContainer">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="emailInput" name="email" class="form-control" required placeholder="Enter your email" />
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required placeholder="Enter password" />
+            </div>
+            <button type="submit" class="btn btn-primary-custom w-100 py-2 fw-semibold">
+                Sign In <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+        </form>
+        
+        <hr class="my-4">
+        
+        <div class="text-center">
+            <p class="text-muted mb-2">Don't have an account?</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="/Auth/RegisterCustomer" class="btn btn-outline-secondary btn-sm">Customer</a>
+                <a href="/Auth/RegisterAgent" class="btn btn-outline-secondary btn-sm">Agent</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.getElementById('roleSelect');
+            const companyContainer = document.getElementById('companyContainer');
+            const companyDropdown = document.getElementById('companyDropdown');
+            const emailContainer = document.getElementById('emailContainer');
+            const emailInput = document.getElementById('emailInput');
+
+            function toggleFields() {
+                if (roleSelect.value === 'Company') {
+                    // Show Company Dropdown, hide Email
+                    companyContainer.classList.remove('d-none');
+                    emailContainer.classList.add('d-none');
+                    
+                    // Switch required validation
+                    companyDropdown.required = true;
+                    emailInput.required = false;
+                    emailInput.value = ''; // Clear email if they typed something
+                } else {
+                    // Hide Company Dropdown, show Email
+                    companyContainer.classList.add('d-none');
+                    emailContainer.classList.remove('d-none');
+                    
+                    // Switch required validation
+                    companyDropdown.required = false;
+                    emailInput.required = true;
+                    companyDropdown.value = ''; // Clear selection
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleFields);
+            
+            // Run on load in case browser restored state
+            toggleFields();
+        });
+    </script>
+}

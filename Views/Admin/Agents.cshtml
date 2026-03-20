@@ -1,0 +1,46 @@
+@model IEnumerable<SmartInsuranceHub.Models.Agent>
+@{
+    ViewData["Title"] = "Manage Agents";
+}
+
+<div class="card table-custom">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Agent Name</th>
+                    <th>Email</th>
+                    <th>Company</th>
+                    <th>License</th>
+                    <th>Exp (Yrs)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model)
+                {
+                    <tr>
+                        <td>@item.full_name</td>
+                        <td>@item.email</td>
+                        <td>@item.Company?.company_name</td>
+                        <td>@item.license_number</td>
+                        <td>@item.experience_years</td>
+                        <td>
+                            @if(item.approved_status) {
+                                <span class="badge bg-success">Approved</span>
+                            } else {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                        </td>
+                        <td>
+                            @if(!item.approved_status) {
+                                <a href="/Admin/ApproveAgent/@item.agent_id" class="btn btn-sm btn-success">Approve</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

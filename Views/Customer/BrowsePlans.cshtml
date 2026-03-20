@@ -1,0 +1,49 @@
+@model IEnumerable<SmartInsuranceHub.Models.InsurancePlan>
+@{
+    ViewData["Title"] = "Browse Insurance Plans";
+    var isVerified = (bool)(ViewBag.IsVerified ?? false);
+}
+
+@if (!isVerified)
+{
+    <div class="alert alert-warning d-flex align-items-center mb-4" style="border-radius:12px;">
+        <i class="bi bi-shield-exclamation fs-4 me-3"></i>
+        <div>
+            <strong>Document verification required.</strong> Please complete your document verification before purchasing policies.
+            <a href="/Document/Profile" class="alert-link ms-1">Complete Verification →</a>
+        </div>
+    </div>
+}
+
+<div class="row">
+    @foreach(var item in Model)
+    {
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <span class="badge bg-primary mb-2">@item.Company?.company_name</span>
+                    <h5 class="card-title text-dark">@item.plan_name</h5>
+                    <p class="text-muted small mb-3" style="min-height: 40px;">@item.description</p>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Coverage</span>
+                        <strong>₹@item.coverage_amount</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Premium</span>
+                        <strong class="text-success">₹@item.premium_amount / yr</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Duration</span>
+                        <strong>@item.duration_months Months</strong>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="/Insurance/Purchase?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-primary-custom">Purchase Plan</a>
+                        <a href="/Review/PlanReviews?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-outline-secondary">View Reviews</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

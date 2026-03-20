@@ -1,0 +1,284 @@
+@model SmartInsuranceHub.Models.HomeViewModel
+@{
+    ViewData["Title"] = "Life Insurance & Financial Security";
+    Layout = "_LandingLayout";
+}
+
+<style>
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        padding: 6rem 0 8rem;
+        overflow: hidden;
+        background-color: #f8fafc;
+    }
+    .hero-bg-pattern {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.3;
+        z-index: 0;
+    }
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin-bottom: 1.5rem;
+    }
+    .hero-title .highlight {
+        color: #0d6efd;
+    }
+    .hero-subtitle {
+        font-size: 1.15rem;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 2.5rem;
+    }
+    .hero-image-wrapper {
+        position: relative;
+        z-index: 1;
+        height: 500px;
+        border-radius: 20px 0 0 20px;
+        overflow: hidden;
+        box-shadow: -20px 20px 60px rgba(0,0,0,0.08);
+    }
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* Stats Section */
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+        border-bottom: 4px solid #0d6efd;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+    .stat-label {
+        color: #64748b;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
+    
+    /* Feature Cards */
+    .feature-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        height: 100%;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(13, 110, 253, 0.1);
+        border-color: #0d6efd;
+    }
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        background-color: #eff6ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Company Cards */
+    .company-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .company-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+    }
+</style>
+
+<!-- Hero Section -->
+<section id="home" class="hero-section">
+    <div class="hero-bg-pattern"></div>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="hero-title">
+                    SmartInsurance <br />
+                    for a secure <br />
+                    <span class="highlight">future.</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Discover comprehensive insurance policies tailored to your needs. Connect with top-tier companies and agents to protect your family, health, and assets.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="#insurance" class="btn btn-primary btn-lg px-4 py-3 rounded-3 shadow-sm">Explore Plans</a>
+                    <a href="/Auth/Login" class="btn btn-outline-primary btn-lg px-4 py-3 rounded-3 bg-white">Login</a>
+                </div>
+            </div>
+            <div class="col-lg-6 pe-0 mt-5 mt-lg-0">
+                <div class="hero-image-wrapper">
+                    <!-- Standard image or fallback if not available -->
+                    <img src="~/images/hero_family.png" alt="Happy family protected by insurance" class="hero-image" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About / Stats Section -->
+<section id="about" class="py-5" style="background-color: #f1f5f9; margin-top: -3rem; position: relative; z-index: 10;">
+    <div class="container pt-3">
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number counter" data-target="@Model.TotalCompanies">0</div>
+                    <div class="stat-label">Partner Companies</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number counter" data-target="@Model.TotalCustomers">0</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number counter" data-target="@Model.YearsExperience">0</div>
+                    <div class="stat-label">Years of Experience</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Insurance Types Section -->
+<section id="insurance" class="py-5 bg-white">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h6 class="text-primary fw-bold text-uppercase" style="letter-spacing: 2px;">Our Coverage Options</h6>
+            <h2 class="display-6 fw-bold text-dark">Insurance That Fits Your Life</h2>
+        </div>
+        
+        <div class="row g-4">
+            @foreach (var item in Model.InsuranceTypes)
+            {
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card">
+                        <div class="icon-box">
+                            <i class="bi @item.icon"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">@item.type_name</h4>
+                        <p class="text-muted mb-4">@item.description</p>
+                        <a href="/Customer/BrowsePlans" class="text-primary text-decoration-none fw-medium">View Benefits <i class="bi bi-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            }
+            @if(!Model.InsuranceTypes.Any())
+            {
+                <div class="col-12 text-center text-muted">No insurance types available currently. Configure them from the admin panel.</div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Companies Section -->
+<section id="companies" class="py-5" style="background-color: #f8fafc;">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h6 class="text-primary fw-bold text-uppercase" style="letter-spacing: 2px;">Trusted Partners</h6>
+            <h2 class="display-6 fw-bold text-dark">Top Insurance Companies</h2>
+            <p class="text-muted mt-3 mx-auto" style="max-width: 600px;">We partner with the industry's leading providers to bring you the best coverage and competitive rates.</p>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            @foreach (var company in Model.Companies)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="card company-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-body p-4 text-center">
+                            <div class="mb-4 d-inline-block p-3 rounded-circle" style="background-color: #eff6ff;">
+                                <i class="bi @company.Icon fs-1 text-primary"></i>
+                            </div>
+                            <h4 class="card-title fw-bold text-dark">@company.Name</h4>
+                            <p class="card-text text-muted small mt-2 mb-4">@company.Description</p>
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-shield-check me-1"></i> @company.TotalPolicies Policies Available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if(!Model.Companies.Any())
+            {
+                <div class="col-12 text-center text-muted">Register and approve an insurance company to see them listed here.</div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll('.counter');
+        const speed = 100; // Lower is slower
+
+        const animateCounters = () => {
+            counters.forEach(counter => {
+                const updateCount = () => {
+                    const target = +counter.getAttribute('data-target');
+                    const count = +counter.innerText;
+                    
+                    const inc = target / speed;
+
+                    if (count < target && target > 0) {
+                        counter.innerText = Math.ceil(count + inc);
+                        setTimeout(updateCount, 20);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+                updateCount();
+            });
+        };
+
+        // Trigger animation when the About section scrolls into view
+        const observer = new IntersectionObserver((entries) => {
+            if(entries[0].isIntersecting) {
+                animateCounters();
+                observer.disconnect();
+            }
+        }, { threshold: 0.3 });
+
+        const aboutSection = document.getElementById('about');
+        if (aboutSection) {
+            observer.observe(aboutSection);
+        } else {
+            animateCounters();
+        }
+    });
+</script>
+}

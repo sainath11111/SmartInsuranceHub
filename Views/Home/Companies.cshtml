@@ -1,0 +1,57 @@
+@model IEnumerable<SmartInsuranceHub.Models.CompanyViewModel>
+@{
+    ViewData["Title"] = "Our Partner Companies";
+    Layout = "_LandingLayout";
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        padding: 5rem 0;
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    .company-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .company-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+    }
+</style>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Trusted Partners</h1>
+        <p class="lead opacity-75">We partner with the industry's leading providers for your peace of mind.</p>
+    </div>
+</div>
+
+<section id="companies" class="py-5" style="background-color: #f8fafc;">
+    <div class="container mb-5">
+        <div class="row g-4 justify-content-center">
+            @foreach (var company in Model)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="card company-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-body p-4 text-center">
+                            <div class="mb-4 d-inline-block p-3 rounded-circle" style="background-color: #eff6ff;">
+                                <i class="bi @company.Icon fs-1 text-primary"></i>
+                            </div>
+                            <h4 class="card-title fw-bold text-dark">@company.Name</h4>
+                            <p class="card-text text-muted small mt-2 mb-4">@company.Description</p>
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-shield-check me-1"></i> @company.TotalPolicies Policies Available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if(!Model.Any())
+            {
+                <div class="col-12 text-center text-muted">Register and approve an insurance company to see them listed here.</div>
+            }
+        </div>
+    </div>
+</section>

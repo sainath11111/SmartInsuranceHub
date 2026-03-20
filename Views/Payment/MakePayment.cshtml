@@ -1,0 +1,42 @@
+@model SmartInsuranceHub.Models.Policy
+@{
+    ViewData["Title"] = "Pay Premium";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card dashboard-card">
+            <div class="card-header bg-success text-white p-4">
+                <h4 class="mb-0">Secure Payment Checkout</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <p class="text-muted mb-1">Paying Premium For</p>
+                    <h5 class="text-dark">Policy No: @Model.policy_no</h5>
+                    <div class="display-4 text-success my-3">₹@Model.premium_amount</div>
+                </div>
+                
+                <form method="post" action="/Payment/ProcessPayment">
+                    <input type="hidden" name="policy_id" value="@Model.policy_id" />
+                    <input type="hidden" name="amount" value="@(Model.premium_amount)" />
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Select Payment Method</label>
+                        <select name="method" class="form-select form-select-lg">
+                            <option value="Credit Card">Credit/Debit Card</option>
+                            <option value="UPI">UPI Payment</option>
+                            <option value="Net Banking">Net Banking</option>
+                            <option value="Wallet">Digital Wallet</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold fs-5">Pay Securely <i class="bi bi-shield-lock ms-2"></i></button>
+                    
+                    <div class="text-center mt-3">
+                        <a href="/Customer/MyPolicies" class="text-muted text-decoration-none">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+@model IEnumerable<SmartInsuranceHub.Models.Review>
+@{
+    ViewData["Title"] = "Customer Reviews";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">Plan Reviews</h3>
+            <a href="/Customer/BrowsePlans" class="btn btn-outline-primary">Back to Plans</a>
+        </div>
+        
+        @if(!Model.Any())
+        {
+            <div class="alert alert-info text-center py-4">
+                No reviews available for this plan yet. Try being the first to review after purchasing!
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach(var item in Model.OrderByDescending(x => x.created_at))
+                {
+                    <div class="col-md-6 mb-4">
+                        <div class="card dashboard-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong class="text-dark">@item.Customer?.full_name</strong>
+                                    <span class="text-warning">
+                                        @for(int i=0; i<item.rating; i++) { <span>★</span> }
+                                        @for(int i=item.rating; i<5; i++) { <span class="text-muted">★</span> }
+                                    </span>
+                                </div>
+                                <small class="text-muted d-block mb-3">@item.created_at.ToString("MMM dd, yyyy")</small>
+                                <p class="mb-0">"@item.comment"</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

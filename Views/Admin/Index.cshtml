@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title text-white-50">Total Companies</h6>
+                <p class="card-text text-white">@ViewBag.TotalCompanies</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title text-white-50">Total Agents</h6>
+                <p class="card-text text-white">@ViewBag.TotalAgents</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title text-white-50">Total Customers</h6>
+                <p class="card-text text-white">@ViewBag.TotalCustomers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-warning text-dark">
+            <div class="card-body">
+                <h6 class="card-title text-dark-50">Total Policies</h6>
+                <p class="card-text text-dark">@ViewBag.TotalPolicies</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if ((int)ViewBag.PendingDocs > 0)
+{
+    <div class="alert alert-warning d-flex align-items-center mb-4" style="border-radius:12px;">
+        <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+        <div>
+            <strong>@ViewBag.PendingDocs document(s) pending verification.</strong>
+            <a href="/Admin/DocumentVerification" class="alert-link ms-2">Review now →</a>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card dashboard-card">
+            <div class="card-header bg-white pb-0 border-0 pt-4 px-4">
+                <h5>Admin Quick Actions</h5>
+            </div>
+            <div class="card-body p-4">
+                <a href="/Admin/Companies" class="btn btn-primary me-2"><i class="bi bi-building"></i> Manage Companies</a>
+                <a href="/Admin/Agents" class="btn btn-success me-2"><i class="bi bi-person-badge"></i> View Agents</a>
+                <a href="/Admin/Customers" class="btn btn-info text-white me-2"><i class="bi bi-people"></i> View Customers</a>
+                <a href="/Admin/DocumentVerification" class="btn btn-dark me-2"><i class="bi bi-shield-check"></i> Document Verification</a>
+                <a href="/Query/Index" class="btn btn-secondary me-2"><i class="bi bi-envelope"></i> Contact Messages</a>
+            </div>
+        </div>
+    </div>
+</div>

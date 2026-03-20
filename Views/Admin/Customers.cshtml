@@ -1,0 +1,32 @@
+@model IEnumerable<SmartInsuranceHub.Models.Customer>
+@{
+    ViewData["Title"] = "Manage Customers";
+}
+
+<div class="card table-custom">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>City</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model)
+                {
+                    <tr>
+                        <td>@item.full_name</td>
+                        <td>@item.email</td>
+                        <td>@item.phone</td>
+                        <td>@item.city</td>
+                        <td>@item.created_at.ToString("MMM dd, yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

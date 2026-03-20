@@ -1,0 +1,58 @@
+@model IEnumerable<SmartInsuranceHub.Models.InsurancePlan>
+@{
+    ViewData["Title"] = "Our Plans";
+}
+
+<div class="d-flex justify-content-end mb-3">
+    <a asp-action="CreatePlan" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Create New Plan</a>
+</div>
+
+<div class="card table-custom">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Plan Name</th>
+                    <th>Agent</th>
+                    <th>Premium (₹)</th>
+                    <th>Coverage (₹)</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>@item.plan_name</strong></td>
+                            <td>@(item.Agent?.full_name ?? "—")</td>
+                            <td>₹@item.premium_amount.ToString("N0")</td>
+                            <td>₹@item.coverage_amount.ToString("N0")</td>
+                            <td>@item.duration_months Months</td>
+                            <td>
+                                @if (item.status == "active")
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@item.status</span>
+                                }
+                            </td>
+                            <td>@item.created_date.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No insurance plans created yet. <a asp-action="CreatePlan">Create your first plan</a>.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

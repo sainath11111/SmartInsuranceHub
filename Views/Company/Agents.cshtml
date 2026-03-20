@@ -1,0 +1,162 @@
+@model IEnumerable<SmartInsuranceHub.Models.Agent>
+@{
+    ViewData["Title"] = "My Agents";
+}
+
+<div class="card table-custom">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Agent Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Experience</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @if(!string.IsNullOrEmpty(item.profile_photo)){
+                                <img src="@item.profile_photo" alt="Photo" width="40" class="rounded-circle" />
+                            }else{
+                                <i class="bi bi-person-circle fs-3 text-muted"></i>
+                            }
+                        </td>
+                        <td>@item.full_name</td>
+                        <td>@item.email</td>
+                        <td>@item.phone</td>
+                        <td>@item.experience_years Yrs</td>
+                        <td>
+                            @if(item.approved_status) {
+                                <span class="badge bg-success">Active</span>
+                            } else {
+                                <span class="badge bg-warning text-dark">Pending Admin Approval</span>
+                            }
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" type="button" onclick="openChat(@item.agent_id, '@Uri.EscapeDataString(item.full_name)')"><i class="bi bi-chat-dots"></i> Chat</button>
+                            <form asp-action="DeleteAgent" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@item.agent_id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this agent?');"><i class="bi bi-trash"></i> Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="chatOffcanvas" aria-labelledby="chatOffcanvasLabel">
+  <div class="offcanvas-header bg-primary text-white">
+    <h5 class="offcanvas-title" id="chatOffcanvasLabel"><i class="bi bi-chat-dots"></i> Chat with <span id="chatAgentName"></span></h5>
+    <button type="button" class="btn-close btn-close-white text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column" style="background-color:#f8f9fa;">
+    <div id="chatMessages" class="flex-grow-1 overflow-auto mb-3 p-2 rounded bg-white shadow-sm border" style="max-height: calc(100vh - 180px);">
+        <!-- Messages will be injected here via JS -->
+    </div>
+    <form id="chatForm">
+      <div class="input-group">
+        <input type="text" id="chatInput" class="form-control" placeholder="Type a message..." required autocomplete="off" />
+        <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentAgentId = null;
+        let chatPollInterval = null;
+
+        function openChat(agentId, encodedName) {
+            currentAgentId = agentId;
+            document.getElementById('chatAgentName').innerText = decodeURIComponent(encodedName);
+            
+            var myOffcanvas = new bootstrap.Offcanvas(document.getElementById('chatOffcanvas'));
+            myOffcanvas.show();
+
+            fetchMessages();
+
+            if(chatPollInterval) clearInterval(chatPollInterval);
+            chatPollInterval = setInterval(fetchMessages, 3000);
+        }
+
+        document.getElementById('chatOffcanvas').addEventListener('hidden.bs.offcanvas', function () {
+            if(chatPollInterval) clearInterval(chatPollInterval);
+            currentAgentId = null;
+        });
+
+        async function fetchMessages() {
+            if(!currentAgentId) return;
+            try {
+                const res = await fetch(`/api/chat/${currentAgentId}`);
+                if(res.ok) {
+                    const messages = await res.json();
+                    renderMessages(messages);
+                }
+            } catch (err) { console.error('Error fetching messages', err); }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            
+            // simple check if at bottom to allow auto-scroll down
+            const isAtBottom = container.scrollHeight - container.scrollTop === container.clientHeight;
+
+            container.innerHTML = '';
+            
+            messages.forEach(m => {
+                const isMine = m.sender_type === 'Company';
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `d-flex mb-2 ${isMine ? 'justify-content-end' : 'justify-content-start'}`;
+                
+                const bubble = document.createElement('div');
+                bubble.className = `p-2 rounded ${isMine ? 'bg-primary text-white' : 'bg-light border'}`;
+                bubble.style.maxWidth = '80%';
+                
+                const txt = document.createElement('span');
+                txt.innerText = m.message_text;
+                bubble.appendChild(txt);
+                
+                const time = document.createElement('small');
+                time.className = `d-block mt-1 ${isMine ? 'text-white-50' : 'text-muted'}`;
+                time.style.fontSize = '0.7rem';
+                time.innerText = new Date(m.sent_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                bubble.appendChild(time);
+                
+                msgDiv.appendChild(bubble);
+                container.appendChild(msgDiv);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.getElementById('chatForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text || !currentAgentId) return;
+            
+            try {
+                const res = await fetch(`/api/chat/${currentAgentId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messageText: text })
+                });
+                
+                if(res.ok) {
+                    input.value = '';
+                    fetchMessages();
+                }
+            } catch (err) { console.error('Send error', err); }
+        });
+    </script>
+}

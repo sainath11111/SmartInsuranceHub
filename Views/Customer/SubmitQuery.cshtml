@@ -1,0 +1,33 @@
+@model SmartInsuranceHub.Models.Query
+@{
+    ViewData["Title"] = "Contact & Support";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-header bg-white pt-4 pb-2 px-4 border-0">
+                <h4 class="mb-0">Submit a Query</h4>
+            </div>
+            <div class="card-body p-4">
+                @if(ViewBag.Message != null)
+                {
+                    <div class="alert alert-success">@ViewBag.Message</div>
+                }
+                
+                <form method="post" action="/Customer/SubmitQuery">
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" asp-for="subject" class="form-control" placeholder="What do you need help with?" required />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Message</label>
+                        <textarea asp-for="message" class="form-control" rows="5" placeholder="Describe your issue or query..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2">Submit Query <i class="bi bi-send ms-2"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

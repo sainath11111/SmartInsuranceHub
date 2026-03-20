@@ -1,0 +1,38 @@
+@model IEnumerable<SmartInsuranceHub.Models.Policy>
+@{
+    ViewData["Title"] = "Sold Policies & Customers";
+}
+
+<div class="card table-custom">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Policy No</th>
+                    <th>Customer Name</th>
+                    <th>Plan Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Premium</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.policy_no</strong></td>
+                        <td>@item.Customer?.full_name</td>
+                        <td>@item.InsurancePlan?.plan_name</td>
+                        <td>@item.start_date.ToString("MMM dd, yyyy")</td>
+                        <td>@item.end_date.ToString("MMM dd, yyyy")</td>
+                        <td>₹@item.premium_amount</td>
+                        <td>
+                            <span class="badge bg-success">@item.policy_status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

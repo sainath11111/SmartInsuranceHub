@@ -1,0 +1,297 @@
+@model SmartInsuranceHub.Models.NewsPageViewModel
+@{
+    ViewData["Title"] = "Latest Insurance News";
+    Layout = "_LandingLayout";
+}
+
+<style>
+    /* ========================================
+       NEWS PAGE — PREMIUM DESIGN
+       ======================================== */
+
+    /* Hero Section */
+    .news-hero {
+        background: linear-gradient(135deg, #0a1628 0%, #1a3a6b 40%, #1252b7 100%);
+        color: white;
+        padding: 70px 0 50px;
+        margin-bottom: 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .news-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .news-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .news-hero h1 {
+        font-size: 2.6rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        position: relative;
+        z-index: 1;
+    }
+    .news-hero p {
+        font-size: 1.1rem;
+        opacity: 0.8;
+        max-width: 540px;
+        margin: 16px auto 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* News Cards */
+    .news-grid {
+        padding: 48px 0 60px;
+        background: #f5f7fb;
+    }
+    .news-card {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+    }
+    .news-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 40px rgba(18,82,183,0.18);
+        color: inherit;
+        text-decoration: none;
+    }
+    .news-card-img-wrap {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    }
+    .news-card-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .news-card:hover .news-card-img-wrap img {
+        transform: scale(1.06);
+    }
+    .news-img-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #94a3b8;
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    }
+    .source-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(8px);
+        color: #1252b7;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        z-index: 2;
+    }
+    .news-card .card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 22px 20px 18px;
+    }
+    .news-date {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .news-card .card-title {
+        font-weight: 700;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #1a2340;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+    .news-card .card-text {
+        font-size: 0.85rem;
+        color: #64748b;
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex-grow: 1;
+    }
+    .read-more-btn {
+        background: linear-gradient(135deg, #1252b7 0%, #1e40af 100%);
+        border: none;
+        color: white;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 10px 20px;
+        transition: all 0.25s ease;
+        text-align: center;
+        display: block;
+        width: 100%;
+    }
+    .read-more-btn:hover {
+        background: linear-gradient(135deg, #0e3d8a 0%, #1e3a8a 100%);
+        color: white;
+        box-shadow: 0 4px 16px rgba(18,82,183,0.3);
+    }
+
+    /* Error & Empty States */
+    .status-card {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+        padding: 48px;
+        text-align: center;
+        max-width: 500px;
+        margin: 40px auto;
+    }
+    .status-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 1.8rem;
+    }
+    .status-icon.warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    .status-icon.info {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+</style>
+
+<!-- Hero -->
+<div class="news-hero">
+    <div class="container">
+        <h1>📰 Latest Insurance News</h1>
+        <p>Stay informed with the most recent developments in insurance & finance, curated just for you.</p>
+    </div>
+</div>
+
+<!-- News Articles Section -->
+<div class="news-grid">
+    <div class="container">
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage) && !Model.Articles.Any())
+        {
+            <div class="status-card">
+                <div class="status-icon warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h5 style="font-weight:700;color:#1a2340;">Unable to Load News</h5>
+                <p style="color:#64748b;font-size:0.92rem;">@Model.ErrorMessage</p>
+            </div>
+        }
+        else if (!Model.Articles.Any())
+        {
+            <div class="status-card">
+                <div class="status-icon info">
+                    <i class="bi bi-newspaper"></i>
+                </div>
+                <h5 style="font-weight:700;color:#1a2340;">No Articles Found</h5>
+                <p style="color:#64748b;font-size:0.92rem;">No news articles found at this time. Please check back later.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var article in Model.Articles)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <a class="card news-card" href="@Url.Action("Detail", "News", new {
+                            title = article.Title,
+                            image = article.ImageUrl,
+                            description = article.Description,
+                            url = article.Url,
+                            source = article.Source,
+                            date = article.PublishedAt,
+                            content = article.Content
+                        })">
+                            <div class="news-card-img-wrap">
+                                @if (!string.IsNullOrEmpty(article.ImageUrl))
+                                {
+                                    <img src="@article.ImageUrl" alt="@article.Title"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy" />
+                                    <div class="news-img-placeholder" style="display:none;">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="news-img-placeholder">
+                                        <i class="bi bi-newspaper"></i>
+                                    </div>
+                                }
+                                <span class="source-badge">@article.Source</span>
+                            </div>
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(article.PublishedAt) && DateTime.TryParse(article.PublishedAt, out var pubDate))
+                                {
+                                    <div class="news-date">
+                                        <i class="bi bi-clock"></i>
+                                        @pubDate.ToLocalTime().ToString("MMM dd, yyyy · hh:mm tt")
+                                    </div>
+                                }
+                                <h5 class="card-title">@article.Title</h5>
+                                @if (!string.IsNullOrEmpty(article.Description))
+                                {
+                                    <p class="card-text">@article.Description</p>
+                                }
+                                <div class="mt-auto pt-3">
+                                    <span class="read-more-btn">
+                                        <i class="bi bi-arrow-right me-1"></i> Read More
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

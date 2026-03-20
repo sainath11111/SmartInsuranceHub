@@ -1,0 +1,51 @@
+@model IEnumerable<SmartInsuranceHub.Models.Policy>
+@{
+    ViewData["Title"] = "My Policies";
+}
+
+<div class="row">
+    @if(!Model.Any())
+    {
+        <div class="col-12 text-center py-5 auth-card">
+            <h4 class="text-muted">You don't have any active policies.</h4>
+            <a href="/Customer/BrowsePlans" class="btn btn-primary mt-3">Browse Plans</a>
+        </div>
+    }
+    
+    @foreach(var item in Model)
+    {
+        <div class="col-md-6 mb-4">
+            <div class="card dashboard-card border-success border-top border-4 h-100">
+                <div class="card-body position-relative">
+                    <span class="badge bg-success position-absolute top-0 end-0 m-3">@item.policy_status</span>
+                    <h5 class="card-title text-success mb-1">@item.policy_no</h5>
+                    <p class="text-dark fw-bold mb-3 fs-5">@item.InsurancePlan?.plan_name</p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Start Date</small>
+                            <strong>@item.start_date.ToString("MMM dd, yyyy")</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">End Date</small>
+                            <strong>@item.end_date.ToString("MMM dd, yyyy")</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-3">
+                        <div>
+                            <small class="text-muted d-block">Premium Amount</small>
+                            <strong class="fs-5 text-dark">₹@item.premium_amount</strong>
+                        </div>
+                        <a href="/Payment/MakePayment?policyId=@item.policy_id" class="btn btn-sm btn-primary">Pay Premium</a>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="bi bi-person-badge"></i> Agent: @(item.Agent?.full_name ?? "Direct")</small>
+                        <a href="/Review/WriteReview?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-sm btn-outline-info"><i class="bi bi-star-fill text-warning"></i> Write Review</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

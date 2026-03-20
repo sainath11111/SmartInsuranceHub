@@ -1,0 +1,82 @@
+@model SmartInsuranceHub.Models.HomeViewModel
+@{
+    ViewData["Title"] = "About Us";
+    Layout = "_LandingLayout";
+}
+
+<style>
+    .about-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        padding: 5rem 0;
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+        border-bottom: 4px solid #0d6efd;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    .stat-number { font-size: 3rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
+    .stat-label { color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
+</style>
+
+<div class="about-header">
+    <div class="container">
+        <h1 class="display-4 fw-bold">About SmartInsurance</h1>
+        <p class="lead opacity-75">Securing your future with trusted partners.</p>
+    </div>
+</div>
+
+<section id="about" class="py-5" style="background-color: #f8fafc;">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number counter" data-target="@Model.TotalCompanies">0</div>
+                    <div class="stat-label">Partner Companies</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number counter" data-target="@Model.TotalCustomers">0</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-number counter" data-target="@Model.YearsExperience">0</div>
+                    <div class="stat-label">Years of Experience</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll('.counter');
+        const speed = 100;
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                const inc = target / speed;
+                if (count < target && target > 0) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 20);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+    });
+</script>
+}

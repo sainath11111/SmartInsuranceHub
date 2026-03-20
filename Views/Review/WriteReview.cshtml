@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Write a Review";
+    var plan = ViewBag.Plan as SmartInsuranceHub.Models.InsurancePlan;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-header bg-warning text-dark p-4 border-0">
+                <h4 class="mb-0">Rate & Review Plan</h4>
+            </div>
+            <div class="card-body p-4">
+                <h5 class="mb-4">Plan: @plan?.plan_name</h5>
+                
+                <form method="post" action="/Review/SubmitReview">
+                    <input type="hidden" name="plan_id" value="@plan?.plan_id" />
+                    <input type="hidden" name="company_id" value="@plan?.company_id" />
+                    
+                    <div class="mb-4 text-center">
+                        <p class="text-muted mb-2">How would you rate this plan?</p>
+                        <select name="rating" class="form-select form-select-lg text-center fw-bold text-warning mx-auto" style="max-width: 150px;">
+                            <option value="5" selected>★★★★★ (5)</option>
+                            <option value="4">★★★★☆ (4)</option>
+                            <option value="3">★★★☆☆ (3)</option>
+                            <option value="2">★★☆☆☆ (2)</option>
+                            <option value="1">★☆☆☆☆ (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Your Experience (Comment)</label>
+                        <textarea name="comment" class="form-control" rows="4" placeholder="Share details of your experience with this policy..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning text-dark w-100 py-3 fw-bold">Post Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

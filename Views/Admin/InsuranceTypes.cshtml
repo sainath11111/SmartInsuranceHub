@@ -1,0 +1,169 @@
+@model IEnumerable<SmartInsuranceHub.Models.InsuranceType>
+@{
+    ViewData["Title"] = "Insurance Types";
+}
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="bi bi-shield-check me-2 text-primary"></i>Insurance Types</h4>
+        <p class="text-muted mb-0">Manage global insurance categories available on the platform</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTypeModal">
+        <i class="bi bi-plus-circle me-1"></i> Add New Type
+    </button>
+</div>
+
+<!-- Alert -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Insurance Type Cards Grid -->
+<div class="row g-4 mb-5">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100 insurance-type-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between mb-3">
+                        <div class="type-icon-wrap rounded-3 p-3 me-3">
+                            <i class="bi @(item.icon ?? "bi-shield") fs-3 text-white"></i>
+                        </div>
+                        <form method="post" action="/Admin/DeleteInsuranceType/@item.type_id" onsubmit="return confirm('Delete @item.type_name?')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Delete">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <h5 class="fw-bold mb-2">@item.type_name</h5>
+                    <p class="text-muted small mb-3">@(item.description ?? "No description provided.")</p>
+                    <span class="badge @(item.status == "active" ? "bg-success" : "bg-secondary") rounded-pill px-3">
+                        <i class="bi bi-circle-fill me-1" style="font-size:6px;vertical-align:middle;"></i>@item.status
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+            <p class="text-muted">No insurance types found. Click <strong>Add New Type</strong> to get started.</p>
+        </div>
+    }
+</div>
+
+<!-- Summary Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0 py-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-table me-2"></i>All Types — Summary Table</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Icon</th>
+                        <th>Type Name</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-muted">@item.type_id</td>
+                            <td><i class="bi @(item.icon ?? "bi-shield") fs-5 text-primary"></i></td>
+                            <td class="fw-semibold">@item.type_name</td>
+                            <td class="text-muted small" style="max-width:250px">@(item.description?.Length > 60 ? item.description.Substring(0,60)+"…" : item.description)</td>
+                            <td><span class="badge @(item.status=="active"?"bg-success":"bg-secondary")">@item.status</span></td>
+                            <td class="text-muted small">@item.created_at.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                <form method="post" action="/Admin/DeleteInsuranceType/@item.type_id" class="d-inline" onsubmit="return confirm('Delete @item.type_name?')">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3 me-1"></i>Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Insurance Type Modal -->
+<div class="modal fade" id="addTypeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2 text-primary"></i>Add Insurance Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/Admin/AddInsuranceType">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Type Name <span class="text-danger">*</span></label>
+                        <input type="text" name="type_name" class="form-control" placeholder="e.g. Life Insurance" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Brief description..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Icon (Bootstrap Icons class)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-shield" id="iconPreview"></i></span>
+                            <input type="text" name="icon" id="iconInput" class="form-control" placeholder="bi-shield" value="bi-shield"
+                                   oninput="document.getElementById('iconPreview').className='bi '+this.value" />
+                        </div>
+                        <div class="mt-2 d-flex flex-wrap gap-2">
+                            @foreach(var ic in new[] { ("bi-heart-pulse-fill","Life"), ("bi-hospital-fill","Health"), ("bi-car-front-fill","Motor"), ("bi-house-fill","Property"), ("bi-airplane-fill","Travel"), ("bi-umbrella-fill","General"), ("bi-shield-fill","Liability"), ("bi-briefcase-fill","Business") })
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-secondary icon-pick" data-icon="@ic.Item1" title="@ic.Item2">
+                                    <i class="bi @ic.Item1"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-plus-circle me-1"></i>Add Type</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.insurance-type-card { transition: transform 0.2s, box-shadow 0.2s; }
+.insurance-type-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important; }
+.type-icon-wrap {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    min-width: 60px; min-height: 60px;
+    display: flex; align-items: center; justify-content: center;
+}
+</style>
+
+<script>
+document.querySelectorAll('.icon-pick').forEach(btn => {
+    btn.addEventListener('click', function() {
+        var ic = this.dataset.icon;
+        document.getElementById('iconInput').value = ic;
+        document.getElementById('iconPreview').className = 'bi ' + ic;
+    });
+});
+</script>

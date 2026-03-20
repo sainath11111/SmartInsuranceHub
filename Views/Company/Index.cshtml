@@ -1,0 +1,52 @@
+@{
+    ViewData["Title"] = "Company Dashboard";
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title text-white-50">Total Agents</h6>
+                <p class="card-text text-white">@ViewBag.TotalAgents</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title text-white-50">Active Plans</h6>
+                <p class="card-text text-white">@ViewBag.TotalPlans</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title text-white-50">Policies Sold</h6>
+                <p class="card-text text-white">@ViewBag.TotalPolicies</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card bg-warning text-dark">
+            <div class="card-body">
+                <h6 class="card-title text-dark-50">Total Revenue</h6>
+                <p class="card-text text-dark">₹@ViewBag.TotalSales</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card dashboard-card h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5>Quick Links</h5>
+            </div>
+            <div class="card-body p-4">
+                <a href="/Insurance/CreatePlan" class="btn btn-primary mb-2 w-100"><i class="bi bi-plus-circle"></i> Create New Plan</a>
+                <a href="/Company/Agents" class="btn btn-outline-secondary w-100"><i class="bi bi-person-badge"></i> View My Agents</a>
+            </div>
+        </div>
+    </div>
+</div>
