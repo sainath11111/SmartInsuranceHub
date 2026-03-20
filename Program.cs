@@ -76,6 +76,9 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""VerificationStatus"" VARCHAR(20) DEFAULT 'unverified';
         ");
         context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Companies"" ADD COLUMN IF NOT EXISTS ""InsuranceTypeId"" INTEGER;
+        ");
+        context.Database.ExecuteSqlRaw(@"
             CREATE TABLE IF NOT EXISTS ""UserDocuments"" (
                 ""DocumentId"" SERIAL PRIMARY KEY,
                 ""UserType"" VARCHAR(20) NOT NULL,
@@ -103,31 +106,79 @@ using (var scope = app.Services.CreateScope())
 
     if (!context.Companies.Any())
     {
-        var topCompanies = new List<string>
+        var connString = context.Database.GetConnectionString();
+        using var conn = new Npgsql.NpgsqlConnection(connString);
+        conn.Open();
+
+        var sqlDelete = @"
+            DELETE FROM ""Payments"";
+            DELETE FROM ""Reviews"";
+            DELETE FROM ""Policies"";
+            DELETE FROM ""InsurancePlans"";
+            DELETE FROM ""ChatMessages"";
+            DELETE FROM ""Agents"";
+            DELETE FROM ""Companies"";
+        ";
+        using var cmdDelete = new Npgsql.NpgsqlCommand(sqlDelete, conn);
+        cmdDelete.ExecuteNonQuery();
+
+        var companies = new (string Name, string Email, string Address, string AgentCount, string Info, string License, int TypeId)[]
         {
-            "State Farm", "Berkshire Hathaway", "Progressive", "Allstate", "Liberty Mutual",
-            "Travelers", "Chubb", "USAA", "Farmers Insurance", "Nationwide",
-            "American International Group (AIG)", "Geico", "MetLife", "Prudential Financial", "New York Life",
-            "MassMutual", "Northwestern Mutual", "Lincoln National", "Principal Financial", "Aflac",
-            "Life Insurance Corporation of India (LIC)", "HDFC Life", "SBI Life", "ICICI Prudential", "Max Life"
+            // Life Insurance (TypeId = 1)
+            ("LIC", "lic@gmail.com", "Mumbai, India", "500", "Government life insurance provider", "LIC001", 1),
+            ("HDFC Life Insurance", "hdfc@gmail.com", "Mumbai, India", "300", "Private life insurance company", "HDFC001", 1),
+            ("ICICI Prudential Life Insurance", "icici@gmail.com", "Mumbai, India", "250", "Joint venture insurance company", "ICICI001", 1),
+            ("SBI Life Insurance", "sbi@gmail.com", "India", "400", "Bank-based life insurance", "SBI001", 1),
+            ("Max Life Insurance", "max@gmail.com", "India", "200", "Private life insurance provider", "MAX001", 1),
+            // Health Insurance (TypeId = 2)
+            ("Star Health Insurance", "star@gmail.com", "Chennai, India", "220", "Health insurance specialist", "STAR001", 2),
+            ("Niva Bupa Health Insurance", "niva@gmail.com", "Delhi, India", "180", "Global health insurance", "NIVA001", 2),
+            ("Care Health Insurance", "care@gmail.com", "India", "160", "Affordable health plans", "CARE001", 2),
+            ("Aditya Birla Health Insurance", "birla@gmail.com", "Mumbai, India", "210", "Wellness-based insurance", "BIRLA001", 2),
+            ("HDFC ERGO Health", "ergohealth@gmail.com", "India", "190", "Comprehensive health insurance", "ERGOH001", 2),
+            // Motor Insurance (TypeId = 3)
+            ("Bajaj Allianz General Insurance", "bajaj@gmail.com", "Pune, India", "350", "Motor insurance leader", "BAJAJ001", 3),
+            ("ICICI Lombard", "lombard@gmail.com", "Mumbai, India", "300", "General insurance provider", "LOMB001", 3),
+            ("TATA AIG General Insurance", "tata@gmail.com", "India", "280", "Trusted motor insurance", "TATA001", 3),
+            ("Reliance General Insurance", "reliance@gmail.com", "India", "260", "Affordable policies", "REL001", 3),
+            ("HDFC ERGO", "ergo@gmail.com", "India", "240", "Motor and general insurance", "ERGO001", 3),
+            // Property Insurance (TypeId = 4)
+            ("New India Assurance", "new@gmail.com", "India", "150", "Public sector insurer", "NEW001", 4),
+            ("United India Insurance", "united@gmail.com", "India", "140", "Government insurance", "UNIT001", 4),
+            ("Oriental Insurance Company", "oriental@gmail.com", "India", "130", "Property insurance provider", "ORI001", 4),
+            ("National Insurance Company", "national@gmail.com", "India", "120", "Public insurer", "NAT001", 4),
+            // Travel Insurance (TypeId = 5)
+            ("Tata AIG Travel Insurance", "tatatravel@gmail.com", "India", "170", "Travel insurance expert", "TATAT001", 5),
+            ("ICICI Lombard Travel Insurance", "lombardtravel@gmail.com", "India", "160", "Travel coverage", "LOMBT001", 5),
+            ("Reliance Travel Insurance", "reliancetravel@gmail.com", "India", "150", "Travel insurance services", "RELT001", 5),
+            ("Bajaj Allianz Travel Insurance", "bajajtravel@gmail.com", "India", "180", "Global travel plans", "BAJT001", 5)
         };
 
-        var defaultPasswordHash = BCrypt.Net.BCrypt.HashPassword("Company@123");
+        var sqlInsert = @"
+            INSERT INTO ""Companies"" (""CompanyName"", ""Email"", ""Password"", ""Address"", ""CAgent"", ""CInformation"", ""LicenseNumber"", ""Status"", ""InsuranceTypeId"", ""CreatedAt"") 
+            VALUES (@name, @email, @pwd, @address, @cagent, @info, @license, 'approved', @typeid, NOW())
+        ";
 
-        foreach (var name in topCompanies)
+        foreach (var comp in companies)
         {
-            var emailPrefix = name.ToLower().Replace(" ", "").Replace("(", "").Replace(")", "");
-            context.Companies.Add(new Company
-            {
-                company_name = name,
-                email = $"info@{emailPrefix}.com",
-                password = defaultPasswordHash,
-                status = "approved",
-                created_at = DateTime.UtcNow
-            });
+            using var cmdInsert = new Npgsql.NpgsqlCommand(sqlInsert, conn);
+            
+            var prefix = comp.Email.Split('@')[0];
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(prefix + "@123");
+
+            cmdInsert.Parameters.AddWithValue("name", comp.Name);
+            cmdInsert.Parameters.AddWithValue("email", comp.Email);
+            cmdInsert.Parameters.AddWithValue("pwd", passwordHash);
+            cmdInsert.Parameters.AddWithValue("address", comp.Address);
+            cmdInsert.Parameters.AddWithValue("cagent", comp.AgentCount);
+            cmdInsert.Parameters.AddWithValue("info", comp.Info);
+            cmdInsert.Parameters.AddWithValue("license", comp.License);
+            cmdInsert.Parameters.AddWithValue("typeid", comp.TypeId);
+            
+            cmdInsert.ExecuteNonQuery();
         }
-        
-        context.SaveChanges();
+
+        Console.WriteLine("✅ Seeded 24 Indian insurance companies successfully.");
     }
 }
 

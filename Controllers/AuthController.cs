@@ -129,6 +129,7 @@ namespace SmartInsuranceHub.Controllers
             }
 
             ViewBag.Error = "Invalid email or password. Please try again.";
+            ViewBag.Companies = _context.Companies.Where(c => c.status == "approved").ToList();
             return View();
         }
 
