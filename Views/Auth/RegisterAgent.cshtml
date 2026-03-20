@@ -1,73 +1,123 @@
 @model SmartInsuranceHub.Models.Agent
 @{
     ViewData["Title"] = "Agent Registration";
-    Layout = "_AuthLayout";
+    Layout = "_LandingLayout";
 }
-<div class="auth-card card">
-    <div class="auth-header bg-info text-white">
-        <h3 class="mb-0">Agent Registration</h3>
-    </div>
-    <div class="card-body p-4">
-        <form method="post" action="/Auth/RegisterAgent">
-            <div class="mb-3">
-                <label class="form-label">Select Company</label>
-                <select name="company_id" class="form-select" required>
-                    <option value="">-- Select Insurance Company --</option>
-                    @if(ViewBag.Companies != null)
-                    {
-                        foreach(var company in ViewBag.Companies)
-                        {
-                            <option value="@company.company_id">@company.company_name</option>
-                        }
-                    }
-                </select>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-dark border-0 text-center py-4">
+                    <h3 class="fw-bold text-white mb-0"><i class="bi bi-briefcase-fill me-2 text-info"></i>Agent Registration</h3>
+                    <p class="text-white-50 mb-0 mt-1">Partner with top insurance providers</p>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" action="/Auth/RegisterAgent">
+                        <div class="row g-4">
+                            <!-- Select Company -->
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <select name="company_id" class="form-select rounded-3 border-info" required>
+                                        <option value="">-- Select Insurance Company --</option>
+                                        @if(ViewBag.Companies != null)
+                                        {
+                                            foreach(var company in ViewBag.Companies)
+                                            {
+                                                <option value="@company.company_id">@company.company_name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <label><i class="bi bi-building text-info me-2"></i>Insurance Company</label>
+                                </div>
+                            </div>
+
+                            <!-- Full Name -->
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <input type="text" asp-for="full_name" class="form-control rounded-3" required placeholder="Full Name" />
+                                    <label><i class="bi bi-person text-info me-2"></i>Full Name</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Email & Password -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="email" asp-for="email" class="form-control rounded-3" required placeholder="Email Address" />
+                                    <label><i class="bi bi-envelope text-info me-2"></i>Email Address</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="password" asp-for="password" class="form-control rounded-3" required placeholder="Password" />
+                                    <label><i class="bi bi-lock text-info me-2"></i>Password</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Phone & Experience -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" asp-for="phone" class="form-control rounded-3" required placeholder="Phone Number" />
+                                    <label><i class="bi bi-telephone text-info me-2"></i>Phone Number</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" asp-for="experience_years" class="form-control rounded-3" required placeholder="Experience (Years)" />
+                                    <label><i class="bi bi-star text-info me-2"></i>Experience (Years)</label>
+                                </div>
+                            </div>
+                            
+                            <!-- License -->
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <input type="text" asp-for="license_number" class="form-control rounded-3" required placeholder="License Number" />
+                                    <label><i class="bi bi-award text-info me-2"></i>License Number</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Location Details -->
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" asp-for="city" class="form-control rounded-3" required placeholder="City" />
+                                    <label><i class="bi bi-geo-alt text-info me-2"></i>City</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" asp-for="pincode" class="form-control rounded-3" required placeholder="Pincode" />
+                                    <label><i class="bi bi-pin-map text-info me-2"></i>Pincode</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" asp-for="profile_photo" class="form-control rounded-3" required placeholder="Profile Photo URL" />
+                                    <label><i class="bi bi-image text-info me-2"></i>Photo URL</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Address -->
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <input type="text" asp-for="address" class="form-control rounded-3" required placeholder="Full Address" />
+                                    <label><i class="bi bi-house text-info me-2"></i>Full Address</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5">
+                            <button type="submit" class="btn btn-dark w-100 py-3 rounded-3 fw-bold shadow-sm" style="letter-spacing: 0.5px;">
+                                Register as Agent <i class="bi bi-arrow-right-circle ms-2 text-info"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mt-4 pt-3 border-top">
+                            <p class="text-muted small mb-0">Already an agent? <a href="/Auth/Login" class="text-info fw-semibold text-decoration-none">Sign in here</a></p>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="row">
-                <div class="col-md-12 mb-3">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" asp-for="full_name" class="form-control" required />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" asp-for="email" class="form-control" required />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" asp-for="password" class="form-control" required />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Phone</label>
-                    <input type="text" asp-for="phone" class="form-control" required />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Experience (Years)</label>
-                    <input type="number" asp-for="experience_years" class="form-control" required />
-                </div>
-                <div class="col-md-12 mb-3">
-                    <label class="form-label">License Number</label>
-                    <input type="text" asp-for="license_number" class="form-control" required />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">City</label>
-                    <input type="text" asp-for="city" class="form-control" required />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Pincode</label>
-                    <input type="text" asp-for="pincode" class="form-control" required />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Profile Photo URL</label>
-                    <input type="text" asp-for="profile_photo" class="form-control" required />
-                </div>
-                <div class="col-md-12 mb-4">
-                    <label class="form-label">Address</label>
-                    <input type="text" asp-for="address" class="form-control" required />
-                </div>
-            </div>
-            <button type="submit" class="btn btn-info text-white w-100 py-2 fw-semibold">Register Agent</button>
-            <div class="text-center mt-3">
-                <a href="/Auth/Login" class="text-decoration-none">Back to Login</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
