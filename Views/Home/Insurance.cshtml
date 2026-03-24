@@ -6,66 +6,69 @@
 
 <style>
     .page-header {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-        color: white;
-        padding: 5rem 0;
+        background: linear-gradient(135deg, var(--bg-light) 0%, #eef2ff 100%);
+        padding: 6rem 0 4rem;
         text-align: center;
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
     }
-    .feature-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        height: 100%;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        border: 1px solid rgba(0,0,0,0.05);
-        transition: all 0.3s;
+    
+    .vector-blob {
+        position: absolute;
+        z-index: 0;
+        filter: blur(60px);
+        opacity: 0.5;
+        border-radius: 50%;
     }
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(13, 110, 253, 0.1);
-        border-color: #0d6efd;
-    }
-    .icon-box {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        background-color: #eff6ff;
-        color: #0d6efd;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
+    .blob-1 { top: -20%; left: 10%; width: 300px; height: 300px; background: #bfdbfe; }
+    .blob-2 { bottom: -20%; right: 10%; width: 300px; height: 300px; background: #ddd6fe; }
+    
+    .header-content {
+        position: relative;
+        z-index: 2;
     }
 </style>
 
 <div class="page-header">
-    <div class="container">
-        <h1 class="display-4 fw-bold">Insurance Coverage</h1>
-        <p class="lead opacity-75">Explore the various insurance options designed to fit your life.</p>
+    <div class="vector-blob blob-1"></div>
+    <div class="vector-blob blob-2"></div>
+    <div class="container header-content">
+        <h1 class="display-4 fw-bold text-secondary mb-3">Insurance Coverage</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 600px;">Explore our comprehensive, fully digital insurance options designed to fit your unique lifestyle.</p>
     </div>
 </div>
 
 <section id="insurance" class="py-5 bg-white">
     <div class="container mb-5">
-        <div class="row g-4">
-            @foreach (var item in Model)
+        <div class="row g-4 justify-content-center">
+            @if(Model != null && Model.Any())
             {
-                <div class="col-lg-3 col-md-6">
-                    <div class="feature-card">
-                        <div class="icon-box">
-                            <i class="bi @item.icon"></i>
+                foreach (var item in Model)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card card-modern border-0 p-4">
+                            <div class="card-icon-wrapper" style="width: 72px; height: 72px; font-size: 2rem;">
+                                <i class="bi @item.icon"></i>
+                            </div>
+                            <h3 class="card-title-modern fs-4">@item.type_name</h3>
+                            <p class="text-muted mb-4 flex-grow-1" style="font-size: 1.05rem;">@item.description</p>
+                            <a href="/Customer/BrowsePlans" class="btn btn-outline-smart mt-auto text-decoration-none fw-semibold">
+                                View Benefits <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
                         </div>
-                        <h4 class="fw-bold mb-3">@item.type_name</h4>
-                        <p class="text-muted mb-4">@item.description</p>
-                        <a href="/Customer/BrowsePlans" class="text-primary text-decoration-none fw-medium">View Benefits <i class="bi bi-arrow-right ms-1"></i></a>
                     </div>
-                </div>
+                }
             }
-            @if(!Model.Any())
+            else
             {
-                <div class="col-12 text-center text-muted">No insurance types available currently. Configure them from the admin panel.</div>
+                <div class="col-12 text-center py-5">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-light text-muted rounded-circle mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-shield-x fs-1"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark">No Plans Available</h4>
+                    <p class="text-muted">There are currently no insurance types configured. Please contact support or check back later.</p>
+                </div>
             }
         </div>
     </div>

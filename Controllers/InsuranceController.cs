@@ -40,7 +40,6 @@ namespace SmartInsuranceHub.Controllers
         {
             model.company_id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
             
-            // Temporary strategy for getting a unique plan_id for composite keys
             var maxPlanId = await _context.InsurancePlans.AnyAsync() 
                 ? await _context.InsurancePlans.MaxAsync(p => p.plan_id) 
                 : 0;
@@ -54,15 +53,34 @@ namespace SmartInsuranceHub.Controllers
             return RedirectToAction("Index");
         }
 
+        // ========================================
+        // Purchase - VERIFICATION GATE (GET)
+        // ========================================
         [Authorize(Policy = "CustomerOnly")]
         public async Task<IActionResult> Purchase(int planId, int companyId)
         {
             var plan = await _context.InsurancePlans.FirstOrDefaultAsync(p => p.plan_id == planId && p.company_id == companyId);
             if (plan == null) return NotFound();
-            
+
+            // --- CRITICAL: Verify customer before showing purchase page ---
+            var cid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var customer = await _context.Customers.FindAsync(cid);
+
+            if (customer == null || customer.verification_status != "verified")
+            {
+                // Pass flag to view — view will show the blocked state
+                ViewBag.IsVerified = false;
+                ViewBag.VerificationStatus = customer?.verification_status ?? "unverified";
+                return View(plan);
+            }
+
+            ViewBag.IsVerified = true;
             return View(plan);
         }
 
+        // ========================================
+        // ConfirmPurchase - VERIFICATION GATE (POST)
+        // ========================================
         [HttpPost]
         [Authorize(Policy = "CustomerOnly")]
         public async Task<IActionResult> ConfirmPurchase(int plan_id, int company_id, int duration)
@@ -71,6 +89,15 @@ namespace SmartInsuranceHub.Controllers
             if (plan == null) return NotFound();
             
             var cid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+            // --- CRITICAL: Server-side verification check (cannot be bypassed from frontend) ---
+            var customer = await _context.Customers.FindAsync(cid);
+            if (customer == null || customer.verification_status != "verified")
+            {
+                TempData["Error"] = "You must complete document verification before purchasing insurance.";
+                return RedirectToAction("BrowsePlans", "Customer");
+            }
+
             var policy = new Policy
             {
                 policy_no = "POL" + DateTime.UtcNow.Ticks.ToString().Substring(8),
@@ -88,6 +115,7 @@ namespace SmartInsuranceHub.Controllers
             _context.Policies.Add(policy);
             await _context.SaveChangesAsync();
             
+            TempData["Success"] = "Policy purchased successfully! Welcome aboard.";
             return RedirectToAction("MyPolicies", "Customer");
         }
     }

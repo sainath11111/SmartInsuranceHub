@@ -2,65 +2,132 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card dashboard-card bg-primary text-white">
-            <div class="card-body">
-                <h6 class="card-title text-white-50">Total Companies</h6>
-                <p class="card-text text-white">@ViewBag.TotalCompanies</p>
+<style>
+    .stat-card { border-radius: 14px; border: none; transition: transform 0.2s; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card .card-body { padding: 1.5rem; }
+    .stat-card .icon { font-size: 2rem; opacity: 0.5; }
+</style>
+
+@* ── Stats Row 1 ─────────────────────────────────── *@
+<div class="row mb-3">
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card stat-card bg-primary text-white h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-title text-white-50 mb-1">Companies</h6>
+                    <p class="card-text text-white display-6 mb-0">@ViewBag.TotalCompanies</p>
+                </div>
+                <i class="bi bi-buildings icon"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card dashboard-card bg-success text-white">
-            <div class="card-body">
-                <h6 class="card-title text-white-50">Total Agents</h6>
-                <p class="card-text text-white">@ViewBag.TotalAgents</p>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card stat-card bg-success text-white h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-title text-white-50 mb-1">Agents</h6>
+                    <p class="card-text text-white display-6 mb-0">@ViewBag.TotalAgents</p>
+                </div>
+                <i class="bi bi-person-badge icon"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card dashboard-card bg-info text-white">
-            <div class="card-body">
-                <h6 class="card-title text-white-50">Total Customers</h6>
-                <p class="card-text text-white">@ViewBag.TotalCustomers</p>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card stat-card bg-info text-white h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-title text-white-50 mb-1">Customers</h6>
+                    <p class="card-text text-white display-6 mb-0">@ViewBag.TotalCustomers</p>
+                </div>
+                <i class="bi bi-people icon"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card dashboard-card bg-warning text-dark">
-            <div class="card-body">
-                <h6 class="card-title text-dark-50">Total Policies</h6>
-                <p class="card-text text-dark">@ViewBag.TotalPolicies</p>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card stat-card bg-warning text-dark h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-title opacity-75 mb-1">Policies</h6>
+                    <p class="card-text display-6 mb-0">@ViewBag.TotalPolicies</p>
+                </div>
+                <i class="bi bi-file-earmark-text icon"></i>
             </div>
         </div>
     </div>
 </div>
 
+@* ── Verification Stats Row ─────────────────────────────────── *@
+<div class="row mb-4">
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card stat-card h-100" style="border: 2px solid #fef3c7; background: #fffbeb;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1" style="color: #92400e;">Pending Docs</h6>
+                    <p class="display-6 mb-0" style="color: #b45309;">@ViewBag.PendingDocs</p>
+                </div>
+                <i class="bi bi-hourglass-split fs-2" style="color: #f59e0b; opacity: 0.6;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card stat-card h-100" style="border: 2px solid #d1fae5; background: #f0fdf4;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1" style="color: #065f46;">Verified Customers</h6>
+                    <p class="display-6 mb-0" style="color: #059669;">@ViewBag.VerifiedCustomers</p>
+                </div>
+                <i class="bi bi-patch-check-fill fs-2" style="color: #10b981; opacity: 0.6;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card stat-card h-100" style="border: 2px solid #e0e7ff; background: #f5f3ff;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1" style="color: #3730a3;">Verified Agents</h6>
+                    <p class="display-6 mb-0" style="color: #6366f1;">@ViewBag.VerifiedAgents</p>
+                </div>
+                <i class="bi bi-person-check-fill fs-2" style="color: #6366f1; opacity: 0.6;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card stat-card h-100" style="border: 2px solid #fee2e2; background: #fff5f5;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1" style="color: #991b1b;">Rejected Docs</h6>
+                    <p class="display-6 mb-0" style="color: #ef4444;">@ViewBag.RejectedDocs</p>
+                </div>
+                <i class="bi bi-x-circle-fill fs-2" style="color: #ef4444; opacity: 0.6;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Pending alert banner ─────────────────────────────────── *@
 @if ((int)ViewBag.PendingDocs > 0)
 {
-    <div class="alert alert-warning d-flex align-items-center mb-4" style="border-radius:12px;">
+    <div class="alert alert-warning d-flex align-items-center mb-4" style="border-radius:12px; border: 1.5px solid #f59e0b;">
         <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
         <div>
-            <strong>@ViewBag.PendingDocs document(s) pending verification.</strong>
-            <a href="/Admin/DocumentVerification" class="alert-link ms-2">Review now →</a>
+            <strong>@ViewBag.PendingDocs document(s) awaiting review.</strong>
+            <a href="/Admin/DocumentVerification?filter=pending" class="alert-link ms-2">Review pending →</a>
         </div>
     </div>
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="card dashboard-card">
-            <div class="card-header bg-white pb-0 border-0 pt-4 px-4">
-                <h5>Admin Quick Actions</h5>
-            </div>
-            <div class="card-body p-4">
-                <a href="/Admin/Companies" class="btn btn-primary me-2"><i class="bi bi-building"></i> Manage Companies</a>
-                <a href="/Admin/Agents" class="btn btn-success me-2"><i class="bi bi-person-badge"></i> View Agents</a>
-                <a href="/Admin/Customers" class="btn btn-info text-white me-2"><i class="bi bi-people"></i> View Customers</a>
-                <a href="/Admin/DocumentVerification" class="btn btn-dark me-2"><i class="bi bi-shield-check"></i> Document Verification</a>
-                <a href="/Query/Index" class="btn btn-secondary me-2"><i class="bi bi-envelope"></i> Contact Messages</a>
-            </div>
-        </div>
+@* ── Quick Actions ─────────────────────────────────── *@
+<div class="card" style="border-radius: 14px; border: 1px solid #e2e8f0;">
+    <div class="card-header bg-white border-0 pt-4 px-4">
+        <h5 class="mb-0">Quick Actions</h5>
+    </div>
+    <div class="card-body p-4 d-flex flex-wrap gap-2">
+        <a href="/Admin/Companies" class="btn btn-primary"><i class="bi bi-building me-1"></i> Companies</a>
+        <a href="/Admin/Agents" class="btn btn-success"><i class="bi bi-person-badge me-1"></i> Agents</a>
+        <a href="/Admin/Customers" class="btn btn-info text-white"><i class="bi bi-people me-1"></i> Customers</a>
+        <a href="/Admin/DocumentVerification" class="btn btn-dark"><i class="bi bi-shield-check me-1"></i> Doc Verification</a>
+        <a href="/Admin/AuditLog" class="btn btn-secondary"><i class="bi bi-journal-text me-1"></i> Audit Log</a>
+        <a href="/Query/Index" class="btn btn-outline-secondary"><i class="bi bi-envelope me-1"></i> Queries</a>
     </div>
 </div>

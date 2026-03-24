@@ -177,6 +177,30 @@
     <div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 }
 
+@* ── Verification status banners ─────────────────── *@
+@if (verificationStatus == "verified")
+{
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-4 mb-4 rounded-3" style="background: linear-gradient(135deg,#065f46,#10b981); color:white;">
+        <div>
+            <h5 class="mb-1"><i class="bi bi-patch-check-fill me-2"></i>All Documents Verified!</h5>
+            <p class="mb-0 opacity-75 small">You are fully KYC verified and can now purchase insurance policies.</p>
+        </div>
+        @if (userType == "Customer")
+        {
+            <a href="/Customer/BrowsePlans" class="btn fw-bold px-4" style="background:white; color:#065f46; border:none;">
+                Browse Plans <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        }
+    </div>
+}
+else if (percentage > 0)
+{
+    <div class="alert alert-info d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-info-circle fs-5"></i>
+        <span>@completed of @total categories approved. An admin will review your documents shortly.</span>
+    </div>
+}
+
 <!-- Tabs -->
 <ul class="nav tab-nav" id="profileTabs" role="tablist">
     <li class="nav-item">

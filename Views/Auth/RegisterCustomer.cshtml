@@ -1,108 +1,151 @@
 @model SmartInsuranceHub.Models.Customer
 @{
     ViewData["Title"] = "Customer Registration";
-    Layout = "_LandingLayout";
+    Layout = null; 
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-primary border-0 text-center py-4">
-                    <h3 class="fw-bold text-white mb-0"><i class="bi bi-person-plus-fill me-2"></i>Customer Registration</h3>
-                    <p class="text-white-50 mb-0 mt-1">Join Smart Insurance Hub today</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Smart Insurance Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="auth-split-wrapper">
+    <!-- Left Side: Graphic / Branding -->
+    <div class="auth-split-left" style="background: linear-gradient(135deg, var(--bg-light) 0%, #dbeafe 100%);">
+        <div class="mb-auto position-relative z-3">
+            <a href="/" class="d-flex align-items-center text-decoration-none">
+                <img src="~/images/logo.png" alt="SmartInsurance" height="40" class="me-2 rounded shadow-sm">
+                <span class="fs-4 fw-bold text-dark">Smart<span class="text-primary">Insurance</span></span>
+            </a>
+            <a href="/" class="btn btn-outline-primary btn-sm mt-3 rounded-pill px-3"><i class="bi bi-arrow-left me-1"></i> Back to Home</a>
+        </div>
+        <div class="z-3">
+            <h1 class="display-4 fw-bold text-secondary mb-4">Your journey to <br><span class="text-primary">Total Security</span> begins here.</h1>
+            <p class="fs-5 text-muted mb-4">Join thousands of smart individuals who trust us to protect their families, health, and assets.</p>
+        </div>
+        <div class="mt-auto z-3">
+            <div class="d-flex align-items-center bg-white p-3 rounded-4 shadow-sm" style="max-width: 320px;">
+                <div class="bg-success-subtle text-success p-2 rounded-circle me-3">
+                    <i class="bi bi-person-check-fill fs-4"></i>
                 </div>
-                
-                <div class="card-body p-4 p-md-5">
-                    <form method="post" action="/Auth/RegisterCustomer">
-                        <div class="row g-4">
-                            <!-- Full Name -->
-                            <div class="col-md-12">
-                                <div class="form-floating">
-                                    <input type="text" asp-for="full_name" class="form-control rounded-3" required placeholder="Full Name" />
-                                    <label><i class="bi bi-person text-primary me-2"></i>Full Name</label>
-                                </div>
-                            </div>
-                            
-                            <!-- Email -->
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="email" asp-for="email" class="form-control rounded-3" required placeholder="Email Address" />
-                                    <label><i class="bi bi-envelope text-primary me-2"></i>Email Address</label>
-                                </div>
-                            </div>
-                            
-                            <!-- Password -->
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="password" asp-for="password" class="form-control rounded-3" required placeholder="Password" />
-                                    <label><i class="bi bi-lock text-primary me-2"></i>Password</label>
-                                </div>
-                            </div>
-                            
-                            <!-- Phone & Age -->
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" asp-for="phone" class="form-control rounded-3" required placeholder="Phone Number" />
-                                    <label><i class="bi bi-telephone text-primary me-2"></i>Phone Number</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="number" asp-for="age" class="form-control rounded-3" required placeholder="Age" />
-                                    <label><i class="bi bi-calendar text-primary me-2"></i>Age</label>
-                                </div>
-                            </div>
-                            
-                            <!-- City & Address -->
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" asp-for="city" class="form-control rounded-3" required placeholder="City" />
-                                    <label><i class="bi bi-geo-alt text-primary me-2"></i>City</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" asp-for="address" class="form-control rounded-3" required placeholder="Full Address" />
-                                    <label><i class="bi bi-house text-primary me-2"></i>Full Address</label>
-                                </div>
-                            </div>
-                            
-                            <!-- Docs -->
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" asp-for="c_pancard" class="form-control rounded-3" required placeholder="PAN Card" />
-                                    <label><i class="bi bi-card-text text-primary me-2"></i>PAN Card</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input type="text" asp-for="c_adhar" class="form-control rounded-3" required placeholder="Aadhar Card" />
-                                    <label><i class="bi bi-card-heading text-primary me-2"></i>Adhar Card</label>
-                                </div>
-                            </div>
-                            
-                            <!-- Family Info -->
-                            <div class="col-md-12">
-                                <div class="form-floating border rounded-3 p-1">
-                                    <textarea asp-for="family_info" class="form-control border-0 shadow-none" placeholder="Family Information" style="height: 80px"></textarea>
-                                    <label class="ps-3"><i class="bi bi-people text-primary me-2"></i>Family Information (Optional)</label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-5">
-                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm" style="letter-spacing: 0.5px;">
-                                Create Customer Account <i class="bi bi-arrow-right-circle ms-2"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="text-center mt-4 pt-3 border-top">
-                            <p class="text-muted small mb-0">Already have an account? <a href="/Auth/Login" class="text-primary fw-semibold text-decoration-none">Sign in here</a></p>
-                        </div>
-                    </form>
+                <div>
+                    <h6 class="mb-0 fw-bold">Fast & Easy Approval</h6>
+                    <small class="text-muted">Get your policy instantly.</small>
                 </div>
             </div>
         </div>
+        <div class="position-absolute rounded-circle" style="width: 600px; height: 600px; background: rgba(37,99,235,0.03); top: -200px; right: -200px; z-index: 1;"></div>
     </div>
-</div>
+
+    <!-- Right Side: Form (Scrollable) -->
+    <div class="auth-split-right" style="overflow-y: auto; align-items: flex-start; padding-top: 4rem; padding-bottom: 4rem;">
+        <div class="auth-card-inner mx-auto" style="max-width: 550px;">
+            <div class="text-center mb-5 d-lg-none">
+                <img src="~/images/logo.png" alt="SmartInsurance" height="48" class="rounded shadow-sm mb-3">
+                <h2 class="fw-bold">Create Account</h2>
+            </div>
+            
+            <h2 class="fw-bold text-dark mb-1 d-none d-lg-block">Customer Registration</h2>
+            <p class="text-muted mb-5 d-none d-lg-block">Fill out the details below to set up your account.</p>
+
+            <form method="post" action="/Auth/RegisterCustomer" class="needs-validation">
+                <div class="row g-3">
+                    <!-- Full Name -->
+                    <div class="col-md-12">
+                        <div class="form-floating mb-2">
+                            <input type="text" asp-for="full_name" class="form-control border-0 shadow-sm" required placeholder="Full Name" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-person text-primary me-2"></i>Full Name</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-2">
+                            <input type="email" asp-for="email" class="form-control border-0 shadow-sm" required placeholder="Email Address" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-envelope text-primary me-2"></i>Email Address</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Password -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-2">
+                            <input type="password" asp-for="password" class="form-control border-0 shadow-sm" required placeholder="Password" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-lock text-primary me-2"></i>Password</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Phone & Age -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-2">
+                            <input type="text" asp-for="phone" class="form-control border-0 shadow-sm" required placeholder="Phone Number" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-telephone text-primary me-2"></i>Phone</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating mb-2">
+                            <input type="number" asp-for="age" class="form-control border-0 shadow-sm" required placeholder="Age" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-calendar text-primary me-2"></i>Age</label>
+                        </div>
+                    </div>
+                    
+                    <!-- City & Address -->
+                    <div class="col-md-5">
+                        <div class="form-floating mb-2">
+                            <input type="text" asp-for="city" class="form-control border-0 shadow-sm" required placeholder="City" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-geo-alt text-primary me-2"></i>City</label>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="form-floating mb-2">
+                            <input type="text" asp-for="address" class="form-control border-0 shadow-sm" required placeholder="Full Address" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-house text-primary me-2"></i>Full Address</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Docs -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-2">
+                            <input type="text" asp-for="c_pancard" class="form-control border-0 shadow-sm" required placeholder="PAN Card" style="text-transform: uppercase; background-color: var(--bg-light);" />
+                            <label><i class="bi bi-card-text text-primary me-2"></i>PAN Card</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating mb-2">
+                            <input type="text" asp-for="c_adhar" class="form-control border-0 shadow-sm" required placeholder="Aadhar Card" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-card-heading text-primary me-2"></i>Aadhar Card</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Family Info -->
+                    <div class="col-md-12">
+                        <div class="form-floating position-relative">
+                            <textarea asp-for="family_info" class="form-control border-0 shadow-sm pt-4" placeholder="Family Information" style="height: 100px; background-color: var(--bg-light);"></textarea>
+                            <label class="ps-3"><i class="bi bi-people text-primary me-2"></i>Family Details (Optional)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-check mt-4 mb-4">
+                    <input type="checkbox" class="form-check-input shadow-sm" id="terms" required>
+                    <label class="form-check-label small text-muted" for="terms">I agree to the <a href="#" class="text-primary text-decoration-none">Terms of Service</a> and <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>.</label>
+                </div>
+
+                <div class="mt-2 text-center">
+                    <button type="submit" class="btn btn-brand w-100 py-3 mb-4 shadow-md">
+                        Create Account <i class="bi bi-arrow-right-circle ms-2"></i>
+                    </button>
+                    <p class="text-muted small mb-0">Already have an account? <a href="/Auth/Login" class="text-primary fw-bold text-decoration-none ms-1">Sign in</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

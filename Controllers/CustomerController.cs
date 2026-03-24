@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartInsuranceHub.Data;
 using SmartInsuranceHub.Models;
+using SmartInsuranceHub.Services;
 
 namespace SmartInsuranceHub.Controllers
 {
@@ -26,9 +27,20 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> Index()
         {
             var cid = GetCustomerId();
+            var customer = await _context.Customers.FindAsync(cid);
+
             ViewBag.MyPolicies = await _context.Policies.Where(p => p.customer_id == cid).CountAsync();
             ViewBag.TotalPayments = await _context.Payments.Where(p => p.customer_id == cid).SumAsync(p => p.amount);
-            
+            ViewBag.IsVerified = customer?.verification_status == "verified";
+            ViewBag.VerificationStatus = customer?.verification_status ?? "unverified";
+
+            // Pass document progress for the dashboard banner
+            var docService = HttpContext.RequestServices.GetRequiredService<DocumentService>();
+            var (completed, total, percentage) = await docService.GetCompletionAsync("Customer", cid);
+            ViewBag.Completed = completed;
+            ViewBag.Total = total;
+            ViewBag.Percentage = percentage;
+
             return View();
         }
 
@@ -62,16 +74,16 @@ namespace SmartInsuranceHub.Controllers
             var cid = GetCustomerId();
             var customer = await _context.Customers.FindAsync(cid);
             if (customer == null) return NotFound();
-            
+
             model.customer_id = cid;
             model.name = customer.full_name;
             model.email = customer.email;
             model.phone = customer.phone;
             model.send_date = DateTime.UtcNow;
-            
+
             _context.Queries.Add(model);
             await _context.SaveChangesAsync();
-            
+
             ViewBag.Message = "Query submitted successfully!";
             return View();
         }

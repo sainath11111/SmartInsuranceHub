@@ -22,6 +22,7 @@ namespace SmartInsuranceHub.Data
         public DbSet<Query> Queries { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<UserDocument> UserDocuments { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

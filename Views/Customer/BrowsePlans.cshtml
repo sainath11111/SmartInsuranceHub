@@ -6,25 +6,30 @@
 
 @if (!isVerified)
 {
-    <div class="alert alert-warning d-flex align-items-center mb-4" style="border-radius:12px;">
-        <i class="bi bi-shield-exclamation fs-4 me-3"></i>
+    <div class="alert d-flex align-items-start gap-3 mb-4" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 1.25rem 1.5rem;">
+        <i class="bi bi-shield-exclamation text-warning fs-3 flex-shrink-0 mt-1"></i>
         <div>
-            <strong>Document verification required.</strong> Please complete your document verification before purchasing policies.
-            <a href="/Document/Profile" class="alert-link ms-1">Complete Verification →</a>
+            <strong class="d-block mb-1" style="color:#92400e;">Document Verification Required</strong>
+            <span style="color:#92400e;">You must complete KYC document verification before purchasing any insurance policy.</span>
+            <div class="mt-2">
+                <a href="/Document/Profile" class="btn btn-sm btn-warning fw-bold">
+                    <i class="bi bi-cloud-upload me-1"></i> Upload & Verify Documents
+                </a>
+            </div>
         </div>
     </div>
 }
 
 <div class="row">
-    @foreach(var item in Model)
+    @foreach (var item in Model)
     {
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card dashboard-card h-100">
-                <div class="card-body">
-                    <span class="badge bg-primary mb-2">@item.Company?.company_name</span>
+            <div class="card dashboard-card h-100" style="border-radius: 14px; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                <div class="card-body d-flex flex-column">
+                    <span class="badge bg-primary mb-2" style="width: fit-content;">@item.Company?.company_name</span>
                     <h5 class="card-title text-dark">@item.plan_name</h5>
-                    <p class="text-muted small mb-3" style="min-height: 40px;">@item.description</p>
-                    
+                    <p class="text-muted small mb-3 flex-grow-1" style="min-height: 40px;">@item.description</p>
+
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Coverage</span>
                         <strong>₹@item.coverage_amount</strong>
@@ -37,9 +42,20 @@
                         <span class="text-muted">Duration</span>
                         <strong>@item.duration_months Months</strong>
                     </div>
-                    
-                    <div class="d-grid gap-2">
-                        <a href="/Insurance/Purchase?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-primary-custom">Purchase Plan</a>
+
+                    <div class="d-grid gap-2 mt-auto">
+                        @if (isVerified)
+                        {
+                            <a href="/Insurance/Purchase?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-primary-custom">
+                                <i class="bi bi-shield-check me-1"></i> Purchase Plan
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary" disabled title="Complete document verification to purchase">
+                                <i class="bi bi-lock me-1"></i> Verify to Purchase
+                            </button>
+                        }
                         <a href="/Review/PlanReviews?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-outline-secondary">View Reviews</a>
                     </div>
                 </div>

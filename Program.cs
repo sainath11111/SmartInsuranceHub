@@ -31,7 +31,11 @@ builder.Services.AddScoped<DocumentService>();
 
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorCodesToAdd: null)));
 
 // Use Cookie Authentication for MVC (much simpler and more reliable for web apps)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -93,6 +97,18 @@ using (var scope = app.Services.CreateScope())
                 ""ReviewedBy"" INTEGER,
                 ""UploadedAt"" TIMESTAMP DEFAULT NOW(),
                 ""ReviewedAt"" TIMESTAMP
+            );
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""AuditLogs"" (
+                ""AuditLogId"" SERIAL PRIMARY KEY,
+                ""ActionType"" VARCHAR(50) NOT NULL,
+                ""EntityType"" VARCHAR(50) NOT NULL,
+                ""EntityId"" INTEGER NOT NULL,
+                ""PerformedBy"" INTEGER NOT NULL,
+                ""PerformedByName"" VARCHAR(100),
+                ""Details"" TEXT,
+                ""CreatedAt"" TIMESTAMP DEFAULT NOW()
             );
         ");
     }

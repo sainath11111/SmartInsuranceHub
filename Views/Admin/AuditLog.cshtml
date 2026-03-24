@@ -1,0 +1,95 @@
+@{
+    ViewData["Title"] = "Audit Log";
+    var logs = (List<SmartInsuranceHub.Models.AuditLog>)Model;
+    var page = (int)ViewBag.Page;
+    var totalPages = (int)ViewBag.TotalPages;
+    var totalCount = (int)ViewBag.TotalCount;
+}
+
+<style>
+    .audit-header { background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 14px; padding: 1.75rem 2rem; color: white; margin-bottom: 2rem; }
+    .action-approve { background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .action-reject { background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .audit-table th { background: #f8fafc; color: #475569; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .audit-table td { vertical-align: middle; }
+</style>
+
+<div class="audit-header">
+    <h4 class="mb-1"><i class="bi bi-journal-text me-2"></i>Audit Log</h4>
+    <p class="text-white-50 mb-0">Complete record of all admin document review actions.</p>
+    <span class="badge bg-white text-dark mt-2">@totalCount total entries</span>
+</div>
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <a href="/Admin/Index" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Dashboard</a>
+</div>
+
+@if (logs.Any())
+{
+    <div class="card border-0 shadow-sm" style="border-radius: 14px; overflow: hidden;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 audit-table">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Action</th>
+                            <th>Document ID</th>
+                            <th>Performed By</th>
+                            <th>Details</th>
+                            <th class="pe-4">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in logs)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    @if (log.action_type == "ApproveDocument")
+                                    {
+                                        <span class="action-approve"><i class="bi bi-check-circle me-1"></i>Approved</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="action-reject"><i class="bi bi-x-circle me-1"></i>Rejected</span>
+                                    }
+                                </td>
+                                <td><code>#@log.entity_id</code></td>
+                                <td><strong>@log.performed_by_name</strong> <small class="text-muted">(#@log.performed_by)</small></td>
+                                <td><small class="text-muted">@log.details</small></td>
+                                <td class="pe-4"><small>@log.created_at.ToString("dd MMM yyyy HH:mm:ss")</small></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @* Pagination *@
+    @if (totalPages > 1)
+    {
+        <nav class="mt-3">
+            <ul class="pagination justify-content-center">
+                @if (page > 1)
+                {
+                    <li class="page-item"><a class="page-link" href="/Admin/AuditLog?page=@(page-1)"><i class="bi bi-chevron-left"></i></a></li>
+                }
+                @for (int i = Math.Max(1, page - 2); i <= Math.Min(totalPages, page + 2); i++)
+                {
+                    <li class="page-item @(i == page ? "active" : "")"><a class="page-link" href="/Admin/AuditLog?page=@i">@i</a></li>
+                }
+                @if (page < totalPages)
+                {
+                    <li class="page-item"><a class="page-link" href="/Admin/AuditLog?page=@(page+1)"><i class="bi bi-chevron-right"></i></a></li>
+                }
+            </ul>
+        </nav>
+    }
+}
+else
+{
+    <div class="text-center py-5">
+        <i class="bi bi-journal-x fs-1 text-muted mb-3 d-block"></i>
+        <p class="text-muted">No audit log entries yet. Actions will appear here after documents are approved or rejected.</p>
+    </div>
+}

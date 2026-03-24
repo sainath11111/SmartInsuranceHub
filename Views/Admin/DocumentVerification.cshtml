@@ -3,28 +3,18 @@
     var documents = (List<SmartInsuranceHub.Models.UserDocument>)Model;
     var customerNames = (Dictionary<int, string>)ViewBag.CustomerNames;
     var agentNames = (Dictionary<int, string>)ViewBag.AgentNames;
-    var pendingDocs = documents.Where(d => d.status == "pending").ToList();
-    var reviewedDocs = documents.Where(d => d.status != "pending").ToList();
+    var activeFilter = (string)(ViewBag.Filter ?? "all");
+    var search = (string)(ViewBag.Search ?? "");
 }
 
 <style>
-    .verification-header {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border-radius: 14px;
-        padding: 2rem;
-        color: white;
-        margin-bottom: 2rem;
-    }
-    .stat-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255,255,255,0.1);
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        color: white;
-    }
+    .verification-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 14px; padding: 2rem; color: white; margin-bottom: 2rem; }
+    .stat-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; color: white; }
+    .filter-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .filter-tab { padding: 8px 20px; border-radius: 24px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: none; border: 2px solid transparent; transition: all 0.2s; }
+    .filter-tab.active { background: #1e293b; color: white; border-color: #1e293b; }
+    .filter-tab:not(.active) { background: white; color: #475569; border-color: #e2e8f0; }
+    .filter-tab:not(.active):hover { border-color: #94a3b8; color: #1e293b; }
     .doc-table { border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
     .doc-table th { background: #f8fafc; color: #475569; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
     .doc-table td { vertical-align: middle; }
@@ -36,25 +26,47 @@
     .action-btn:hover { transform: scale(1.03); }
     .approve-btn { background: #10b981; color: white; }
     .reject-btn { background: #ef4444; color: white; }
+    .user-link { color: #4f46e5; text-decoration: none; font-weight: 600; }
+    .user-link:hover { text-decoration: underline; }
 </style>
 
 <div class="verification-header">
     <h4 class="mb-2"><i class="bi bi-shield-check me-2"></i>Document Verification</h4>
     <p class="text-white-50 mb-3">Review and approve user documents for KYC verification.</p>
     <div class="d-flex gap-3 flex-wrap">
-        <span class="stat-pill"><i class="bi bi-hourglass-split"></i> @pendingDocs.Count Pending</span>
-        <span class="stat-pill"><i class="bi bi-check-circle"></i> @documents.Count(d => d.status == "approved") Approved</span>
-        <span class="stat-pill"><i class="bi bi-x-circle"></i> @documents.Count(d => d.status == "rejected") Rejected</span>
+        <span class="stat-pill"><i class="bi bi-list-ul"></i> @ViewBag.AllCount Total</span>
+        <span class="stat-pill"><i class="bi bi-hourglass-split"></i> @ViewBag.PendingCount Pending</span>
+        <span class="stat-pill"><i class="bi bi-check-circle"></i> @ViewBag.ApprovedCount Approved</span>
+        <span class="stat-pill"><i class="bi bi-x-circle"></i> @ViewBag.RejectedCount Rejected</span>
     </div>
 </div>
 
-<!-- Pending Documents -->
-@if (pendingDocs.Any())
+@* Filter Tabs + Search *@
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+    <div class="filter-tabs mb-0">
+        <a href="/Admin/DocumentVerification?filter=all&search=@search" class="filter-tab @(activeFilter == "all" ? "active" : "")">
+            All <span class="ms-1 badge @(activeFilter == "all" ? "bg-white text-dark" : "bg-secondary")">@ViewBag.AllCount</span>
+        </a>
+        <a href="/Admin/DocumentVerification?filter=pending&search=@search" class="filter-tab @(activeFilter == "pending" ? "active" : "")">
+            Pending <span class="ms-1 badge @(activeFilter == "pending" ? "bg-white text-dark" : "bg-warning text-dark")">@ViewBag.PendingCount</span>
+        </a>
+        <a href="/Admin/DocumentVerification?filter=approved&search=@search" class="filter-tab @(activeFilter == "approved" ? "active" : "")">
+            Approved <span class="ms-1 badge @(activeFilter == "approved" ? "bg-white text-dark" : "bg-success")">@ViewBag.ApprovedCount</span>
+        </a>
+        <a href="/Admin/DocumentVerification?filter=rejected&search=@search" class="filter-tab @(activeFilter == "rejected" ? "active" : "")">
+            Rejected <span class="ms-1 badge @(activeFilter == "rejected" ? "bg-white text-dark" : "bg-danger")">@ViewBag.RejectedCount</span>
+        </a>
+    </div>
+    <form method="get" action="/Admin/DocumentVerification" class="d-flex gap-2">
+        <input type="hidden" name="filter" value="@activeFilter" />
+        <input type="text" name="search" value="@search" class="form-control form-control-sm" placeholder="Search by user name..." style="min-width: 220px;" />
+        <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-search"></i></button>
+    </form>
+</div>
+
+@if (documents.Any())
 {
-    <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
-        <div class="card-header bg-white border-0 pt-4 px-4">
-            <h5 class="mb-0"><i class="bi bi-clock-history text-warning me-2"></i>Pending Review (@pendingDocs.Count)</h5>
-        </div>
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
         <div class="card-body p-0">
             <div class="table-responsive doc-table">
                 <table class="table table-hover mb-0">
@@ -64,26 +76,30 @@
                             <th>Role</th>
                             <th>Category</th>
                             <th>Document</th>
+                            <th>Status</th>
                             <th>Uploaded</th>
                             <th>Preview</th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var doc in pendingDocs)
+                        @foreach (var doc in documents)
                         {
                             var userName = doc.user_type == "Customer"
                                 ? (customerNames.ContainsKey(doc.user_id) ? customerNames[doc.user_id] : "Customer #" + doc.user_id)
                                 : (agentNames.ContainsKey(doc.user_id) ? agentNames[doc.user_id] : "Agent #" + doc.user_id);
 
                             <tr>
-                                <td class="ps-4 fw-semibold">@userName</td>
+                                <td class="ps-4">
+                                    <a href="/Admin/UserDocuments?userId=@doc.user_id&userType=@doc.user_type" class="user-link">@userName</a>
+                                </td>
                                 <td><span class="badge bg-@(doc.user_type == "Customer" ? "info" : "success") bg-opacity-10 text-@(doc.user_type == "Customer" ? "info" : "success")">@doc.user_type</span></td>
                                 <td>@doc.category</td>
                                 <td>
                                     @doc.document_name
-                                    <br><small class="text-muted">@doc.file_name</small>
+                                    <br /><small class="text-muted">@doc.file_name</small>
                                 </td>
+                                <td><span class="status-badge status-@doc.status">@doc.status.ToUpper()</span></td>
                                 <td><small>@doc.uploaded_at.ToString("dd MMM yyyy HH:mm")</small></td>
                                 <td>
                                     <a href="/Document/Preview/@doc.document_id" target="_blank" class="btn btn-sm btn-outline-primary">
@@ -91,37 +107,45 @@
                                     </a>
                                 </td>
                                 <td class="text-end pe-4">
-                                    <form method="post" action="/Admin/ApproveDocument" class="d-inline">
-                                        <input type="hidden" name="id" value="@doc.document_id" />
-                                        <button type="submit" class="action-btn approve-btn"><i class="bi bi-check-lg"></i> Approve</button>
-                                    </form>
-                                    <button type="button" class="action-btn reject-btn ms-1" data-bs-toggle="modal" data-bs-target="#rejectModal-@doc.document_id">
-                                        <i class="bi bi-x-lg"></i> Reject
-                                    </button>
-
-                                    <!-- Reject Modal -->
-                                    <div class="modal fade" id="rejectModal-@doc.document_id" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form method="post" action="/Admin/RejectDocument">
-                                                    <input type="hidden" name="id" value="@doc.document_id" />
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Reject Document</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body text-start">
-                                                        <p>Rejecting <strong>@doc.document_name</strong> by <strong>@userName</strong>.</p>
-                                                        <label class="form-label">Reason for rejection</label>
-                                                        <textarea name="reason" class="form-control" rows="3" placeholder="e.g., Document is blurry, please re-upload a clear copy."></textarea>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-danger">Reject</button>
-                                                    </div>
-                                                </form>
+                                    @if (doc.status != "approved")
+                                    {
+                                        <form method="post" action="/Admin/ApproveDocument" class="d-inline">
+                                            <input type="hidden" name="id" value="@doc.document_id" />
+                                            <input type="hidden" name="returnUserId" value="" />
+                                            <input type="hidden" name="returnUserType" value="" />
+                                            <button type="submit" class="action-btn approve-btn"><i class="bi bi-check-lg"></i> Approve</button>
+                                        </form>
+                                    }
+                                    @if (doc.status != "rejected")
+                                    {
+                                        <button type="button" class="action-btn reject-btn ms-1" data-bs-toggle="modal" data-bs-target="#rejectModal-@doc.document_id">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                        <div class="modal fade" id="rejectModal-@doc.document_id" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form method="post" action="/Admin/RejectDocument">
+                                                        <input type="hidden" name="id" value="@doc.document_id" />
+                                                        <input type="hidden" name="returnUserId" value="" />
+                                                        <input type="hidden" name="returnUserType" value="" />
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Reject Document</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body text-start">
+                                                            <p>Rejecting <strong>@doc.document_name</strong> by <strong>@userName</strong>.</p>
+                                                            <label class="form-label">Reason for rejection</label>
+                                                            <textarea name="reason" class="form-control" rows="3" placeholder="e.g., Document is blurry, please re-upload a clear copy."></textarea>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-danger">Reject</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -133,48 +157,9 @@
 }
 else
 {
-    <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>No documents pending review. All caught up!</div>
-}
-
-<!-- Reviewed Documents History -->
-@if (reviewedDocs.Any())
-{
-    <div class="card border-0 shadow-sm" style="border-radius:14px;">
-        <div class="card-header bg-white border-0 pt-4 px-4">
-            <h5 class="mb-0"><i class="bi bi-archive me-2"></i>Reviewed Documents (@reviewedDocs.Count)</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive doc-table">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">User</th>
-                            <th>Role</th>
-                            <th>Document</th>
-                            <th>Status</th>
-                            <th>Reviewed</th>
-                            <th class="pe-4">Reason</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var doc in reviewedDocs)
-                        {
-                            var userName = doc.user_type == "Customer"
-                                ? (customerNames.ContainsKey(doc.user_id) ? customerNames[doc.user_id] : "Customer #" + doc.user_id)
-                                : (agentNames.ContainsKey(doc.user_id) ? agentNames[doc.user_id] : "Agent #" + doc.user_id);
-
-                            <tr>
-                                <td class="ps-4 fw-semibold">@userName</td>
-                                <td>@doc.user_type</td>
-                                <td>@doc.document_name</td>
-                                <td><span class="status-badge status-@doc.status">@doc.status.ToUpper()</span></td>
-                                <td><small>@doc.reviewed_at?.ToString("dd MMM yyyy")</small></td>
-                                <td class="pe-4"><small class="text-muted">@(doc.rejection_reason ?? "—")</small></td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="text-center py-5">
+        <i class="bi bi-inbox fs-1 text-muted mb-3 d-block"></i>
+        <h6 class="text-muted">No documents found for this filter.</h6>
+        <a href="/Admin/DocumentVerification" class="btn btn-sm btn-outline-secondary mt-2">Clear filters</a>
     </div>
 }

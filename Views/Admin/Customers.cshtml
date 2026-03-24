@@ -1,32 +1,62 @@
 @model IEnumerable<SmartInsuranceHub.Models.Customer>
 @{
-    ViewData["Title"] = "Manage Customers";
+    ViewData["Title"] = "Customers";
 }
 
-<div class="card table-custom">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0"><i class="bi bi-people me-2"></i>All Customers</h5>
+    <span class="badge bg-secondary fs-6">@Model.Count() total</span>
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius: 14px; overflow: hidden;">
     <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th>Customer Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>City</th>
-                    <th>Joined</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(var item in Model)
-                {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead style="background: #f8fafc;">
                     <tr>
-                        <td>@item.full_name</td>
-                        <td>@item.email</td>
-                        <td>@item.phone</td>
-                        <td>@item.city</td>
-                        <td>@item.created_at.ToString("MMM dd, yyyy")</td>
+                        <th class="ps-4" style="color: #475569; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Name</th>
+                        <th style="color: #475569; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Email</th>
+                        <th style="color: #475569; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Phone</th>
+                        <th style="color: #475569; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
+                        <th style="color: #475569; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Verification</th>
+                        <th style="color: #475569; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Registered</th>
+                        <th class="pe-4 text-end" style="color: #475569; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-semibold">@c.full_name</td>
+                            <td class="text-muted small">@c.email</td>
+                            <td class="text-muted small">@(c.phone ?? "—")</td>
+                            <td>
+                                <span class="badge @(c.status == "active" ? "bg-success" : "bg-secondary")">@c.status</span>
+                            </td>
+                            <td>
+                                @if (c.verification_status == "verified")
+                                {
+                                    <span style="background:#d1fae5; color:#065f46; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                        <i class="bi bi-patch-check-fill me-1"></i>Verified
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="background:#fef3c7; color:#92400e; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                        <i class="bi bi-clock me-1"></i>Unverified
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-muted small">@c.created_at.ToString("dd MMM yyyy")</td>
+                            <td class="pe-4 text-end">
+                                <a href="/Admin/UserDocuments?userId=@c.customer_id&userType=Customer" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-text me-1"></i> View Docs
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

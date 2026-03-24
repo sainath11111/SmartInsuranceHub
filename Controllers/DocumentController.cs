@@ -37,7 +37,6 @@ namespace SmartInsuranceHub.Controllers
         {
             var (userType, userId) = GetCurrentUser();
 
-            // Get user info
             if (userType == "Customer")
             {
                 var customer = await _context.Customers.FindAsync(userId);
@@ -62,7 +61,6 @@ namespace SmartInsuranceHub.Controllers
             ViewBag.UserType = userType;
             ViewBag.UserId = userId;
 
-            // Get documents and progress
             var documents = await _docService.GetUserDocumentsAsync(userType, userId);
             var (completed, total, percentage) = await _docService.GetCompletionAsync(userType, userId);
             var requiredDocs = DocumentService.GetRequiredDocuments(userType);
@@ -77,14 +75,14 @@ namespace SmartInsuranceHub.Controllers
         }
 
         // ========================================
-        // Upload Document
+        // Upload Document (with deduplication)
         // ========================================
         [HttpPost]
         public async Task<IActionResult> Upload(IFormFile file, string category, string documentName)
         {
             var (userType, userId) = GetCurrentUser();
 
-            // Validate file
+            // Validate file type & size
             var (isValid, error) = _r2.ValidateFile(file);
             if (!isValid)
             {
@@ -92,7 +90,24 @@ namespace SmartInsuranceHub.Controllers
                 return RedirectToAction("Profile");
             }
 
-            // Upload to R2 (or local fallback)
+            // --- DEDUPLICATION: Remove any existing pending/rejected doc for same slot ---
+            var existingDoc = await _context.UserDocuments
+                .FirstOrDefaultAsync(d =>
+                    d.user_type == userType &&
+                    d.user_id == userId &&
+                    d.category == category &&
+                    d.document_name == documentName &&
+                    d.status != "approved"); // never touch approved docs
+
+            if (existingDoc != null)
+            {
+                // Delete old file from R2 storage before replacing
+                await _r2.DeleteFileAsync(existingDoc.file_url);
+                _context.UserDocuments.Remove(existingDoc);
+                await _context.SaveChangesAsync();
+            }
+
+            // Upload new file to R2 (or local fallback)
             var fileUrl = await _r2.UploadFileAsync(file, userType, userId, category);
             if (fileUrl == null)
             {
@@ -135,7 +150,6 @@ namespace SmartInsuranceHub.Controllers
                 return RedirectToAction("Profile");
             }
 
-            // Only allow delete if pending or rejected
             if (doc.status == "approved")
             {
                 TempData["Error"] = "Cannot delete an approved document.";
@@ -146,7 +160,7 @@ namespace SmartInsuranceHub.Controllers
             _context.UserDocuments.Remove(doc);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Document removed. You can re-upload.";
+            TempData["Success"] = "Document removed. You can now re-upload.";
             return RedirectToAction("Profile");
         }
 
@@ -160,10 +174,6 @@ namespace SmartInsuranceHub.Controllers
 
             var url = await _r2.GetPresignedUrlAsync(doc.file_url);
             if (url == null) return NotFound();
-
-            // If it's a local URL, redirect directly
-            if (url.StartsWith("/"))
-                return Redirect(url);
 
             return Redirect(url);
         }

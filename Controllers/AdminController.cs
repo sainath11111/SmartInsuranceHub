@@ -12,12 +12,17 @@ namespace SmartInsuranceHub.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly DocumentService _docService;
 
-        public AdminController(ApplicationDbContext context)
+        public AdminController(ApplicationDbContext context, DocumentService docService)
         {
             _context = context;
+            _docService = docService;
         }
 
+        // ========================================
+        // Dashboard
+        // ========================================
         public async Task<IActionResult> Index()
         {
             ViewBag.TotalCompanies = await _context.Companies.CountAsync();
@@ -25,10 +30,15 @@ namespace SmartInsuranceHub.Controllers
             ViewBag.TotalCustomers = await _context.Customers.CountAsync();
             ViewBag.TotalPolicies = await _context.Policies.CountAsync();
             ViewBag.PendingDocs = await _context.UserDocuments.Where(d => d.status == "pending").CountAsync();
-            
+            ViewBag.VerifiedCustomers = await _context.Customers.Where(c => c.verification_status == "verified").CountAsync();
+            ViewBag.VerifiedAgents = await _context.Agents.Where(a => a.verification_status == "verified").CountAsync();
+            ViewBag.RejectedDocs = await _context.UserDocuments.Where(d => d.status == "rejected").CountAsync();
             return View();
         }
 
+        // ========================================
+        // Company, Agent, Customer Management
+        // ========================================
         public async Task<IActionResult> Companies()
         {
             var companies = await _context.Companies.ToListAsync();
@@ -38,22 +48,14 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> ApproveCompany(int id)
         {
             var company = await _context.Companies.FindAsync(id);
-            if (company != null)
-            {
-                company.status = "approved";
-                await _context.SaveChangesAsync();
-            }
+            if (company != null) { company.status = "approved"; await _context.SaveChangesAsync(); }
             return RedirectToAction("Companies");
         }
 
         public async Task<IActionResult> RejectCompany(int id)
         {
             var company = await _context.Companies.FindAsync(id);
-            if (company != null)
-            {
-                company.status = "rejected";
-                await _context.SaveChangesAsync();
-            }
+            if (company != null) { company.status = "rejected"; await _context.SaveChangesAsync(); }
             return RedirectToAction("Companies");
         }
 
@@ -66,11 +68,7 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> ApproveAgent(int id)
         {
             var agent = await _context.Agents.FindAsync(id);
-            if (agent != null)
-            {
-                agent.approved_status = true;
-                await _context.SaveChangesAsync();
-            }
+            if (agent != null) { agent.approved_status = true; await _context.SaveChangesAsync(); }
             return RedirectToAction("Agents");
         }
 
@@ -107,11 +105,7 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> DeleteInsuranceType(int id)
         {
             var type = await _context.InsuranceTypes.FindAsync(id);
-            if (type != null)
-            {
-                _context.InsuranceTypes.Remove(type);
-                await _context.SaveChangesAsync();
-            }
+            if (type != null) { _context.InsuranceTypes.Remove(type); await _context.SaveChangesAsync(); }
             return RedirectToAction("InsuranceTypes");
         }
 
@@ -122,71 +116,208 @@ namespace SmartInsuranceHub.Controllers
         }
 
         // ========================================
-        // Document Verification Panel
+        // Document Verification Panel (with filter)
         // ========================================
-        public async Task<IActionResult> DocumentVerification()
+        public async Task<IActionResult> DocumentVerification(string? filter, string? search)
         {
-            var documents = await _context.UserDocuments
-                .OrderByDescending(d => d.uploaded_at)
-                .ToListAsync();
+            var query = _context.UserDocuments.AsQueryable();
 
-            // Build lookup dictionaries for user names
+            // Apply status filter
+            if (!string.IsNullOrWhiteSpace(filter) && filter != "all")
+                query = query.Where(d => d.status == filter);
+
+            var documents = await query.OrderByDescending(d => d.uploaded_at).ToListAsync();
+
+            // Apply name search (post-query since names are in separate tables)
             var customerIds = documents.Where(d => d.user_type == "Customer").Select(d => d.user_id).Distinct().ToList();
             var agentIds = documents.Where(d => d.user_type == "Agent").Select(d => d.user_id).Distinct().ToList();
 
             var customerNames = await _context.Customers
                 .Where(c => customerIds.Contains(c.customer_id))
                 .ToDictionaryAsync(c => c.customer_id, c => c.full_name);
-            
+
             var agentNames = await _context.Agents
                 .Where(a => agentIds.Contains(a.agent_id))
                 .ToDictionaryAsync(a => a.agent_id, a => a.full_name);
 
+            // Apply search filter if provided
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var sl = search.ToLower();
+                documents = documents.Where(d =>
+                {
+                    var name = d.user_type == "Customer"
+                        ? (customerNames.TryGetValue(d.user_id, out var cn) ? cn : "")
+                        : (agentNames.TryGetValue(d.user_id, out var an) ? an : "");
+                    return name.ToLower().Contains(sl);
+                }).ToList();
+            }
+
             ViewBag.CustomerNames = customerNames;
             ViewBag.AgentNames = agentNames;
+            ViewBag.Filter = filter ?? "all";
+            ViewBag.Search = search ?? "";
+            ViewBag.AllCount = await _context.UserDocuments.CountAsync();
+            ViewBag.PendingCount = await _context.UserDocuments.CountAsync(d => d.status == "pending");
+            ViewBag.ApprovedCount = await _context.UserDocuments.CountAsync(d => d.status == "approved");
+            ViewBag.RejectedCount = await _context.UserDocuments.CountAsync(d => d.status == "rejected");
 
             return View(documents);
         }
 
+        // ========================================
+        // Per-User Document View
+        // ========================================
+        public async Task<IActionResult> UserDocuments(int userId, string userType)
+        {
+            string userName;
+            string verificationStatus;
+
+            if (userType == "Customer")
+            {
+                var customer = await _context.Customers.FindAsync(userId);
+                if (customer == null) return NotFound();
+                userName = customer.full_name;
+                verificationStatus = customer.verification_status;
+                ViewBag.UserEmail = customer.email;
+            }
+            else
+            {
+                var agent = await _context.Agents.FindAsync(userId);
+                if (agent == null) return NotFound();
+                userName = agent.full_name;
+                verificationStatus = agent.verification_status;
+                ViewBag.UserEmail = agent.email;
+            }
+
+            var documents = await _context.UserDocuments
+                .Where(d => d.user_type == userType && d.user_id == userId)
+                .OrderByDescending(d => d.uploaded_at)
+                .ToListAsync();
+
+            var (completed, total, percentage) = await _docService.GetCompletionAsync(userType, userId);
+
+            ViewBag.UserName = userName;
+            ViewBag.UserType = userType;
+            ViewBag.UserId = userId;
+            ViewBag.VerificationStatus = verificationStatus;
+            ViewBag.Completed = completed;
+            ViewBag.Total = total;
+            ViewBag.Percentage = percentage;
+
+            return View(documents);
+        }
+
+        // ========================================
+        // Approve Document (with Audit Log)
+        // ========================================
         [HttpPost]
-        public async Task<IActionResult> ApproveDocument(int id)
+        public async Task<IActionResult> ApproveDocument(int id, string? returnUserId, string? returnUserType)
         {
             var doc = await _context.UserDocuments.FindAsync(id);
             if (doc != null)
             {
-                var adminId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? "0");
+                var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+                var adminName = User.FindFirstValue(ClaimTypes.Name) ?? "Admin";
+
                 doc.status = "approved";
                 doc.reviewed_by = adminId;
                 doc.reviewed_at = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
-                // Check if all docs are now approved for this user
-                var docService = HttpContext.RequestServices.GetRequiredService<DocumentService>();
-                await docService.UpdateVerificationStatusAsync(doc.user_type, doc.user_id);
+                // Write audit log via raw SQL to avoid DbContext state issues
+                try
+                {
+                    await _context.Database.ExecuteSqlRawAsync(
+                        @"INSERT INTO ""AuditLogs"" (""ActionType"", ""EntityType"", ""EntityId"", ""PerformedBy"", ""PerformedByName"", ""Details"", ""CreatedAt"")
+                          VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
+                        "ApproveDocument", "UserDocument", doc.document_id, adminId, adminName,
+                        $"Approved '{doc.document_name}' ({doc.category}) for {doc.user_type} #{doc.user_id}",
+                        DateTime.UtcNow);
+                }
+                catch (Exception ex)
+                {
+                    // Audit log failure should not block the approval
+                    System.Diagnostics.Debug.WriteLine($"Audit log write failed: {ex.Message}");
+                }
+
+                // Recompute verification status
+                await _docService.UpdateVerificationStatusAsync(doc.user_type, doc.user_id);
             }
+
+            // Return to per-user view if we came from there
+            if (!string.IsNullOrEmpty(returnUserId) && !string.IsNullOrEmpty(returnUserType))
+                return RedirectToAction("UserDocuments", new { userId = returnUserId, userType = returnUserType });
+
             return RedirectToAction("DocumentVerification");
         }
 
+        // ========================================
+        // Reject Document (with Audit Log)
+        // ========================================
         [HttpPost]
-        public async Task<IActionResult> RejectDocument(int id, string? reason)
+        public async Task<IActionResult> RejectDocument(int id, string? reason, string? returnUserId, string? returnUserType)
         {
             var doc = await _context.UserDocuments.FindAsync(id);
             if (doc != null)
             {
-                var adminId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? "0");
+                var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+                var adminName = User.FindFirstValue(ClaimTypes.Name) ?? "Admin";
+                var rejectionReason = reason ?? "Document rejected by admin.";
+
                 doc.status = "rejected";
-                doc.rejection_reason = reason ?? "Document rejected by admin.";
+                doc.rejection_reason = rejectionReason;
                 doc.reviewed_by = adminId;
                 doc.reviewed_at = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
+
+                // Write audit log via raw SQL to avoid DbContext state issues
+                try
+                {
+                    await _context.Database.ExecuteSqlRawAsync(
+                        @"INSERT INTO ""AuditLogs"" (""ActionType"", ""EntityType"", ""EntityId"", ""PerformedBy"", ""PerformedByName"", ""Details"", ""CreatedAt"")
+                          VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
+                        "RejectDocument", "UserDocument", doc.document_id, adminId, adminName,
+                        $"Rejected '{doc.document_name}' ({doc.category}) for {doc.user_type} #{doc.user_id}: {rejectionReason}",
+                        DateTime.UtcNow);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Audit log write failed: {ex.Message}");
+                }
+
+                // Recompute verification status
+                await _docService.UpdateVerificationStatusAsync(doc.user_type, doc.user_id);
             }
+
+            if (!string.IsNullOrEmpty(returnUserId) && !string.IsNullOrEmpty(returnUserType))
+                return RedirectToAction("UserDocuments", new { userId = returnUserId, userType = returnUserType });
+
             return RedirectToAction("DocumentVerification");
+        }
+
+        // ========================================
+        // Audit Log View
+        // ========================================
+        public async Task<IActionResult> AuditLog(int page = 1)
+        {
+            const int pageSize = 30;
+            var totalCount = await _context.AuditLogs.CountAsync();
+            var logs = await _context.AuditLogs
+                .OrderByDescending(a => a.created_at)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.Page = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            ViewBag.TotalCount = totalCount;
+            return View(logs);
         }
 
         // ========================================
         // Company Management (Add / Delete / Seed)
         // ========================================
-
         [HttpPost]
         public async Task<IActionResult> AddCompany(string company_name, string email, string? address, string? license_number, string? c_information)
         {
@@ -217,7 +348,6 @@ namespace SmartInsuranceHub.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteCompany(int id)
         {
-            // Use raw SQL with fresh connection to delete company and dependents
             var connString = _context.Database.GetConnectionString();
             using var conn = new Npgsql.NpgsqlConnection(connString);
             await conn.OpenAsync();
@@ -255,30 +385,25 @@ namespace SmartInsuranceHub.Controllers
 
             var companies = new (string Name, string Email, string Address, string AgentCount, string Info, string License, int TypeId)[]
             {
-                // Life Insurance (TypeId = 1)
                 ("LIC", "lic@gmail.com", "Mumbai, India", "500", "Government life insurance provider", "LIC001", 1),
                 ("HDFC Life Insurance", "hdfc@gmail.com", "Mumbai, India", "300", "Private life insurance company", "HDFC001", 1),
                 ("ICICI Prudential Life Insurance", "icici@gmail.com", "Mumbai, India", "250", "Joint venture insurance company", "ICICI001", 1),
                 ("SBI Life Insurance", "sbi@gmail.com", "India", "400", "Bank-based life insurance", "SBI001", 1),
                 ("Max Life Insurance", "max@gmail.com", "India", "200", "Private life insurance provider", "MAX001", 1),
-                // Health Insurance (TypeId = 2)
                 ("Star Health Insurance", "star@gmail.com", "Chennai, India", "220", "Health insurance specialist", "STAR001", 2),
                 ("Niva Bupa Health Insurance", "niva@gmail.com", "Delhi, India", "180", "Global health insurance", "NIVA001", 2),
                 ("Care Health Insurance", "care@gmail.com", "India", "160", "Affordable health plans", "CARE001", 2),
                 ("Aditya Birla Health Insurance", "birla@gmail.com", "Mumbai, India", "210", "Wellness-based insurance", "BIRLA001", 2),
                 ("HDFC ERGO Health", "ergohealth@gmail.com", "India", "190", "Comprehensive health insurance", "ERGOH001", 2),
-                // Motor Insurance (TypeId = 3)
                 ("Bajaj Allianz General Insurance", "bajaj@gmail.com", "Pune, India", "350", "Motor insurance leader", "BAJAJ001", 3),
                 ("ICICI Lombard", "lombard@gmail.com", "Mumbai, India", "300", "General insurance provider", "LOMB001", 3),
                 ("TATA AIG General Insurance", "tata@gmail.com", "India", "280", "Trusted motor insurance", "TATA001", 3),
                 ("Reliance General Insurance", "reliance@gmail.com", "India", "260", "Affordable policies", "REL001", 3),
                 ("HDFC ERGO", "ergo@gmail.com", "India", "240", "Motor and general insurance", "ERGO001", 3),
-                // Property Insurance (TypeId = 4)
                 ("New India Assurance", "new@gmail.com", "India", "150", "Public sector insurer", "NEW001", 4),
                 ("United India Insurance", "united@gmail.com", "India", "140", "Government insurance", "UNIT001", 4),
                 ("Oriental Insurance Company", "oriental@gmail.com", "India", "130", "Property insurance provider", "ORI001", 4),
                 ("National Insurance Company", "national@gmail.com", "India", "120", "Public insurer", "NAT001", 4),
-                // Travel Insurance (TypeId = 5)
                 ("Tata AIG Travel Insurance", "tatatravel@gmail.com", "India", "170", "Travel insurance expert", "TATAT001", 5),
                 ("ICICI Lombard Travel Insurance", "lombardtravel@gmail.com", "India", "160", "Travel coverage", "LOMBT001", 5),
                 ("Reliance Travel Insurance", "reliancetravel@gmail.com", "India", "150", "Travel insurance services", "RELT001", 5),
@@ -293,7 +418,6 @@ namespace SmartInsuranceHub.Controllers
             foreach (var comp in companies)
             {
                 using var cmdInsert = new Npgsql.NpgsqlCommand(sqlInsert, conn);
-                
                 var prefix = comp.Email.Split('@')[0];
                 var passwordHash = BCrypt.Net.BCrypt.HashPassword(prefix + "@123");
 
@@ -305,7 +429,6 @@ namespace SmartInsuranceHub.Controllers
                 cmdInsert.Parameters.AddWithValue("info", comp.Info);
                 cmdInsert.Parameters.AddWithValue("license", comp.License);
                 cmdInsert.Parameters.AddWithValue("typeid", comp.TypeId);
-                
                 await cmdInsert.ExecuteNonQueryAsync();
             }
 

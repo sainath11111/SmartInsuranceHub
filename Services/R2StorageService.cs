@@ -49,8 +49,9 @@ namespace SmartInsuranceHub.Services
         {
             var config = new AmazonS3Config
             {
-                ServiceURL = _endpoint,
-                ForcePathStyle = true
+                ServiceURL = _endpoint?.TrimEnd('/'),
+                ForcePathStyle = true,
+                AuthenticationRegion = "auto"
             };
             return new AmazonS3Client(_accessKey, _secretKey, config);
         }
@@ -120,7 +121,13 @@ namespace SmartInsuranceHub.Services
         /// </summary>
         public async Task<string?> GetPresignedUrlAsync(string objectKey)
         {
-            if (!IsConfigured || string.IsNullOrEmpty(objectKey))
+            if (string.IsNullOrEmpty(objectKey)) return null;
+
+            // If the key starts with '/', it was saved via the local fallback.
+            if (objectKey.StartsWith("/"))
+                return GetLocalUrl(objectKey);
+
+            if (!IsConfigured)
                 return GetLocalUrl(objectKey);
 
             try
@@ -146,7 +153,13 @@ namespace SmartInsuranceHub.Services
         /// </summary>
         public async Task<bool> DeleteFileAsync(string objectKey)
         {
-            if (!IsConfigured || string.IsNullOrEmpty(objectKey))
+            if (string.IsNullOrEmpty(objectKey)) return false;
+
+            // If the key starts with '/', it was saved via the local fallback.
+            if (objectKey.StartsWith("/"))
+                return DeleteLocal(objectKey);
+
+            if (!IsConfigured)
                 return DeleteLocal(objectKey);
 
             try
