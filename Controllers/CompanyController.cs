@@ -65,7 +65,6 @@ namespace SmartInsuranceHub.Controllers
             if (agent != null && agent.company_id == GetCompanyId())
             {
                 agent.approved_status = true;
-                _context.Agents.Update(agent);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Agent successfully approved and is now Active.";
             }
