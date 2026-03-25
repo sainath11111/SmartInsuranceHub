@@ -174,5 +174,175 @@ namespace SmartInsuranceHub.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");
         }
+
+        // ========================================
+        // Password Reset Token Storage (in-memory)
+        // ========================================
+        private static readonly Dictionary<string, (string Role, string Email, DateTime Expiry)> _resetTokens = new();
+
+        // ========================================
+        // Forgot Password (GET)
+        // ========================================
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        // ========================================
+        // Forgot Password (POST)
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email, string companyName, string role)
+        {
+            if (string.IsNullOrWhiteSpace(role))
+            {
+                ViewBag.Error = "Please select your account type.";
+                return View();
+            }
+
+            string? foundEmail = null;
+
+            if (role == "Customer")
+            {
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    ViewBag.Error = "Please enter your email address.";
+                    return View();
+                }
+                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.email == email);
+                if (customer != null) foundEmail = customer.email;
+            }
+            else if (role == "Agent")
+            {
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    ViewBag.Error = "Please enter your email address.";
+                    return View();
+                }
+                var agent = await _context.Agents.FirstOrDefaultAsync(a => a.email == email);
+                if (agent != null) foundEmail = agent.email;
+            }
+            else if (role == "Company")
+            {
+                if (string.IsNullOrWhiteSpace(companyName))
+                {
+                    ViewBag.Error = "Please enter your company name.";
+                    return View();
+                }
+                var company = await _context.Companies.FirstOrDefaultAsync(c => c.company_name == companyName);
+                if (company != null) foundEmail = company.email;
+            }
+
+            if (foundEmail == null)
+            {
+                ViewBag.Error = role == "Company"
+                    ? "No company found with that name. Please check and try again."
+                    : "No account found with that email address. Please check and try again.";
+                ViewBag.SelectedRole = role;
+                ViewBag.EnteredEmail = email;
+                ViewBag.EnteredCompanyName = companyName;
+                return View();
+            }
+
+            // Generate a secure reset token
+            var token = Guid.NewGuid().ToString("N");
+            _resetTokens[token] = (role, foundEmail, DateTime.UtcNow.AddMinutes(15));
+
+            // Clean up expired tokens
+            var expired = _resetTokens.Where(t => t.Value.Expiry < DateTime.UtcNow).Select(t => t.Key).ToList();
+            foreach (var key in expired) _resetTokens.Remove(key);
+
+            return RedirectToAction("ResetPassword", new { token });
+        }
+
+        // ========================================
+        // Reset Password (GET)
+        // ========================================
+        [HttpGet]
+        public IActionResult ResetPassword(string token)
+        {
+            if (string.IsNullOrEmpty(token) || !_resetTokens.ContainsKey(token))
+            {
+                TempData["Error"] = "Invalid or expired password reset link. Please try again.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            var (role, email, expiry) = _resetTokens[token];
+            if (DateTime.UtcNow > expiry)
+            {
+                _resetTokens.Remove(token);
+                TempData["Error"] = "Password reset link has expired. Please try again.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            ViewBag.Token = token;
+            ViewBag.Email = email;
+            ViewBag.Role = role;
+            return View();
+        }
+
+        // ========================================
+        // Reset Password (POST)
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrEmpty(token) || !_resetTokens.ContainsKey(token))
+            {
+                TempData["Error"] = "Invalid or expired password reset link. Please try again.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            var (role, email, expiry) = _resetTokens[token];
+            if (DateTime.UtcNow > expiry)
+            {
+                _resetTokens.Remove(token);
+                TempData["Error"] = "Password reset link has expired. Please try again.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                ViewBag.Error = "Password must be at least 6 characters.";
+                ViewBag.Token = token;
+                ViewBag.Email = email;
+                ViewBag.Role = role;
+                return View();
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Passwords do not match.";
+                ViewBag.Token = token;
+                ViewBag.Email = email;
+                ViewBag.Role = role;
+                return View();
+            }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            if (role == "Customer")
+            {
+                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.email == email);
+                if (customer != null) customer.password = hashedPassword;
+            }
+            else if (role == "Agent")
+            {
+                var agent = await _context.Agents.FirstOrDefaultAsync(a => a.email == email);
+                if (agent != null) agent.password = hashedPassword;
+            }
+            else if (role == "Company")
+            {
+                var company = await _context.Companies.FirstOrDefaultAsync(c => c.email == email);
+                if (company != null) company.password = hashedPassword;
+            }
+
+            await _context.SaveChangesAsync();
+            _resetTokens.Remove(token);
+
+            TempData["Success"] = "Password reset successfully! You can now log in with your new password.";
+            return RedirectToAction("Login");
+        }
     }
 }

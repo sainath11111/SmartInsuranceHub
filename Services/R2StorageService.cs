@@ -81,12 +81,12 @@ namespace SmartInsuranceHub.Services
         /// Uploads a file to Cloudflare R2.
         /// Returns the object key on success, or null on failure.
         /// </summary>
-        public async Task<string?> UploadFileAsync(IFormFile file, string userType, int userId, string category)
+        public async Task<(string? FileUrl, string? Error)> UploadFileAsync(IFormFile file, string userType, int userId, string category)
         {
             if (!IsConfigured)
             {
-                _logger.LogWarning("R2 is not configured. File saved locally as fallback.");
-                return await SaveLocallyAsync(file, userType, userId, category);
+                _logger.LogError("Cloudflare R2 is not configured. Please set CLOUDFLARE_R2_ACCESS_KEY, CLOUDFLARE_R2_SECRET_KEY, CLOUDFLARE_R2_BUCKET, and CLOUDFLARE_R2_ENDPOINT environment variables in your .env file.");
+                return (null, "Cloudflare R2 is not configured. Please check environment variables.");
             }
 
             try
@@ -102,17 +102,23 @@ namespace SmartInsuranceHub.Services
                     BucketName = _bucket,
                     Key = objectKey,
                     InputStream = stream,
-                    ContentType = file.ContentType
+                    ContentType = file.ContentType,
+                    DisablePayloadSigning = true
                 };
 
                 await client.PutObjectAsync(request);
                 _logger.LogInformation("Uploaded {FileName} to R2 as {Key}", file.FileName, objectKey);
-                return objectKey;
+                return (objectKey, null);
+            }
+            catch (AmazonS3Exception ex)
+            {
+                _logger.LogError(ex, "S3 Exception while uploading to R2.");
+                return (null, $"Storage Error [{ex.ErrorCode}]: {ex.Message}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to upload to R2. Using local fallback.");
-                return await SaveLocallyAsync(file, userType, userId, category);
+                _logger.LogError(ex, "Failed to upload file to Cloudflare R2.");
+                return (null, $"Error: {ex.Message}");
             }
         }
 
@@ -123,12 +129,19 @@ namespace SmartInsuranceHub.Services
         {
             if (string.IsNullOrEmpty(objectKey)) return null;
 
-            // If the key starts with '/', it was saved via the local fallback.
+            // Old local fallback URLs start with '/' — these files only exist on the PC that uploaded them.
+            // They cannot be served across PCs. The document must be re-uploaded to R2.
             if (objectKey.StartsWith("/"))
-                return GetLocalUrl(objectKey);
+            {
+                _logger.LogWarning("Document has a local fallback URL ({Key}). It must be re-uploaded to Cloudflare R2 to be viewable across PCs.", objectKey);
+                return null;
+            }
 
             if (!IsConfigured)
-                return GetLocalUrl(objectKey);
+            {
+                _logger.LogError("R2 is not configured. Cannot generate presigned URL.");
+                return null;
+            }
 
             try
             {
@@ -155,12 +168,18 @@ namespace SmartInsuranceHub.Services
         {
             if (string.IsNullOrEmpty(objectKey)) return false;
 
-            // If the key starts with '/', it was saved via the local fallback.
+            // Old local fallback URLs — nothing to delete from R2
             if (objectKey.StartsWith("/"))
-                return DeleteLocal(objectKey);
+            {
+                _logger.LogWarning("Skipping delete for local fallback URL: {Key}", objectKey);
+                return true;
+            }
 
             if (!IsConfigured)
-                return DeleteLocal(objectKey);
+            {
+                _logger.LogError("R2 is not configured. Cannot delete file.");
+                return false;
+            }
 
             try
             {
@@ -174,52 +193,6 @@ namespace SmartInsuranceHub.Services
                 _logger.LogError(ex, "Failed to delete {Key} from R2.", objectKey);
                 return false;
             }
-        }
-
-        // ============================
-        // Local fallback (for development without R2)
-        // ============================
-        private async Task<string?> SaveLocallyAsync(IFormFile file, string userType, int userId, string category)
-        {
-            try
-            {
-                var extension = Path.GetExtension(file.FileName);
-                var folder = Path.Combine("wwwroot", "uploads", userType.ToLower(), userId.ToString(), category.Replace(" ", "_").ToLower());
-                Directory.CreateDirectory(folder);
-
-                var fileName = $"{Guid.NewGuid()}{extension}";
-                var filePath = Path.Combine(folder, fileName);
-
-                using var stream = new FileStream(filePath, FileMode.Create);
-                await file.CopyToAsync(stream);
-
-                var relativeUrl = $"/uploads/{userType.ToLower()}/{userId}/{category.Replace(" ", "_").ToLower()}/{fileName}";
-                _logger.LogInformation("Saved {FileName} locally at {Path}", file.FileName, relativeUrl);
-                return relativeUrl;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to save file locally.");
-                return null;
-            }
-        }
-
-        private string? GetLocalUrl(string? key)
-        {
-            if (string.IsNullOrEmpty(key)) return null;
-            return key.StartsWith("/") ? key : null;
-        }
-
-        private bool DeleteLocal(string? key)
-        {
-            if (string.IsNullOrEmpty(key) || !key.StartsWith("/")) return false;
-            var path = Path.Combine("wwwroot", key.TrimStart('/'));
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-                return true;
-            }
-            return false;
         }
     }
 }

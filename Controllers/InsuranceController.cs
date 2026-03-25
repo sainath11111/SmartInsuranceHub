@@ -50,7 +50,73 @@ namespace SmartInsuranceHub.Controllers
             
             _context.InsurancePlans.Add(model);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+            TempData["Success"] = "Insurance plan created successfully!";
+            return Redirect("/Insurance/Index");
+        }
+
+        // ========================================
+        // Edit Plan (GET)
+        // ========================================
+        [Authorize(Policy = "CompanyOnly")]
+        public async Task<IActionResult> EditPlan(int id)
+        {
+            var cid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var plan = await _context.InsurancePlans.FirstOrDefaultAsync(p => p.plan_id == id && p.company_id == cid);
+            if (plan == null) return NotFound();
+
+            ViewBag.Agents = await _context.Agents.Where(a => a.company_id == cid && a.approved_status).ToListAsync();
+            ViewBag.Types = await _context.InsuranceTypes.Where(t => t.status == "active").ToListAsync();
+            return View(plan);
+        }
+
+        // ========================================
+        // Edit Plan (POST)
+        // ========================================
+        [HttpPost]
+        [Authorize(Policy = "CompanyOnly")]
+        public async Task<IActionResult> EditPlan(InsurancePlan model)
+        {
+            var cid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var plan = await _context.InsurancePlans.FirstOrDefaultAsync(p => p.plan_id == model.plan_id && p.company_id == cid);
+            if (plan == null) return NotFound();
+
+            plan.plan_name = model.plan_name;
+            plan.agent_id = model.agent_id;
+            plan.type_id = model.type_id;
+            plan.premium_amount = model.premium_amount;
+            plan.coverage_amount = model.coverage_amount;
+            plan.duration_months = model.duration_months;
+            plan.description = model.description;
+            plan.status = model.status;
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Insurance plan updated successfully!";
+            return Redirect("/Insurance/Index");
+        }
+
+        // ========================================
+        // Delete Plan (POST)
+        // ========================================
+        [HttpPost]
+        [Authorize(Policy = "CompanyOnly")]
+        public async Task<IActionResult> DeletePlan(int id)
+        {
+            var cid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var plan = await _context.InsurancePlans.FirstOrDefaultAsync(p => p.plan_id == id && p.company_id == cid);
+            if (plan == null) return NotFound();
+
+            // Check if any policies exist for this plan
+            var hasPolicies = await _context.Policies.AnyAsync(p => p.plan_id == id && p.company_id == cid);
+            if (hasPolicies)
+            {
+                TempData["Error"] = "Cannot delete this plan because active policies are linked to it.";
+                return Redirect("/Insurance/Index");
+            }
+
+            _context.InsurancePlans.Remove(plan);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Insurance plan deleted successfully.";
+            return Redirect("/Insurance/Index");
         }
 
         // ========================================

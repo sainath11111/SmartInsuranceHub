@@ -56,6 +56,14 @@
             <h2 class="fw-bold text-dark mb-1 d-none d-lg-block">Sign In</h2>
             <p class="text-muted mb-4 d-none d-lg-block">Enter your credentials to access your account.</p>
 
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success d-flex align-items-center border-0 rounded-3 mb-4 shadow-sm" role="alert">
+                    <i class="bi bi-check-circle-fill fs-5 me-3"></i>
+                    <div>@TempData["Success"]</div>
+                </div>
+            }
+
             @if(ViewBag.Error != null) {
                 <div class="alert alert-danger d-flex align-items-center border-0 rounded-3 mb-4 shadow-sm" role="alert">
                     <i class="bi bi-exclamation-octagon-fill fs-5 me-3"></i>
@@ -107,7 +115,7 @@
                         <input type="checkbox" class="form-check-input shadow-sm" id="rememberMe">
                         <label class="form-check-label small text-muted text-nowrap" for="rememberMe">Remember me</label>
                     </div>
-                    <a href="#" class="small text-primary text-decoration-none fw-medium ms-2">Forgot password?</a>
+                    <a href="/Auth/ForgotPassword" class="small text-primary text-decoration-none fw-medium ms-2">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="btn btn-brand w-100 py-3 mb-4">

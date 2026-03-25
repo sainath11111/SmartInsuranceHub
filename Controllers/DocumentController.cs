@@ -107,11 +107,11 @@ namespace SmartInsuranceHub.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Upload new file to R2 (or local fallback)
-            var fileUrl = await _r2.UploadFileAsync(file, userType, userId, category);
+            // Upload new file to R2
+            var (fileUrl, uploadError) = await _r2.UploadFileAsync(file, userType, userId, category);
             if (fileUrl == null)
             {
-                TempData["Error"] = "Failed to upload file. Please try again.";
+                TempData["Error"] = $"Failed to upload file: {uploadError ?? "Please ensure Cloudflare R2 is properly configured."}";
                 return RedirectToAction("Profile");
             }
 
@@ -173,7 +173,34 @@ namespace SmartInsuranceHub.Controllers
             if (doc == null) return NotFound();
 
             var url = await _r2.GetPresignedUrlAsync(doc.file_url);
-            if (url == null) return NotFound();
+            if (url == null)
+            {
+                // Document was uploaded to local storage (old fallback) and can't be viewed from another PC.
+                // Or R2 is not configured on this PC.
+                var isLocalFallback = doc.file_url.StartsWith("/");
+                var message = isLocalFallback
+                    ? "This document was uploaded to local storage on another PC and is not available here. The customer needs to <strong>re-upload</strong> this document so it goes to Cloudflare R2."
+                    : "Unable to generate document preview URL. Please ensure Cloudflare R2 is properly configured on this PC.";
+
+                var html = $@"<!DOCTYPE html>
+<html><head><title>Document Unavailable</title>
+<style>
+  body {{ font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }}
+  .card {{ background: #1e293b; border-radius: 16px; padding: 2.5rem; max-width: 500px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }}
+  .icon {{ font-size: 3rem; margin-bottom: 1rem; }}
+  h2 {{ color: #f59e0b; margin-bottom: 0.5rem; }}
+  p {{ color: #94a3b8; line-height: 1.6; }}
+  .btn {{ display: inline-block; margin-top: 1.5rem; padding: 10px 24px; background: #6366f1; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; }}
+  .btn:hover {{ background: #4f46e5; }}
+</style></head>
+<body><div class='card'>
+  <div class='icon'>⚠️</div>
+  <h2>Document Unavailable</h2>
+  <p>{message}</p>
+  <a href='javascript:window.close()' class='btn'>Close Tab</a>
+</div></body></html>";
+                return Content(html, "text/html");
+            }
 
             return Redirect(url);
         }

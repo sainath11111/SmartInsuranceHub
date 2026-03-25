@@ -3,6 +3,21 @@
     ViewData["Title"] = "Our Plans";
 }
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="d-flex justify-content-end mb-3">
     <a asp-action="CreatePlan" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Create New Plan</a>
 </div>
@@ -19,6 +34,7 @@
                     <th>Duration</th>
                     <th>Status</th>
                     <th>Created</th>
+                    <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,16 +59,57 @@
                                 }
                             </td>
                             <td>@item.created_date.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                            <td class="text-center">
+                                <a href="/Insurance/EditPlan?id=@item.plan_id" class="btn btn-sm btn-outline-primary me-1" title="Edit Plan">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Delete Plan"
+                                        onclick="confirmDelete(@item.plan_id, '@item.plan_name.Replace("'", "\\'"))')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
                         </tr>
                     }
                 }
                 else
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No insurance plans created yet. <a asp-action="CreatePlan">Create your first plan</a>.</td>
+                        <td colspan="8" class="text-center text-muted py-4">No insurance plans created yet. <a asp-action="CreatePlan">Create your first plan</a>.</td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title" id="deleteModalLabel"><i class="bi bi-exclamation-triangle me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-0">Are you sure you want to delete <strong id="deletePlanName"></strong>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Delete Plan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function confirmDelete(planId, planName) {
+        document.getElementById('deletePlanName').textContent = planName;
+        document.getElementById('deleteForm').action = '/Insurance/DeletePlan?id=' + planId;
+        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+</script>
+}

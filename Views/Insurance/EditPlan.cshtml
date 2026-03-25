@@ -1,13 +1,18 @@
 @model SmartInsuranceHub.Models.InsurancePlan
 @{
-    ViewData["Title"] = "Create Insurance Plan";
+    ViewData["Title"] = "Edit Insurance Plan";
 }
 
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card dashboard-card">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Insurance Plan</h5>
+            </div>
             <div class="card-body p-4">
-                <form method="post" action="/Insurance/CreatePlan">
+                <form method="post" action="/Insurance/EditPlan">
+                    <input type="hidden" asp-for="plan_id" />
+                    <input type="hidden" asp-for="company_id" />
                     <div class="mb-3">
                         <label class="form-label">Plan Name</label>
                         <input type="text" asp-for="plan_name" class="form-control" required />
@@ -19,7 +24,7 @@
                                 <option value="">-- No specific agent --</option>
                                 @foreach(var agent in ViewBag.Agents)
                                 {
-                                    <option value="@agent.agent_id">@agent.full_name</option>
+                                    <option value="@agent.agent_id" selected="@(Model.agent_id == agent.agent_id ? "selected" : null)">@agent.full_name</option>
                                 }
                             </select>
                         </div>
@@ -29,7 +34,7 @@
                                 <option value="">-- Select Category --</option>
                                 @foreach(var t in ViewBag.Types)
                                 {
-                                    <option value="@t.type_id">@t.type_name</option>
+                                    <option value="@t.type_id" selected="@(Model.type_id == t.type_id ? "selected" : null)">@t.type_name</option>
                                 }
                             </select>
                         </div>
@@ -41,9 +46,16 @@
                             <label class="form-label">Coverage Amount (₹)</label>
                             <input type="number" asp-for="coverage_amount" class="form-control" required />
                         </div>
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Duration (Months)</label>
                             <input type="number" asp-for="duration_months" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <select asp-for="status" class="form-select" required>
+                                <option value="active" selected="@(Model.status == "active" ? "selected" : null)">Active</option>
+                                <option value="inactive" selected="@(Model.status == "inactive" ? "selected" : null)">Inactive</option>
+                            </select>
                         </div>
                     </div>
                     <div class="mb-4">
@@ -51,7 +63,7 @@
                         <textarea asp-for="description" class="form-control" rows="3" required></textarea>
                     </div>
                     
-                    <button type="submit" class="btn btn-success py-2 w-100 fw-semibold">Launch Plan</button>
+                    <button type="submit" class="btn btn-primary py-2 w-100 fw-semibold"><i class="bi bi-check-circle me-1"></i>Save Changes</button>
                     <a href="/Insurance/Index" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
                 </form>
             </div>
