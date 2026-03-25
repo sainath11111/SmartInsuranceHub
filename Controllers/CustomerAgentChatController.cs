@@ -7,8 +7,7 @@ using System.Security.Claims;
 
 namespace SmartInsuranceHub.Controllers
 {
-    [Authorize(Policy = "CustomerOnly")] // Wait, it needs to be both Agent and Customer.
-    [Authorize]
+    [Authorize(Roles = "Customer,Agent")]
     public class CustomerAgentChatController : Controller
     {
         private readonly ApplicationDbContext _context;

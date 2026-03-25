@@ -53,6 +53,21 @@ namespace SmartInsuranceHub.Controllers
             {
                 _context.Agents.Remove(agent);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Agent successfully removed from your company.";
+            }
+            return RedirectToAction("Agents");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveAgent(int id)
+        {
+            var agent = await _context.Agents.FindAsync(id);
+            if (agent != null && agent.company_id == GetCompanyId())
+            {
+                agent.approved_status = true;
+                _context.Agents.Update(agent);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Agent successfully approved and is now Active.";
             }
             return RedirectToAction("Agents");
         }

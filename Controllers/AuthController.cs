@@ -190,6 +190,7 @@ namespace SmartInsuranceHub.Controllers
 
             model.password = BCrypt.Net.BCrypt.HashPassword(model.password);
             model.created_at = DateTime.UtcNow;
+            model.dob = DateTime.SpecifyKind(model.dob, DateTimeKind.Utc);
             model.status = "active";
 
             _context.Customers.Add(model);
@@ -250,6 +251,7 @@ namespace SmartInsuranceHub.Controllers
 
             model.password = BCrypt.Net.BCrypt.HashPassword(model.password);
             model.created_at = DateTime.UtcNow;
+            model.dob = DateTime.SpecifyKind(model.dob, DateTimeKind.Utc);
             model.approved_status = false;
 
             _context.Agents.Add(model);

@@ -5,14 +5,28 @@ namespace SmartInsuranceHub.Hubs
 {
     public class ChatHub : Hub
     {
+        public override async Task OnConnectedAsync()
+        {
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(role))
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"{role}_{userId}");
+            }
+            await base.OnConnectedAsync();
+        }
+
         public async Task SendMessage(string receiverId, string senderType, string message)
         {
             var senderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(senderId)) return;
+            var senderRole = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
+            if (string.IsNullOrEmpty(senderId) || string.IsNullOrEmpty(senderRole)) return;
 
-            // Broadcast to the specific user via their connected UserIdentifier
-            // We use the connected user's ID as the group/user name in SignalR
-            await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, senderType, message, DateTime.UtcNow.ToString("o"));
+            string receiverRole = senderRole == "Customer" ? "Agent" : "Customer";
+            
+            // Broadcast to the specific user via their targeted Group
+            await Clients.Group($"{receiverRole}_{receiverId}").SendAsync("ReceiveMessage", senderId, senderRole, message, DateTime.UtcNow.ToString("o"));
         }
     }
 }
