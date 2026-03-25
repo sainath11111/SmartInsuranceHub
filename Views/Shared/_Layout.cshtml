@@ -34,12 +34,14 @@
                             <li class="nav-item"><a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Customers" ? "active" : "")" href="/Admin/Customers"><i class="bi bi-people me-1"></i> Customers</a></li>
                             <li class="nav-item"><a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "InsuranceTypes" ? "active" : "")" href="/Admin/InsuranceTypes"><i class="bi bi-tags me-1"></i> Categories</a></li>
                             <li class="nav-item"><a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && (ViewContext.RouteData.Values["Action"]?.ToString() == "DocumentVerification" || ViewContext.RouteData.Values["Action"]?.ToString() == "UserDocuments") ? "active" : "")" href="/Admin/DocumentVerification"><i class="bi bi-shield-check me-1"></i> Doc Verify</a></li>
+                            <li class="nav-item"><a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "ManageAds" ? "active" : "")" href="/Admin/ManageAds"><i class="bi bi-megaphone me-1"></i> Ads</a></li>
                             <li class="nav-item"><a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Query" ? "active" : "")" href="/Query/Index"><i class="bi bi-chat-left-text me-1"></i> Queries</a></li>
                         }
                         else if (User.IsInRole("Company"))
                         {
                             <li class="nav-item"><a class="nav-link" href="/Company/Index"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Insurance/Index"><i class="bi bi-shield-check me-1"></i> Our Plans</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/Advertisement/MyAds"><i class="bi bi-megaphone me-1"></i> Advertisements</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Company/Agents"><i class="bi bi-person-badge me-1"></i> My Agents</a></li>
                         }
                         else if (User.IsInRole("Agent"))

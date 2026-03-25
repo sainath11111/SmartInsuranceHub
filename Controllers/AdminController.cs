@@ -434,5 +434,86 @@ namespace SmartInsuranceHub.Controllers
 
             return RedirectToAction("Companies");
         }
+
+        // ========================================
+        // Advertisement Management
+        // ========================================
+        public async Task<IActionResult> ManageAds(string? filter)
+        {
+            var query = _context.Advertisements.Include(a => a.Company).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter) && filter != "all")
+                query = query.Where(a => a.status == filter);
+
+            var ads = await query.OrderByDescending(a => a.created_at).ToListAsync();
+
+            // Get plan names
+            var planKeys = ads.Select(a => new { a.plan_id, a.company_id }).Distinct().ToList();
+            var planNames = new Dictionary<string, string>();
+            foreach (var key in planKeys)
+            {
+                var plan = await _context.InsurancePlans
+                    .FirstOrDefaultAsync(p => p.plan_id == key.plan_id && p.company_id == key.company_id);
+                if (plan != null)
+                    planNames[$"{key.plan_id}_{key.company_id}"] = plan.plan_name;
+            }
+
+            // Get payments
+            var adIds = ads.Select(a => a.ad_id).ToList();
+            var payments = await _context.AdPayments
+                .Where(p => adIds.Contains(p.advertisement_id))
+                .ToDictionaryAsync(p => p.advertisement_id, p => p);
+
+            ViewBag.PlanNames = planNames;
+            ViewBag.Payments = payments;
+            ViewBag.Filter = filter ?? "all";
+            ViewBag.AllCount = await _context.Advertisements.CountAsync();
+            ViewBag.PendingCount = await _context.Advertisements.CountAsync(a => a.status == "pending");
+            ViewBag.ApprovedCount = await _context.Advertisements.CountAsync(a => a.status == "approved");
+            ViewBag.RejectedCount = await _context.Advertisements.CountAsync(a => a.status == "rejected");
+
+            return View(ads);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveAd(int id)
+        {
+            var ad = await _context.Advertisements.FindAsync(id);
+            if (ad != null)
+            {
+                ad.status = "approved";
+                ad.start_date = DateTime.UtcNow;
+                ad.end_date = DateTime.UtcNow.AddDays(ad.duration_days);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("ManageAds");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectAd(int id)
+        {
+            var ad = await _context.Advertisements.FindAsync(id);
+            if (ad != null)
+            {
+                ad.status = "rejected";
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("ManageAds");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteAd(int id)
+        {
+            var ad = await _context.Advertisements.FindAsync(id);
+            if (ad != null)
+            {
+                // Delete related payments first
+                var payments = await _context.AdPayments.Where(p => p.advertisement_id == id).ToListAsync();
+                _context.AdPayments.RemoveRange(payments);
+                _context.Advertisements.Remove(ad);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("ManageAds");
+        }
     }
 }

@@ -40,6 +40,27 @@ namespace SmartInsuranceHub.Controllers
                 
             vm.Companies = companiesList;
 
+            // Active Advertisements (approved, within date range, ordered by amount for priority)
+            var now = DateTime.UtcNow;
+            vm.Advertisements = await _context.Advertisements
+                .Include(a => a.Company)
+                .Where(a => a.status == "approved" && a.start_date <= now && a.end_date >= now)
+                .OrderByDescending(a => a.amount_paid)
+                .Take(10)
+                .ToListAsync();
+
+            // Attach plan names to ViewBag for ads
+            var adPlanIds = vm.Advertisements.Select(a => new { a.plan_id, a.company_id }).Distinct().ToList();
+            var adPlanNames = new Dictionary<string, string>();
+            foreach (var key in adPlanIds)
+            {
+                var plan = await _context.InsurancePlans
+                    .FirstOrDefaultAsync(p => p.plan_id == key.plan_id && p.company_id == key.company_id);
+                if (plan != null)
+                    adPlanNames[$"{key.plan_id}_{key.company_id}"] = plan.plan_name;
+            }
+            ViewBag.AdPlanNames = adPlanNames;
+
             return View(vm);
         }
 

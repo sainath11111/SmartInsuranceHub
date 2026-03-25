@@ -1,0 +1,177 @@
+@model IEnumerable<SmartInsuranceHub.Models.Advertisement>
+@{
+    ViewData["Title"] = "Manage Advertisements";
+    var planNames = ViewBag.PlanNames as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var payments = ViewBag.Payments as Dictionary<int, SmartInsuranceHub.Models.AdPayment> ?? new Dictionary<int, SmartInsuranceHub.Models.AdPayment>();
+    var filter = ViewBag.Filter as string ?? "all";
+}
+
+<style>
+    .segmented-control {
+        display: inline-flex;
+        background: #e2e8f0;
+        padding: 4px;
+        border-radius: 12px;
+        gap: 4px;
+    }
+    .segment-btn {
+        padding: 6px 16px;
+        border-radius: 8px;
+        color: #64748b;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+    .segment-btn:hover {
+        color: #334155;
+    }
+    .segment-btn.active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        font-weight: 600;
+    }
+    .ad-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+        background: #ffffff;
+        overflow: hidden;
+    }
+    .ad-card:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+    .soft-badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .bg-soft-warning { background: #fef3c7; color: #b45309; }
+    .bg-soft-success { background: #dcfce7; color: #15803d; }
+    .bg-soft-danger { background: #fee2e2; color: #b91c1c; }
+    .bg-soft-secondary { background: #f1f5f9; color: #475569; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0 text-dark" style="font-family: 'Outfit', sans-serif;">Manage Advertisements</h4>
+</div>
+
+<!-- Filter Tabs -->
+<div class="mb-4 overflow-auto">
+    <div class="segmented-control">
+        <a class="segment-btn @(filter == "all" ? "active" : "")" href="/Admin/ManageAds?filter=all">All <span class="badge bg-secondary bg-opacity-25 text-dark ms-1 rounded-pill">@ViewBag.AllCount</span></a>
+        <a class="segment-btn @(filter == "pending" ? "active" : "")" href="/Admin/ManageAds?filter=pending">Pending <span class="badge bg-warning text-dark ms-1 rounded-pill">@ViewBag.PendingCount</span></a>
+        <a class="segment-btn @(filter == "approved" ? "active" : "")" href="/Admin/ManageAds?filter=approved">Approved <span class="badge bg-success ms-1 rounded-pill">@ViewBag.ApprovedCount</span></a>
+        <a class="segment-btn @(filter == "rejected" ? "active" : "")" href="/Admin/ManageAds?filter=rejected">Rejected <span class="badge bg-danger ms-1 rounded-pill">@ViewBag.RejectedCount</span></a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 mt-4" style="background: #ffffff; border-radius: 16px; border: 1px dashed #cbd5e1;">
+        <i class="bi bi-megaphone fs-1 d-block mb-3" style="color: #94a3b8;"></i>
+        <h5 class="text-secondary fw-medium">No advertisements found</h5>
+        <p class="text-muted small">Try changing the filter or wait for new submissions.</p>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var ad in Model)
+        {
+            var planKey = $"{ad.plan_id}_{ad.company_id}";
+            var planName = planNames.ContainsKey(planKey) ? planNames[planKey] : "Unknown Plan";
+            var payment = payments.ContainsKey(ad.ad_id) ? payments[ad.ad_id] : null;
+            var isExpired = ad.status == "approved" && ad.end_date.HasValue && ad.end_date.Value < DateTime.UtcNow;
+
+            <div class="col-lg-6 col-xl-4">
+                <div class="card ad-card h-100">
+                    <!-- Banner preview -->
+                    @if (!string.IsNullOrWhiteSpace(ad.banner_url))
+                    {
+                        <div style="height: 160px; overflow: hidden; border-bottom: 1px solid #e2e8f0;">
+                            <img src="@ad.banner_url" alt="Banner" class="w-100 h-100" style="object-fit: cover;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center justify-content-center" style="height: 160px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-bottom: 1px solid #e2e8f0;">
+                            <i class="bi bi-image text-secondary fs-1 opacity-25"></i>
+                        </div>
+                    }
+
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Outfit', sans-serif;">@ad.title</h5>
+                            @if (ad.status == "pending")
+                            {
+                                <span class="soft-badge bg-soft-warning"><i class="bi bi-clock"></i> Pending</span>
+                            }
+                            else if (ad.status == "approved" && !isExpired)
+                            {
+                                <span class="soft-badge bg-soft-success"><i class="bi bi-check-circle"></i> Live</span>
+                            }
+                            else if (isExpired)
+                            {
+                                <span class="soft-badge bg-soft-secondary"><i class="bi bi-calendar-x"></i> Expired</span>
+                            }
+                            else
+                            {
+                                <span class="soft-badge bg-soft-danger"><i class="bi bi-x-circle"></i> Rejected</span>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(ad.description))
+                        {
+                            <p class="text-muted small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">@ad.description</p>
+                        }
+
+                        <div class="bg-light rounded-3 p-3 mb-3 border" style="border-color: #f1f5f9 !important;">
+                            <div class="row g-2 small">
+                                <div class="col-12 text-dark"><i class="bi bi-building text-muted me-2"></i><strong>@(ad.Company?.company_name ?? "—")</strong></div>
+                                <div class="col-12 text-muted"><i class="bi bi-shield me-2"></i>@planName</div>
+                                <div class="col-12 text-muted"><i class="bi bi-calendar-event me-2"></i>@ad.duration_days Days <span class="text-success ms-2 fw-bold">₹@ad.amount_paid.ToString("N0")</span></div>
+                            </div>
+                        </div>
+
+                        @if (ad.start_date.HasValue && ad.end_date.HasValue)
+                        {
+                            <div class="mb-3 small text-muted">
+                                <i class="bi bi-calendar-check me-2"></i>@ad.start_date.Value.ToString("MMM dd") — @ad.end_date.Value.ToString("MMM dd, yyyy")
+                            </div>
+                        }
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2 mt-auto pt-3 border-top" style="border-color: #f1f5f9 !important;">
+                            @if (ad.status == "pending")
+                            {
+                                <form method="post" action="/Admin/ApproveAd" class="d-inline flex-grow-1">
+                                    <input type="hidden" name="id" value="@ad.ad_id" />
+                                    <button type="submit" class="btn btn-success btn-sm w-100 fw-medium rounded-3"><i class="bi bi-check-lg me-1"></i>Approve</button>
+                                </form>
+                                <form method="post" action="/Admin/RejectAd" class="d-inline flex-grow-1">
+                                    <input type="hidden" name="id" value="@ad.ad_id" />
+                                    <button type="submit" class="btn btn-light btn-sm text-danger w-100 fw-medium rounded-3 border"><i class="bi bi-x-lg me-1"></i>Reject</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" action="/Admin/DeleteAd" class="d-inline w-100" onsubmit="return confirm('Delete this advertisement permanently?');">
+                                    <input type="hidden" name="id" value="@ad.ad_id" />
+                                    <button type="submit" class="btn btn-light btn-sm text-danger w-100 fw-medium rounded-3 border"><i class="bi bi-trash me-1"></i>Delete Ad</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

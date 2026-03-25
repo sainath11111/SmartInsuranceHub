@@ -1,0 +1,142 @@
+@model IEnumerable<SmartInsuranceHub.Models.Advertisement>
+@{
+    ViewData["Title"] = "My Advertisements";
+    var planNames = ViewBag.PlanNames as Dictionary<int, string> ?? new Dictionary<int, string>();
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="bi bi-megaphone text-primary me-2"></i>My Advertisements</h4>
+        <p class="text-muted mb-0">Promote your insurance plans to thousands of customers</p>
+    </div>
+    <a href="/Advertisement/CreateAd" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Create New Ad</a>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-3">
+                <div class="fs-3 fw-bold text-primary">@Model.Count()</div>
+                <small class="text-muted">Total Ads</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-3">
+                <div class="fs-3 fw-bold text-warning">@Model.Count(a => a.status == "pending")</div>
+                <small class="text-muted">Pending</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-3">
+                <div class="fs-3 fw-bold text-success">@Model.Count(a => a.status == "approved")</div>
+                <small class="text-muted">Active</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-3">
+                <div class="fs-3 fw-bold text-info">₹@Model.Sum(a => a.amount_paid).ToString("N0")</div>
+                <small class="text-muted">Total Spent</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card table-custom">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Plan</th>
+                    <th>Duration</th>
+                    <th>Amount Paid</th>
+                    <th>Status</th>
+                    <th>Dates</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var ad in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@ad.title</strong>
+                                @if (!string.IsNullOrEmpty(ad.banner_url))
+                                {
+                                    <br /><small class="text-muted"><i class="bi bi-image me-1"></i>Has banner</small>
+                                }
+                            </td>
+                            <td>@(planNames.ContainsKey(ad.plan_id) ? planNames[ad.plan_id] : "—")</td>
+                            <td>@ad.duration_days Days</td>
+                            <td class="fw-semibold text-success">₹@ad.amount_paid.ToString("N0")</td>
+                            <td>
+                                @if (ad.status == "pending")
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending</span>
+                                }
+                                else if (ad.status == "approved")
+                                {
+                                    var isExpired = ad.end_date.HasValue && ad.end_date.Value < DateTime.UtcNow;
+                                    if (isExpired)
+                                    {
+                                        <span class="badge bg-secondary"><i class="bi bi-calendar-x me-1"></i>Expired</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Live</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Rejected</span>
+                                }
+                            </td>
+                            <td>
+                                @if (ad.start_date.HasValue && ad.end_date.HasValue)
+                                {
+                                    <small>@ad.start_date.Value.ToString("MMM dd") — @ad.end_date.Value.ToString("MMM dd, yyyy")</small>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">Awaiting approval</small>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-megaphone fs-1 d-block mb-3 text-primary opacity-50"></i>
+                            No advertisements yet. <a href="/Advertisement/CreateAd" class="fw-bold">Create your first ad</a> to promote your plans!
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

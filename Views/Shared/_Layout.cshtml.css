@@ -41,4 +41,6 @@ button.accept-policy {
 
 .footer {
   width: 100%;
+  margin-top: auto !important;
+  flex-shrink: 0;
 }

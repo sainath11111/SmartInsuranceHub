@@ -1,0 +1,165 @@
+@model SmartInsuranceHub.Models.Advertisement
+@{
+    ViewData["Title"] = "Create Advertisement";
+    var plans = ViewBag.Plans as List<SmartInsuranceHub.Models.InsurancePlan>;
+    var rate = (decimal)ViewBag.RatePerDay;
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Pricing Info -->
+        <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-white p-4">
+                <div class="d-flex align-items-center">
+                    <div class="me-4">
+                        <i class="bi bi-megaphone-fill fs-1"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">Promote Your Insurance Plan</h4>
+                        <p class="mb-0 opacity-75">Get your plan in front of thousands of potential customers on our homepage.</p>
+                    </div>
+                    <div class="ms-auto text-end">
+                        <div class="fs-2 fw-bold">₹@rate.ToString("N0")</div>
+                        <small class="opacity-75">per day</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card dashboard-card">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-pencil-square me-2 text-primary"></i>Advertisement Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" action="/Advertisement/CreateAd">
+                    <!-- Select Plan -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Plan to Promote</label>
+                        <select name="plan_id" class="form-select" required id="planSelect">
+                            <option value="">-- Choose a plan --</option>
+                            @if (plans != null)
+                            {
+                                @foreach (var plan in plans)
+                                {
+                                    <option value="@plan.plan_id" data-name="@plan.plan_name">@plan.plan_name — ₹@plan.premium_amount.ToString("N0")/month</option>
+                                }
+                            }
+                        </select>
+                        @if (plans == null || !plans.Any())
+                        {
+                            <small class="text-danger">No active plans found. <a href="/Insurance/CreatePlan">Create a plan first</a>.</small>
+                        }
+                    </div>
+
+                    <!-- Ad Title -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Advertisement Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g., Best Health Plan 2026 — Limited Time!" required maxlength="200" />
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Briefly describe why customers should choose this plan..." maxlength="500"></textarea>
+                    </div>
+
+                    <!-- Banner Image URL -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Banner Image URL <small class="text-muted">(optional)</small></label>
+                        <input type="url" name="banner_url" class="form-control" id="bannerInput" placeholder="https://example.com/banner.jpg" />
+                        <small class="text-muted">Paste a direct image URL. Recommended size: 1200×400px</small>
+                        <div class="mt-2 d-none" id="bannerPreview">
+                            <img id="bannerImg" src="" alt="Banner Preview" class="img-fluid rounded shadow-sm" style="max-height: 200px; object-fit: cover; width: 100%;" />
+                        </div>
+                    </div>
+
+                    <!-- Duration & Pricing -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Duration (Days)</label>
+                            <input type="number" name="duration_days" id="durationInput" class="form-control" min="1" max="365" value="7" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Total Cost</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white fw-bold">₹</span>
+                                <input type="text" id="totalCost" class="form-control fw-bold fs-5 text-success" value="700" readonly style="background: #f0fdf4;" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Summary -->
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-receipt text-primary me-2"></i>Payment Summary</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Rate</span>
+                                <span>₹@rate.ToString("N0") / day</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Duration</span>
+                                <span id="summaryDuration">7 days</span>
+                            </div>
+                            <hr />
+                            <div class="d-flex justify-content-between fw-bold fs-5">
+                                <span>Total</span>
+                                <span class="text-success" id="summaryTotal">₹700</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success py-3 w-100 fw-bold fs-5">
+                        <i class="bi bi-credit-card me-2"></i>Pay & Submit for Approval
+                    </button>
+                    <a href="/Advertisement/MyAds" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const durationInput = document.getElementById('durationInput');
+        const totalCost = document.getElementById('totalCost');
+        const summaryDuration = document.getElementById('summaryDuration');
+        const summaryTotal = document.getElementById('summaryTotal');
+        const bannerInput = document.getElementById('bannerInput');
+        const bannerPreview = document.getElementById('bannerPreview');
+        const bannerImg = document.getElementById('bannerImg');
+        const rate = @((int)rate);
+
+        function updatePrice() {
+            const days = parseInt(durationInput.value) || 0;
+            const total = days * rate;
+            totalCost.value = total.toLocaleString('en-IN');
+            summaryDuration.textContent = days + ' day' + (days !== 1 ? 's' : '');
+            summaryTotal.textContent = '₹' + total.toLocaleString('en-IN');
+        }
+
+        durationInput.addEventListener('input', updatePrice);
+
+        bannerInput.addEventListener('input', function () {
+            const url = bannerInput.value.trim();
+            if (url) {
+                bannerImg.src = url;
+                bannerPreview.classList.remove('d-none');
+                bannerImg.onerror = function () { bannerPreview.classList.add('d-none'); };
+            } else {
+                bannerPreview.classList.add('d-none');
+            }
+        });
+
+        updatePrice();
+    });
+</script>
+}

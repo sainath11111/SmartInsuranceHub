@@ -111,6 +111,32 @@ using (var scope = app.Services.CreateScope())
                 ""CreatedAt"" TIMESTAMP DEFAULT NOW()
             );
         ");
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""Advertisements"" (
+                ""AdId"" SERIAL PRIMARY KEY,
+                ""CompanyId"" INTEGER NOT NULL,
+                ""PlanId"" INTEGER NOT NULL,
+                ""Title"" VARCHAR(200) NOT NULL,
+                ""Description"" TEXT,
+                ""BannerUrl"" TEXT,
+                ""AmountPaid"" DECIMAL(12,2) DEFAULT 0,
+                ""DurationDays"" INTEGER DEFAULT 7,
+                ""StartDate"" TIMESTAMP,
+                ""EndDate"" TIMESTAMP,
+                ""Status"" VARCHAR(20) DEFAULT 'pending',
+                ""CreatedAt"" TIMESTAMP DEFAULT NOW()
+            );
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""AdPayments"" (
+                ""AdPaymentId"" SERIAL PRIMARY KEY,
+                ""CompanyId"" INTEGER NOT NULL,
+                ""AdvertisementId"" INTEGER NOT NULL,
+                ""Amount"" DECIMAL(12,2) DEFAULT 0,
+                ""PaymentStatus"" VARCHAR(20) DEFAULT 'completed',
+                ""PaymentDate"" TIMESTAMP DEFAULT NOW()
+            );
+        ");
     }
     catch (Exception ex)
     {

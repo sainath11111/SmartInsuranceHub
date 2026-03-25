@@ -189,6 +189,178 @@
     </div>
 </section>
 
+<!-- Sponsored Ads Carousel -->
+@if (Model.Advertisements.Any())
+{
+    var adPlanNames = ViewBag.AdPlanNames as Dictionary<string, string> ?? new Dictionary<string, string>();
+    <style>
+        .ad-carousel-section {
+            padding: 2rem 0 0;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            overflow: hidden;
+        }
+        .ad-carousel-track {
+            display: flex;
+            gap: 1.5rem;
+            animation: scrollAds 30s linear infinite;
+            width: max-content;
+        }
+        .ad-carousel-track:hover {
+            animation-play-state: paused;
+        }
+        @@keyframes scrollAds {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ad-card {
+            flex: 0 0 360px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: transform 0.4s cubic-bezier(.25,.8,.25,1), box-shadow 0.4s ease;
+            cursor: pointer;
+            background: white;
+        }
+        .ad-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(37,99,235,0.15);
+        }
+        .ad-card-banner {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        .ad-card-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .ad-card:hover .ad-card-banner img {
+            transform: scale(1.1);
+        }
+        .ad-card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        }
+        .ad-sponsored {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            color: #f59e0b;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 50px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .ad-priority {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 50px;
+        }
+        .ad-card-body {
+            padding: 1.25rem;
+        }
+        .ad-card-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--secondary);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ad-card-company {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+        .ad-card-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+        }
+        .ad-card-btn:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            transform: translateX(3px);
+            color: white;
+            box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+        }
+        @@media (max-width: 768px) {
+            .ad-card { flex: 0 0 280px; }
+            .ad-card-banner { height: 160px; }
+        }
+    </style>
+
+    <section class="ad-carousel-section">
+        <div class="container mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="bi bi-stars me-1"></i>Featured Promotions</span>
+                <div class="flex-grow-1" style="height: 1px; background: linear-gradient(90deg, #e2e8f0, transparent);"></div>
+            </div>
+        </div>
+        <div style="overflow: hidden; padding: 0.5rem 0 2rem;">
+            <div class="ad-carousel-track" id="adCarousel">
+                @* Duplicate ads for seamless infinite scroll *@
+                @for (int repeat = 0; repeat < 2; repeat++)
+                {
+                    @foreach (var ad in Model.Advertisements)
+                    {
+                        var key = $"{ad.plan_id}_{ad.company_id}";
+                        var pName = adPlanNames.ContainsKey(key) ? adPlanNames[key] : "Insurance Plan";
+                        var banner = !string.IsNullOrWhiteSpace(ad.banner_url) ? ad.banner_url : "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80";
+                        <div class="ad-card">
+                            <div class="ad-card-banner">
+                                <img src="@banner" alt="@ad.title" loading="lazy" />
+                                <div class="ad-card-overlay"></div>
+                                <span class="ad-sponsored"><i class="bi bi-megaphone-fill me-1"></i>Sponsored</span>
+                                @if (ad.amount_paid >= 1000)
+                                {
+                                    <span class="ad-priority"><i class="bi bi-lightning-fill me-1"></i>Premium</span>
+                                }
+                            </div>
+                            <div class="ad-card-body">
+                                <div class="ad-card-title">@ad.title</div>
+                                <div class="ad-card-company">
+                                    <i class="bi bi-building me-1"></i>@(ad.Company?.company_name ?? "Insurance Co.") · <i class="bi bi-shield-check me-1"></i>@pName
+                                </div>
+                                <a href="/Customer/BrowsePlans" class="ad-card-btn">
+                                    View Plan <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+}
+
 <!-- Stats Section -->
 <section class="stats-container">
     <div class="container">
