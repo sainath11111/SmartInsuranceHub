@@ -141,27 +141,31 @@ using (var scope = app.Services.CreateScope())
             );
         ");
         context.Database.ExecuteSqlRaw(@"
-            ALTER TABLE ""Customers"" ADD COLUMN IF NOT EXISTS ""dob"" TIMESTAMP NOT NULL DEFAULT '2000-01-01';
+            ALTER TABLE ""Customers"" ADD COLUMN IF NOT EXISTS ""Dob"" TIMESTAMP NOT NULL DEFAULT '2000-01-01';
+            DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Customers' AND column_name = 'dob') THEN ALTER TABLE ""Customers"" DROP COLUMN ""dob""; END IF; END $$;
         ");
         context.Database.ExecuteSqlRaw(@"
-            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""dob"" TIMESTAMP NOT NULL DEFAULT '2000-01-01';
+            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""Dob"" TIMESTAMP NOT NULL DEFAULT '2000-01-01';
+            DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Agents' AND column_name = 'dob') THEN ALTER TABLE ""Agents"" DROP COLUMN ""dob""; END IF; END $$;
         ");
         context.Database.ExecuteSqlRaw(@"
-            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""aadhaar"" VARCHAR(20);
+            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""Aadhaar"" VARCHAR(20);
+            DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Agents' AND column_name = 'aadhaar') THEN ALTER TABLE ""Agents"" DROP COLUMN ""aadhaar""; END IF; END $$;
         ");
         context.Database.ExecuteSqlRaw(@"
-            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""pan"" VARCHAR(20);
+            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""Pan"" VARCHAR(20);
+            DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Agents' AND column_name = 'pan') THEN ALTER TABLE ""Agents"" DROP COLUMN ""pan""; END IF; END $$;
         ");
         context.Database.ExecuteSqlRaw(@"
             CREATE TABLE IF NOT EXISTS ""CustomerAgentMessages"" (
-                ""id"" SERIAL PRIMARY KEY,
-                ""customer_id"" INTEGER NOT NULL,
-                ""agent_id"" INTEGER NOT NULL,
-                ""sender_type"" VARCHAR(20) NOT NULL,
-                ""message_text"" TEXT NOT NULL,
-                ""sent_at"" TIMESTAMP DEFAULT NOW(),
-                FOREIGN KEY (""customer_id"") REFERENCES ""Customers""(""customer_id"") ON DELETE RESTRICT,
-                FOREIGN KEY (""agent_id"") REFERENCES ""Agents""(""agent_id"") ON DELETE RESTRICT
+                ""Id"" SERIAL PRIMARY KEY,
+                ""CustomerId"" INTEGER NOT NULL,
+                ""AgentId"" INTEGER NOT NULL,
+                ""SenderType"" VARCHAR(20) NOT NULL,
+                ""MessageText"" TEXT NOT NULL,
+                ""SentAt"" TIMESTAMP DEFAULT NOW(),
+                FOREIGN KEY (""CustomerId"") REFERENCES ""Customers""(""CustomerId"") ON DELETE RESTRICT,
+                FOREIGN KEY (""AgentId"") REFERENCES ""Agents""(""AgentId"") ON DELETE RESTRICT
             );
         ");
     }
