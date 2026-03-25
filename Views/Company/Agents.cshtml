@@ -35,7 +35,7 @@
                     <tr>
                         <td>
                             @if(!string.IsNullOrEmpty(item.profile_photo)){
-                                <img src="@item.profile_photo" alt="Photo" width="40" class="rounded-circle" />
+                                <img src="/api/avatar/@item.profile_photo" alt="Photo" width="40" height="40" class="rounded-circle shadow-sm" style="object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('@item.full_name') + '&background=random'" />
                             }else{
                                 <i class="bi bi-person-circle fs-3 text-muted"></i>
                             }

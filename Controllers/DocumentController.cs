@@ -204,5 +204,27 @@ namespace SmartInsuranceHub.Controllers
 
             return Redirect(url);
         }
+        // ========================================
+        // Avatar Renderer (Presigned URL Redirect)
+        // ========================================
+        [AllowAnonymous]
+        [HttpGet("/api/avatar/{*objectKey}")]
+        public async Task<IActionResult> RenderAvatar(string objectKey)
+        {
+            if (string.IsNullOrEmpty(objectKey)) return NotFound();
+            
+            // Security: Only allow fetching profile_photo and advertisement categories to prevent unauthorized document access
+            if (!objectKey.Contains("/profile_photo/") && !objectKey.Contains("/banner_url/") && !objectKey.Contains("/advertisement/") && !objectKey.Contains("http")) 
+                return Forbid();
+
+            // If it's already a full HTTP url (like from an older version or mock data), just redirect
+            if (objectKey.StartsWith("http"))
+                return Redirect(objectKey);
+
+            var url = await _r2.GetPresignedUrlAsync(objectKey);
+            if (url != null) return Redirect(url);
+            
+            return NotFound();
+        }
     }
 }

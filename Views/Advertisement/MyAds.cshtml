@@ -86,7 +86,9 @@
                                 <strong>@ad.title</strong>
                                 @if (!string.IsNullOrEmpty(ad.banner_url))
                                 {
+                                    var tBanner = ad.banner_url.StartsWith("http") ? ad.banner_url : "/api/avatar/" + ad.banner_url;
                                     <br /><small class="text-muted"><i class="bi bi-image me-1"></i>Has banner</small>
+                                    <br /><img src="@tBanner" style="height: 30px; width: 80px; object-fit: cover; border-radius: 4px;" class="mt-1 shadow-sm" onerror="this.onerror=null; this.outerHTML='<div class=\'mt-1 shadow-sm d-inline-flex align-items-center justify-content-center bg-light text-muted border\' style=\'height: 30px; width: 80px; border-radius: 4px;\'><i class=\'bi bi-image opacity-50\'></i></div>';" />
                                 }
                             </td>
                             <td>@(planNames.ContainsKey(ad.plan_id) ? planNames[ad.plan_id] : "—")</td>

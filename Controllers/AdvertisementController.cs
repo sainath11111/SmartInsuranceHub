@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartInsuranceHub.Data;
 using SmartInsuranceHub.Models;
+using SmartInsuranceHub.Services;
 
 namespace SmartInsuranceHub.Controllers
 {
@@ -11,11 +12,13 @@ namespace SmartInsuranceHub.Controllers
     public class AdvertisementController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly R2StorageService _r2Storage;
         private const decimal RATE_PER_DAY = 100m;
 
-        public AdvertisementController(ApplicationDbContext context)
+        public AdvertisementController(ApplicationDbContext context, R2StorageService r2Storage)
         {
             _context = context;
+            _r2Storage = r2Storage;
         }
 
         private int GetCompanyId() =>
@@ -61,9 +64,19 @@ namespace SmartInsuranceHub.Controllers
         // Create Ad (POST)
         // ========================================
         [HttpPost]
-        public async Task<IActionResult> CreateAd(string title, string? description, string? banner_url, int plan_id, int duration_days)
+        public async Task<IActionResult> CreateAd(string title, string? description, IFormFile? bannerImage, int plan_id, int duration_days)
         {
             var cid = GetCompanyId();
+
+            if (bannerImage != null)
+            {
+                var valResult = _r2Storage.ValidateFile(bannerImage);
+                if (!valResult.IsValid)
+                {
+                    TempData["Error"] = valResult.Error;
+                    return Redirect("/Advertisement/CreateAd");
+                }
+            }
 
             if (string.IsNullOrWhiteSpace(title) || duration_days < 1)
             {
@@ -94,7 +107,6 @@ namespace SmartInsuranceHub.Controllers
                 plan_id = plan_id,
                 title = title.Trim(),
                 description = description?.Trim(),
-                banner_url = banner_url?.Trim(),
                 amount_paid = totalAmount,
                 duration_days = duration_days,
                 status = "pending",
@@ -103,6 +115,17 @@ namespace SmartInsuranceHub.Controllers
 
             _context.Advertisements.Add(ad);
             await _context.SaveChangesAsync();
+            
+            // Upload Banner Photo (After DB Save to get ad_id)
+            if (bannerImage != null)
+            {
+                var uploadResult = await _r2Storage.UploadFileAsync(bannerImage, "Advertisement", ad.ad_id, "banner_url");
+                if (uploadResult.FileUrl != null)
+                {
+                    ad.banner_url = uploadResult.FileUrl;
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             // Create payment record
             var payment = new AdPayment

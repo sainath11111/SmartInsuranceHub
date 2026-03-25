@@ -5,16 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using SmartInsuranceHub.Data;
 using SmartInsuranceHub.Models;
 using System.Security.Claims;
+using SmartInsuranceHub.Services;
 
 namespace SmartInsuranceHub.Controllers
 {
     public class AuthController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly R2StorageService _r2Storage;
 
-        public AuthController(ApplicationDbContext context)
+        public AuthController(ApplicationDbContext context, R2StorageService r2Storage)
         {
             _context = context;
+            _r2Storage = r2Storage;
         }
 
         [HttpGet]
@@ -94,6 +97,11 @@ namespace SmartInsuranceHub.Controllers
                         new Claim(ClaimTypes.Email, agent.email),
                         new Claim(ClaimTypes.Role, "Agent")
                     };
+                    
+                    if (!string.IsNullOrEmpty(agent.profile_photo))
+                    {
+                        claims.Add(new Claim("ProfilePhoto", agent.profile_photo));
+                    }
                 }
             }
             else if (role == "Customer")
@@ -208,8 +216,18 @@ namespace SmartInsuranceHub.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegisterAgent(Agent model)
+        public async Task<IActionResult> RegisterAgent(Agent model, IFormFile? profilePhotoFile)
         {
+            // Profile Photo Validation (Before DB Save)
+            if (profilePhotoFile != null)
+            {
+                var valResult = _r2Storage.ValidateFile(profilePhotoFile);
+                if (!valResult.IsValid)
+                {
+                    ModelState.AddModelError("profile_photo", valResult.Error);
+                }
+            }
+
             // Unique Email Validation
             if (!await IsEmailUniqueAsync(model.email))
             {
@@ -256,6 +274,17 @@ namespace SmartInsuranceHub.Controllers
 
             _context.Agents.Add(model);
             await _context.SaveChangesAsync();
+
+            // Profile Photo Upload (After DB Save to get agent_id)
+            if (profilePhotoFile != null)
+            {
+                var uploadResult = await _r2Storage.UploadFileAsync(profilePhotoFile, "Agent", model.agent_id, "profile_photo");
+                if (uploadResult.FileUrl != null)
+                {
+                    model.profile_photo = uploadResult.FileUrl;
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             TempData["Success"] = "Registration successful! Awaiting Admin approval.";
             return RedirectToAction("Login");

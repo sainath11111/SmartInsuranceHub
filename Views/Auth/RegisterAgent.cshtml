@@ -51,12 +51,31 @@
                 <h2 class="fw-bold">Become an Agent</h2>
             </div>
             
-            <h2 class="fw-bold text-dark mb-1 d-none d-lg-block">Agent Registration</h2>
-            <p class="text-muted mb-5 d-none d-lg-block">Complete the application to join our elite agent network.</p>
+            <h2 class="card-title fw-bold text-center mb-1">Agent Application</h2>
+            <p class="text-muted text-center mb-4">Join our network of premium insurance professionals</p>
 
-            <form method="post" action="/Auth/RegisterAgent" class="needs-validation">
-                @Html.ValidationSummary(false, "", new { @class = "text-danger small mb-3 fw-bold" })
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger shadow-sm rounded-3">
+                    <div asp-validation-summary="All" class="text-danger mb-0 small fw-bold"></div>
+                </div>
+            }
+
+            <form asp-action="RegisterAgent" method="post" class="needs-validation" novalidate enctype="multipart/form-data">
                 <div class="row g-3">
+                    
+                    <!-- Profile Photo Upload -->
+                    <div class="col-12 text-center mb-2">
+                        <div class="position-relative d-inline-block">
+                            <img id="profilePreview" src="~/images/default-avatar.png" alt="Profile Preview" class="rounded-circle shadow-sm border border-3 border-white bg-light" style="width: 120px; height: 120px; object-fit: cover; cursor: pointer;" onclick="document.getElementById('profilePhotoInput').click()" onerror="this.src='https://ui-avatars.com/api/?name=Agent&background=random'" />
+                            <label for="profilePhotoInput" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow-sm" style="cursor: pointer; transform: translate(10%, 10%);">
+                                <i class="bi bi-camera"></i>
+                            </label>
+                        </div>
+                        <input type="file" id="profilePhotoInput" name="profilePhotoFile" accept=".jpg,.jpeg,.png" class="d-none" onchange="previewProfileImage(event)" />
+                        <div class="small text-muted mt-2">Upload Profile Photo (optional, max 2MB)</div>
+                        <span class="text-danger small" asp-validation-for="profile_photo"></span>
+                    </div>
                     <!-- Select Company -->
                     <div class="col-12">
                         <div class="form-floating mb-2">
@@ -159,14 +178,6 @@
                             <label><i class="bi bi-house text-primary me-2"></i>Office/Home Address</label>
                         </div>
                     </div>
-                    
-                    <!-- Profile Photo URL -->
-                    <div class="col-md-12">
-                        <div class="form-floating mb-2">
-                            <input type="url" asp-for="profile_photo" class="form-control border-0 shadow-sm" required placeholder="Profile Photo URL" style="background-color: var(--bg-light);" />
-                            <label><i class="bi bi-image text-primary me-2"></i>Profile Photo URL</label>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="form-check mt-4 mb-4">
@@ -185,5 +196,17 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function previewProfileImage(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profilePreview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </body>
 </html>

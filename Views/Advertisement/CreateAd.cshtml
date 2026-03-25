@@ -39,7 +39,7 @@
                 <h5 class="mb-0 fw-semibold"><i class="bi bi-pencil-square me-2 text-primary"></i>Advertisement Details</h5>
             </div>
             <div class="card-body p-4">
-                <form method="post" action="/Advertisement/CreateAd">
+                <form method="post" action="/Advertisement/CreateAd" enctype="multipart/form-data">
                     <!-- Select Plan -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Select Plan to Promote</label>
@@ -71,13 +71,13 @@
                         <textarea name="description" class="form-control" rows="3" placeholder="Briefly describe why customers should choose this plan..." maxlength="500"></textarea>
                     </div>
 
-                    <!-- Banner Image URL -->
+                    <!-- Banner Image Upload -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Banner Image URL <small class="text-muted">(optional)</small></label>
-                        <input type="url" name="banner_url" class="form-control" id="bannerInput" placeholder="https://example.com/banner.jpg" />
-                        <small class="text-muted">Paste a direct image URL. Recommended size: 1200×400px</small>
-                        <div class="mt-2 d-none" id="bannerPreview">
-                            <img id="bannerImg" src="" alt="Banner Preview" class="img-fluid rounded shadow-sm" style="max-height: 200px; object-fit: cover; width: 100%;" />
+                        <label class="form-label fw-semibold">Banner Image</label>
+                        <input type="file" name="bannerImage" class="form-control" id="bannerInput" accept=".jpg,.jpeg,.png" required />
+                        <small class="text-muted">Recommended aspect ratio: 1200×400px (Max 5MB)</small>
+                        <div class="mt-3 d-none text-center" id="bannerPreviewContainer">
+                            <img id="bannerImg" src="" alt="Banner Preview" class="img-fluid rounded shadow-sm" style="max-height: 250px; object-fit: contain; width: 100%; border: 1px solid #e2e8f0; padding: 4px;" />
                         </div>
                     </div>
 
@@ -148,14 +148,19 @@
 
         durationInput.addEventListener('input', updatePrice);
 
-        bannerInput.addEventListener('input', function () {
-            const url = bannerInput.value.trim();
-            if (url) {
-                bannerImg.src = url;
-                bannerPreview.classList.remove('d-none');
-                bannerImg.onerror = function () { bannerPreview.classList.add('d-none'); };
+        bannerInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const bannerPreviewContainer = document.getElementById('bannerPreviewContainer');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    bannerImg.src = e.target.result;
+                    bannerPreviewContainer.classList.remove('d-none');
+                }
+                reader.readAsDataURL(file);
             } else {
-                bannerPreview.classList.add('d-none');
+                bannerPreviewContainer.classList.add('d-none');
+                bannerImg.src = '';
             }
         });
 
