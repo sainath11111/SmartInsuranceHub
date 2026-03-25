@@ -55,6 +55,7 @@
             <p class="text-muted mb-5 d-none d-lg-block">Complete the application to join our elite agent network.</p>
 
             <form method="post" action="/Auth/RegisterAgent" class="needs-validation">
+                @Html.ValidationSummary(false, "", new { @class = "text-danger small mb-3 fw-bold" })
                 <div class="row g-3">
                     <!-- Select Company -->
                     <div class="col-12">
@@ -95,7 +96,7 @@
                         </div>
                     </div>
                     
-                    <!-- Phone & Experience -->
+                    <!-- Phone & DOB -->
                     <div class="col-md-6">
                         <div class="form-floating mb-2">
                             <input type="text" asp-for="phone" class="form-control border-0 shadow-sm" required placeholder="Phone Number" style="background-color: var(--bg-light);" />
@@ -104,13 +105,33 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating mb-2">
-                            <input type="number" asp-for="experience_years" class="form-control border-0 shadow-sm" required placeholder="Experience (Years)" style="background-color: var(--bg-light);" />
-                            <label><i class="bi bi-star-fill text-primary me-2"></i>Experience (Years)</label>
+                            <input type="date" asp-for="dob" class="form-control border-0 shadow-sm" required style="background-color: var(--bg-light);" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <label><i class="bi bi-calendar text-primary me-2"></i>Date of Birth</label>
                         </div>
                     </div>
                     
-                    <!-- License -->
-                    <div class="col-md-12">
+                    <!-- Identity Documents -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-2">
+                            <input type="text" asp-for="aadhaar" class="form-control border-0 shadow-sm" required placeholder="Aadhaar Card" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-person-badge text-primary me-2"></i>Aadhaar Card</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating mb-2">
+                            <input type="text" asp-for="pan" class="form-control border-0 shadow-sm" required placeholder="PAN Card" style="text-transform: uppercase; background-color: var(--bg-light);" />
+                            <label><i class="bi bi-card-text text-primary me-2"></i>PAN Card</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Experience & License -->
+                    <div class="col-md-4">
+                        <div class="form-floating mb-2">
+                            <input type="number" asp-for="experience_years" class="form-control border-0 shadow-sm" required placeholder="Experience" style="background-color: var(--bg-light);" />
+                            <label><i class="bi bi-star-fill text-primary me-2"></i>Experience (Yrs)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
                         <div class="form-floating mb-2">
                             <input type="text" asp-for="license_number" class="form-control border-0 shadow-sm" required placeholder="License Number" style="text-transform: uppercase; background-color: var(--bg-light);" />
                             <label><i class="bi bi-award text-primary me-2"></i>Agent License Number</label>
@@ -150,7 +171,7 @@
 
                 <div class="form-check mt-4 mb-4">
                     <input type="checkbox" class="form-check-input shadow-sm" id="terms" required>
-                    <label class="form-check-label small text-muted" for="terms">I agree to the <a href="#" class="text-primary text-decoration-none">Agent Terms & Conditions</a>.</label>
+                    <label class="form-check-label small text-muted" for="terms">I agree to the <a href="/Home/Terms" target="_blank" class="text-primary text-decoration-none fw-medium">Terms of Service</a> and <a href="/Home/Privacy" target="_blank" class="text-primary text-decoration-none fw-medium">Privacy Policy</a>.</label>
                 </div>
 
                 <div class="mt-2 text-center">

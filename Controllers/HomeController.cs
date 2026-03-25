@@ -14,6 +14,10 @@ namespace SmartInsuranceHub.Controllers
             _context = context;
         }
 
+        public IActionResult Terms() => View();
+        
+        public IActionResult Privacy() => View();
+
         public async Task<IActionResult> Index()
         {
             var vm = new HomeViewModel();

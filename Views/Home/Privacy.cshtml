@@ -1,6 +1,36 @@
-﻿@{
+@{
     ViewData["Title"] = "Privacy Policy";
+    Layout = "_LandingLayout";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-4" style="font-family: 'Outfit', sans-serif;">Privacy Policy</h1>
+            <p class="text-muted">Last updated: @DateTime.UtcNow.ToString("MMMM dd, yyyy")</p>
+            
+            <hr class="my-4" />
+
+            <div class="prose text-secondary" style="font-family: 'Inter', sans-serif; line-height: 1.8;">
+                <h4 class="fw-bold text-dark mt-4">1. Information We Collect</h4>
+                <p>We collect information you provide directly to us, including your Name, Email Address, Phone Number, Date of Birth, PAN, and Aadhaar card details for regulatory compliance and identity verification.</p>
+
+                <h4 class="fw-bold text-dark mt-4">2. How We Use Your Information</h4>
+                <p>We use your information to provide, maintain, and improve our services. Specifically: to verify your identity (18+), securely process your insurance policies, and facilitate communications (via encrypted chat) between you and authorized insurance agents.</p>
+
+                <h4 class="fw-bold text-dark mt-4">3. Data Security</h4>
+                <p>We implement strict security measures designed to protect your information, including encrypting passwords via BCrypt and exclusively storing sensitive document metadata securely in the cloud.</p>
+
+                <h4 class="fw-bold text-dark mt-4">4. Sharing Your Information</h4>
+                <p>We do not sell your personal data. Your contact details are only shared with matching Agents (in your city) if you explicitly initiate a conversation or policy purchase.</p>
+
+                <h4 class="fw-bold text-dark mt-4">5. Your Rights</h4>
+                <p>You have the right to request access, correction, or deletion of your personal data. Contact our support team to exercise these rights.</p>
+            </div>
+            
+            <div class="mt-5 text-center">
+                <a href="/" class="btn btn-primary rounded-pill px-4 shadow-sm">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>

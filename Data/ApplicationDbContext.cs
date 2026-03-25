@@ -25,6 +25,7 @@ namespace SmartInsuranceHub.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Advertisement> Advertisements { get; set; }
         public DbSet<AdPayment> AdPayments { get; set; }
+        public DbSet<CustomerAgentMessage> CustomerAgentMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -100,6 +101,18 @@ namespace SmartInsuranceHub.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ChatMessage>()
+                .HasOne(c => c.Agent)
+                .WithMany()
+                .HasForeignKey(c => c.agent_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CustomerAgentMessage>()
+                .HasOne(c => c.Customer)
+                .WithMany()
+                .HasForeignKey(c => c.customer_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CustomerAgentMessage>()
                 .HasOne(c => c.Agent)
                 .WithMany()
                 .HasForeignKey(c => c.agent_id)

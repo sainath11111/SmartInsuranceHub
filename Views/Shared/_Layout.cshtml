@@ -51,6 +51,7 @@
                             <li class="nav-item">
                                 <button class="nav-link btn btn-link text-decoration-none" onclick="openAgentChat()"><i class="bi bi-chat-dots me-1"></i> Company Chat</button>
                             </li>
+                            <li class="nav-item"><a class="nav-link" href="/CustomerAgentChat"><i class="bi bi-chat-text me-1"></i> Customer Chat</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Document/Profile"><i class="bi bi-person-lines-fill me-1"></i> Profile & Docs</a></li>
                         }
                         else if (User.IsInRole("Customer"))
@@ -58,6 +59,7 @@
                             <li class="nav-item"><a class="nav-link" href="/Customer/Index"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Customer/BrowsePlans"><i class="bi bi-search me-1"></i> Browse Plans</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Customer/MyPolicies"><i class="bi bi-shield-check me-1"></i> My Policies</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/CustomerAgentChat"><i class="bi bi-chat-text me-1"></i> Agent Chat</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Customer/SubmitQuery"><i class="bi bi-question-circle me-1"></i> Support</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Document/Profile"><i class="bi bi-person-lines-fill me-1"></i> Profile & Docs</a></li>
                         }
@@ -118,8 +120,8 @@
         <div class="container-fluid px-lg-4 text-center text-md-start d-md-flex justify-content-between align-items-center">
             <span class="text-muted small">&copy; @DateTime.Now.Year <span class="text-primary fw-semibold">SmartInsurance Hub</span>. All rights reserved.</span>
             <div class="mt-2 mt-md-0 small">
-                <a href="#" class="text-muted text-decoration-none me-3 hover-primary">Privacy Policy</a>
-                <a href="#" class="text-muted text-decoration-none hover-primary">Terms of Service</a>
+                <a href="/Home/Privacy" class="text-muted text-decoration-none me-3 hover-primary">Privacy Policy</a>
+                <a href="/Home/Terms" class="text-muted text-decoration-none hover-primary">Terms of Service</a>
             </div>
         </div>
     </footer>

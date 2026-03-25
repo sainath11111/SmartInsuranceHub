@@ -55,6 +55,7 @@
             <p class="text-muted mb-5 d-none d-lg-block">Fill out the details below to set up your account.</p>
 
             <form method="post" action="/Auth/RegisterCustomer" class="needs-validation">
+                @Html.ValidationSummary(false, "", new { @class = "text-danger small mb-3 fw-bold" })
                 <div class="row g-3">
                     <!-- Full Name -->
                     <div class="col-md-12">
@@ -89,8 +90,8 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating mb-2">
-                            <input type="number" asp-for="age" class="form-control border-0 shadow-sm" required placeholder="Age" style="background-color: var(--bg-light);" />
-                            <label><i class="bi bi-calendar text-primary me-2"></i>Age</label>
+                            <input type="date" asp-for="dob" class="form-control border-0 shadow-sm" required style="background-color: var(--bg-light);" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <label><i class="bi bi-calendar text-primary me-2"></i>Date of Birth</label>
                         </div>
                     </div>
                     
@@ -133,7 +134,7 @@
                 
                 <div class="form-check mt-4 mb-4">
                     <input type="checkbox" class="form-check-input shadow-sm" id="terms" required>
-                    <label class="form-check-label small text-muted" for="terms">I agree to the <a href="#" class="text-primary text-decoration-none">Terms of Service</a> and <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>.</label>
+                    <label class="form-check-label small text-muted" for="terms">I agree to the <a href="/Home/Terms" target="_blank" class="text-primary text-decoration-none fw-medium">Terms of Service</a> and <a href="/Home/Privacy" target="_blank" class="text-primary text-decoration-none fw-medium">Privacy Policy</a>.</label>
                 </div>
 
                 <div class="mt-2 text-center">

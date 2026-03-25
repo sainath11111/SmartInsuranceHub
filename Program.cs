@@ -19,6 +19,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<JwtAuthService>();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
 
 // News API Configuration & Services
 builder.Services.AddSingleton<NewsApiConfig>();
@@ -62,6 +63,8 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
+
+app.MapHub<SmartInsuranceHub.Hubs.ChatHub>("/chatHub");
 
 // ==========================================
 // Database Seeding: Top 25 Insurance Companies
@@ -135,6 +138,30 @@ using (var scope = app.Services.CreateScope())
                 ""Amount"" DECIMAL(12,2) DEFAULT 0,
                 ""PaymentStatus"" VARCHAR(20) DEFAULT 'completed',
                 ""PaymentDate"" TIMESTAMP DEFAULT NOW()
+            );
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Customers"" ADD COLUMN IF NOT EXISTS ""dob"" TIMESTAMP NOT NULL DEFAULT '2000-01-01';
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""dob"" TIMESTAMP NOT NULL DEFAULT '2000-01-01';
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""aadhaar"" VARCHAR(20);
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Agents"" ADD COLUMN IF NOT EXISTS ""pan"" VARCHAR(20);
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""CustomerAgentMessages"" (
+                ""id"" SERIAL PRIMARY KEY,
+                ""customer_id"" INTEGER NOT NULL,
+                ""agent_id"" INTEGER NOT NULL,
+                ""sender_type"" VARCHAR(20) NOT NULL,
+                ""message_text"" TEXT NOT NULL,
+                ""sent_at"" TIMESTAMP DEFAULT NOW(),
+                FOREIGN KEY (""customer_id"") REFERENCES ""Customers""(""customer_id"") ON DELETE RESTRICT,
+                FOREIGN KEY (""agent_id"") REFERENCES ""Agents""(""agent_id"") ON DELETE RESTRICT
             );
         ");
     }

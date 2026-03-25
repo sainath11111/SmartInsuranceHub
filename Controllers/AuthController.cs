@@ -136,9 +136,58 @@ namespace SmartInsuranceHub.Controllers
         [HttpGet]
         public IActionResult RegisterCustomer() => View(new Customer());
 
+        private async Task<bool> IsEmailUniqueAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+            email = email.ToLower().Trim();
+            return !(await _context.Admins.AnyAsync(x => x.email.ToLower() == email) ||
+                     await _context.Companies.AnyAsync(x => x.email.ToLower() == email) ||
+                     await _context.Agents.AnyAsync(x => x.email.ToLower() == email) ||
+                     await _context.Customers.AnyAsync(x => x.email.ToLower() == email));
+        }
+
         [HttpPost]
         public async Task<IActionResult> RegisterCustomer(Customer model)
         {
+            // Unique Email Validation
+            if (!await IsEmailUniqueAsync(model.email))
+            {
+                ModelState.AddModelError("email", "This email is already registered.");
+            }
+
+            // Age Validation
+            var age = DateTime.Today.Year - model.dob.Year;
+            if (model.dob.Date > DateTime.Today.AddYears(-age)) age--;
+            if (age < 18)
+            {
+                ModelState.AddModelError("dob", "You must be 18+ to register.");
+            }
+            model.age = age;
+
+            // Aadhaar Validation
+            if (!string.IsNullOrEmpty(model.c_adhar))
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(model.c_adhar, @"^\d{12}$"))
+                    ModelState.AddModelError("c_adhar", "Invalid Aadhaar number. Must be exactly 12 digits.");
+                else if (await _context.Customers.AnyAsync(c => c.c_adhar == model.c_adhar) || await _context.Agents.AnyAsync(a => a.aadhaar == model.c_adhar))
+                    ModelState.AddModelError("c_adhar", "Aadhaar already exists.");
+            }
+
+            // PAN Validation
+            if (!string.IsNullOrEmpty(model.c_pancard))
+            {
+                model.c_pancard = model.c_pancard.ToUpper();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(model.c_pancard, @"^[A-Z]{5}[0-9]{4}[A-Z]{1}$"))
+                    ModelState.AddModelError("c_pancard", "Invalid PAN number.");
+                else if (await _context.Customers.AnyAsync(c => c.c_pancard == model.c_pancard) || await _context.Agents.AnyAsync(a => a.pan == model.c_pancard))
+                    ModelState.AddModelError("c_pancard", "PAN number already exists.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             model.password = BCrypt.Net.BCrypt.HashPassword(model.password);
             model.created_at = DateTime.UtcNow;
             model.status = "active";
@@ -146,6 +195,7 @@ namespace SmartInsuranceHub.Controllers
             _context.Customers.Add(model);
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Registration successful! You can now log in.";
             return RedirectToAction("Login");
         }
 
@@ -159,6 +209,45 @@ namespace SmartInsuranceHub.Controllers
         [HttpPost]
         public async Task<IActionResult> RegisterAgent(Agent model)
         {
+            // Unique Email Validation
+            if (!await IsEmailUniqueAsync(model.email))
+            {
+                ModelState.AddModelError("email", "This email is already registered.");
+            }
+
+            // Age Validation
+            var age = DateTime.Today.Year - model.dob.Year;
+            if (model.dob.Date > DateTime.Today.AddYears(-age)) age--;
+            if (age < 18)
+            {
+                ModelState.AddModelError("dob", "You must be 18+ to register.");
+            }
+
+            // Aadhaar Validation
+            if (!string.IsNullOrEmpty(model.aadhaar))
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(model.aadhaar, @"^\d{12}$"))
+                    ModelState.AddModelError("aadhaar", "Invalid Aadhaar number. Must be exactly 12 digits.");
+                else if (await _context.Agents.AnyAsync(a => a.aadhaar == model.aadhaar) || await _context.Customers.AnyAsync(c => c.c_adhar == model.aadhaar))
+                    ModelState.AddModelError("aadhaar", "Aadhaar already exists.");
+            }
+
+            // PAN Validation
+            if (!string.IsNullOrEmpty(model.pan))
+            {
+                model.pan = model.pan.ToUpper();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(model.pan, @"^[A-Z]{5}[0-9]{4}[A-Z]{1}$"))
+                    ModelState.AddModelError("pan", "Invalid PAN number.");
+                else if (await _context.Agents.AnyAsync(a => a.pan == model.pan) || await _context.Customers.AnyAsync(c => c.c_pancard == model.pan))
+                    ModelState.AddModelError("pan", "PAN number already exists.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Companies = _context.Companies.Where(c => c.status == "approved").ToList();
+                return View(model);
+            }
+
             model.password = BCrypt.Net.BCrypt.HashPassword(model.password);
             model.created_at = DateTime.UtcNow;
             model.approved_status = false;
@@ -166,6 +255,7 @@ namespace SmartInsuranceHub.Controllers
             _context.Agents.Add(model);
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Registration successful! Awaiting Admin approval.";
             return RedirectToAction("Login");
         }
 

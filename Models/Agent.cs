@@ -39,6 +39,14 @@ namespace SmartInsuranceHub.Models
         
         public string? profile_photo { get; set; }
         
+        public DateTime dob { get; set; }
+        
+        [MaxLength(20)]
+        public string? aadhaar { get; set; }
+        
+        [MaxLength(20)]
+        public string? pan { get; set; }
+        
         public bool approved_status { get; set; } = false;
         
         public DateTime created_at { get; set; } = DateTime.UtcNow;

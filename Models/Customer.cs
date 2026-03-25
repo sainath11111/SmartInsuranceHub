@@ -28,6 +28,8 @@ namespace SmartInsuranceHub.Models
         
         public int age { get; set; }
         
+        public DateTime dob { get; set; }
+        
         [MaxLength(20)]
         public string? c_pancard { get; set; }
         
