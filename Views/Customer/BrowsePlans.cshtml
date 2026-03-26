@@ -1,16 +1,43 @@
 @model IEnumerable<SmartInsuranceHub.Models.InsurancePlan>
 @{
-    ViewData["Title"] = "Browse Insurance Plans";
+    ViewData["Title"] = "Insurance Marketplace";
     var isVerified = (bool)(ViewBag.IsVerified ?? false);
+    var insuranceTypes = ViewBag.InsuranceTypes as List<SmartInsuranceHub.Models.InsuranceType> ?? new List<SmartInsuranceHub.Models.InsuranceType>();
+    var companies = ViewBag.Companies as List<SmartInsuranceHub.Models.Company> ?? new List<SmartInsuranceHub.Models.Company>();
+    var maxPremium = (decimal)(ViewBag.MaxPremium ?? 50000m);
+    var maxCoverage = (decimal)(ViewBag.MaxCoverage ?? 5000000m);
 }
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Page Header -->
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-4" data-aos="fade-down">
+    <div>
+        <h2 class="fw-bold mb-1" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.03em;">
+            <i class="bi bi-grid-3x3-gap text-primary me-2"></i>Insurance Marketplace
+        </h2>
+        <p class="text-muted mb-0">Discover, compare, and purchase the perfect insurance plan for your needs.</p>
+    </div>
+    <div class="d-flex gap-2 mt-2 mt-md-0">
+        <span class="badge bg-primary bg-opacity-10 text-primary fs-6 px-3 py-2 rounded-pill">
+            <i class="bi bi-collection me-1"></i>@Model.Count() Plans Available
+        </span>
+    </div>
+</div>
 
 @if (!isVerified)
 {
-    <div class="alert d-flex align-items-start gap-3 mb-4" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 1.25rem 1.5rem;">
+    <div class="alert d-flex align-items-start gap-3 mb-4" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 1.25rem 1.5rem;" data-aos="fade-up">
         <i class="bi bi-shield-exclamation text-warning fs-3 flex-shrink-0 mt-1"></i>
         <div>
             <strong class="d-block mb-1" style="color:#92400e;">Document Verification Required</strong>
-            <span style="color:#92400e;">You must complete KYC document verification before purchasing any insurance policy.</span>
+            <span style="color:#92400e;">Complete KYC document verification before purchasing any insurance policy.</span>
             <div class="mt-2">
                 <a href="/Document/Profile" class="btn btn-sm btn-warning fw-bold">
                     <i class="bi bi-cloud-upload me-1"></i> Upload & Verify Documents
@@ -21,45 +48,326 @@
 }
 
 <div class="row">
-    @foreach (var item in Model)
-    {
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card dashboard-card h-100" style="border-radius: 14px; border: 1px solid #e2e8f0; transition: all 0.2s;">
-                <div class="card-body d-flex flex-column">
-                    <span class="badge bg-primary mb-2" style="width: fit-content;">@item.Company?.company_name</span>
-                    <h5 class="card-title text-dark">@item.plan_name</h5>
-                    <p class="text-muted small mb-3 flex-grow-1" style="min-height: 40px;">@item.description</p>
+    <!-- =============================== -->
+    <!-- FILTER SIDEBAR                  -->
+    <!-- =============================== -->
+    <div class="col-lg-3 mb-4" data-aos="fade-right">
+        <div class="filter-sidebar">
+            <!-- Search -->
+            <div class="position-relative mb-3">
+                <i class="bi bi-search position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <input type="text" id="planSearch" class="filter-search-input" placeholder="Search plans..." autocomplete="off" />
+            </div>
 
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Coverage</span>
-                        <strong>₹@item.coverage_amount</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Premium</span>
-                        <strong class="text-success">₹@item.premium_amount / yr</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Duration</span>
-                        <strong>@item.duration_months Months</strong>
-                    </div>
+            <div class="filter-divider"></div>
 
-                    <div class="d-grid gap-2 mt-auto">
-                        @if (isVerified)
-                        {
-                            <a href="/Insurance/Purchase?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-primary-custom">
-                                <i class="bi bi-shield-check me-1"></i> Purchase Plan
-                            </a>
-                        }
-                        else
-                        {
-                            <button class="btn btn-secondary" disabled title="Complete document verification to purchase">
-                                <i class="bi bi-lock me-1"></i> Verify to Purchase
-                            </button>
-                        }
-                        <a href="/Review/PlanReviews?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-outline-secondary">View Reviews</a>
+            <!-- Insurance Type Filter -->
+            <h6><i class="bi bi-tags me-1"></i> Insurance Type</h6>
+            @foreach (var type in insuranceTypes)
+            {
+                <div class="form-check mb-2">
+                    <input class="form-check-input filter-type" type="checkbox" value="@type.type_id" id="type_@type.type_id">
+                    <label class="form-check-label" for="type_@type.type_id">
+                        <i class="bi @(type.icon ?? "bi-shield") me-1 text-primary"></i>@type.type_name
+                    </label>
+                </div>
+            }
+
+            <div class="filter-divider"></div>
+
+            <!-- Premium Range -->
+            <h6><i class="bi bi-currency-rupee me-1"></i> Max Premium</h6>
+            <input type="range" class="form-range" id="premiumRange" min="0" max="@maxPremium" value="@maxPremium" step="500">
+            <div class="d-flex justify-content-between small text-muted">
+                <span>₹0</span>
+                <span class="fw-bold text-primary" id="premiumVal">₹@maxPremium.ToString("N0")</span>
+            </div>
+
+            <div class="filter-divider"></div>
+
+            <!-- Coverage Range -->
+            <h6><i class="bi bi-shield-check me-1"></i> Min Coverage</h6>
+            <input type="range" class="form-range" id="coverageRange" min="0" max="@maxCoverage" value="0" step="10000">
+            <div class="d-flex justify-content-between small text-muted">
+                <span class="fw-bold text-primary" id="coverageVal">₹0</span>
+                <span>₹@maxCoverage.ToString("N0")</span>
+            </div>
+
+            <div class="filter-divider"></div>
+
+            <!-- Company Filter -->
+            <h6><i class="bi bi-building me-1"></i> Company</h6>
+            <select id="companyFilter" class="form-select form-select-sm" style="border-radius: 10px;">
+                <option value="">All Companies</option>
+                @foreach (var company in companies)
+                {
+                    <option value="@company.company_id">@company.company_name</option>
+                }
+            </select>
+
+            <div class="filter-divider"></div>
+
+            <!-- Sort -->
+            <h6><i class="bi bi-sort-down me-1"></i> Sort By</h6>
+            <select id="sortFilter" class="form-select form-select-sm" style="border-radius: 10px;">
+                <option value="default">Default</option>
+                <option value="price_asc">Premium: Low to High</option>
+                <option value="price_desc">Premium: High to Low</option>
+                <option value="coverage_desc">Coverage: High to Low</option>
+            </select>
+
+            <div class="filter-divider"></div>
+
+            <button class="btn btn-outline-secondary btn-sm w-100 rounded-pill" onclick="resetFilters()">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset All Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- =============================== -->
+    <!-- PLAN CARDS GRID                 -->
+    <!-- =============================== -->
+    <div class="col-lg-9">
+        <div class="row" id="plansGrid">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-xl-4 mb-4 plan-item"
+                     data-name="@item.plan_name.ToLower()"
+                     data-desc="@(item.description?.ToLower() ?? "")"
+                     data-company="@item.company_id"
+                     data-company-name="@(item.Company?.company_name?.ToLower() ?? "")"
+                     data-type="@item.type_id"
+                     data-premium="@item.premium_amount"
+                     data-coverage="@item.coverage_amount"
+                     data-duration="@item.duration_months"
+                     data-plan-id="@item.plan_id"
+                     data-aos="fade-up">
+                    <div class="plan-card">
+                        <!-- Compare checkbox -->
+                        <div class="compare-check">
+                            <input type="checkbox" class="compare-cb"
+                                   data-id="@(item.plan_id)_@(item.company_id)"
+                                   data-name="@item.plan_name"
+                                   title="Add to compare" />
+                        </div>
+
+                        <div class="plan-header">
+                            <div>
+                                <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold mb-2" style="font-size: 0.75rem;">
+                                    @(item.Company?.company_name ?? "—")
+                                </span>
+                                <h6 class="fw-bold mb-0" style="font-family: 'Outfit', sans-serif;">@item.plan_name</h6>
+                            </div>
+                        </div>
+
+                        <div class="plan-body">
+                            <p class="text-muted small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 32px;">
+                                @(item.description ?? "Comprehensive insurance coverage tailored to your needs.")
+                            </p>
+
+                            <div class="plan-price mb-3">
+                                ₹@item.premium_amount.ToString("N0") <small>/yr</small>
+                            </div>
+
+                            <div class="plan-stat">
+                                <span><i class="bi bi-shield-check me-1"></i>Coverage</span>
+                                <span>₹@item.coverage_amount.ToString("N0")</span>
+                            </div>
+                            <div class="plan-stat">
+                                <span><i class="bi bi-calendar3 me-1"></i>Duration</span>
+                                <span>@item.duration_months Months</span>
+                            </div>
+                        </div>
+
+                        <div class="plan-footer">
+                            <div class="d-grid gap-2">
+                                @if (isVerified)
+                                {
+                                    <a href="/Customer/SelectAgent?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-primary btn-sm fw-bold rounded-pill py-2">
+                                        <i class="bi bi-person-lines-fill me-1"></i> Request via Agent
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary btn-sm rounded-pill py-2" disabled title="Complete verification first">
+                                        <i class="bi bi-lock me-1"></i> Verify to Request
+                                    </button>
+                                }
+                                <a href="/Review/PlanReviews?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-outline-secondary btn-sm rounded-pill py-2">
+                                    <i class="bi bi-star me-1"></i> Reviews
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         </div>
-    }
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-5" style="display: none;">
+            <i class="bi bi-search text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+            <h5 class="text-muted mt-3 fw-bold">No plans match your filters</h5>
+            <p class="text-muted">Try adjusting your search criteria or <a href="javascript:resetFilters()" class="text-primary">reset all filters</a></p>
+        </div>
+    </div>
 </div>
+
+<!-- =============================== -->
+<!-- COMPARISON TRAY                 -->
+<!-- =============================== -->
+<div class="compare-tray" id="compareTray">
+    <div class="d-flex align-items-center gap-3">
+        <span class="text-white fw-bold"><i class="bi bi-layers me-1"></i> Compare (<span id="compareCount">0</span>/3)</span>
+        <div class="compare-items" id="compareChips"></div>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-light rounded-pill" onclick="clearCompare()">Clear</button>
+        <button class="btn btn-sm btn-primary rounded-pill fw-bold px-4" onclick="goCompare()" id="compareBtn" disabled>
+            <i class="bi bi-arrow-right-circle me-1"></i> Compare Now
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// =============================================
+// LIVE FILTERING ENGINE
+// =============================================
+const searchEl = document.getElementById('planSearch');
+const premiumEl = document.getElementById('premiumRange');
+const coverageEl = document.getElementById('coverageRange');
+const companyEl = document.getElementById('companyFilter');
+const sortEl = document.getElementById('sortFilter');
+const typeCheckboxes = document.querySelectorAll('.filter-type');
+const planItems = document.querySelectorAll('.plan-item');
+const emptyState = document.getElementById('emptyState');
+const plansGrid = document.getElementById('plansGrid');
+
+function applyFilters() {
+    const q = searchEl.value.toLowerCase().trim();
+    const maxPrem = parseFloat(premiumEl.value);
+    const minCov = parseFloat(coverageEl.value);
+    const company = companyEl.value;
+    const checkedTypes = [...typeCheckboxes].filter(c => c.checked).map(c => c.value);
+
+    document.getElementById('premiumVal').textContent = '₹' + maxPrem.toLocaleString('en-IN');
+    document.getElementById('coverageVal').textContent = '₹' + minCov.toLocaleString('en-IN');
+
+    let visible = 0;
+    let items = [...planItems];
+
+    items.forEach(item => {
+        const name = item.dataset.name;
+        const desc = item.dataset.desc;
+        const companyName = item.dataset.companyName;
+        const itemCompany = item.dataset.company;
+        const itemType = item.dataset.type;
+        const prem = parseFloat(item.dataset.premium);
+        const cov = parseFloat(item.dataset.coverage);
+
+        let show = true;
+        if (q && !name.includes(q) && !desc.includes(q) && !companyName.includes(q)) show = false;
+        if (prem > maxPrem) show = false;
+        if (cov < minCov) show = false;
+        if (company && itemCompany !== company) show = false;
+        if (checkedTypes.length > 0 && !checkedTypes.includes(itemType)) show = false;
+
+        item.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+
+    emptyState.style.display = visible === 0 ? 'block' : 'none';
+
+    // Sorting
+    const sortVal = sortEl.value;
+    if (sortVal !== 'default') {
+        items.sort((a, b) => {
+            const pa = parseFloat(a.dataset.premium);
+            const pb = parseFloat(b.dataset.premium);
+            const ca = parseFloat(a.dataset.coverage);
+            const cb = parseFloat(b.dataset.coverage);
+            if (sortVal === 'price_asc') return pa - pb;
+            if (sortVal === 'price_desc') return pb - pa;
+            if (sortVal === 'coverage_desc') return cb - ca;
+            return 0;
+        });
+        items.forEach(item => plansGrid.appendChild(item));
+    }
+}
+
+searchEl.addEventListener('input', applyFilters);
+premiumEl.addEventListener('input', applyFilters);
+coverageEl.addEventListener('input', applyFilters);
+companyEl.addEventListener('change', applyFilters);
+sortEl.addEventListener('change', applyFilters);
+typeCheckboxes.forEach(cb => cb.addEventListener('change', applyFilters));
+
+function resetFilters() {
+    searchEl.value = '';
+    premiumEl.value = premiumEl.max;
+    coverageEl.value = 0;
+    companyEl.value = '';
+    sortEl.value = 'default';
+    typeCheckboxes.forEach(cb => cb.checked = false);
+    applyFilters();
+}
+
+// =============================================
+// COMPARISON ENGINE
+// =============================================
+let compareSet = new Map(); // id => name
+
+document.querySelectorAll('.compare-cb').forEach(cb => {
+    cb.addEventListener('change', function() {
+        const id = this.dataset.id;
+        const name = this.dataset.name;
+        if (this.checked) {
+            if (compareSet.size >= 3) {
+                this.checked = false;
+                alert('You can compare a maximum of 3 plans.');
+                return;
+            }
+            compareSet.set(id, name);
+        } else {
+            compareSet.delete(id);
+        }
+        updateTray();
+    });
+});
+
+function updateTray() {
+    const tray = document.getElementById('compareTray');
+    const chips = document.getElementById('compareChips');
+    const count = document.getElementById('compareCount');
+    const btn = document.getElementById('compareBtn');
+
+    count.textContent = compareSet.size;
+    chips.innerHTML = '';
+    compareSet.forEach((name, id) => {
+        chips.innerHTML += `<span class="compare-chip">${name} <span class="remove-chip" onclick="removeCompare('${id}')">&times;</span></span>`;
+    });
+
+    tray.classList.toggle('active', compareSet.size > 0);
+    btn.disabled = compareSet.size < 2;
+}
+
+function removeCompare(id) {
+    compareSet.delete(id);
+    const cb = document.querySelector(`.compare-cb[data-id="${id}"]`);
+    if (cb) cb.checked = false;
+    updateTray();
+}
+
+function clearCompare() {
+    compareSet.clear();
+    document.querySelectorAll('.compare-cb').forEach(cb => cb.checked = false);
+    updateTray();
+}
+
+function goCompare() {
+    if (compareSet.size < 2) return;
+    const ids = [...compareSet.keys()].join(',');
+    window.location.href = '/Customer/ComparePlans?ids=' + encodeURIComponent(ids);
+}
+</script>
+}

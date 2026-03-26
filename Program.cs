@@ -168,6 +168,21 @@ using (var scope = app.Services.CreateScope())
                 FOREIGN KEY (""AgentId"") REFERENCES ""Agents""(""AgentId"") ON DELETE RESTRICT
             );
         ");
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""PolicyRequests"" (
+                ""RequestId"" SERIAL PRIMARY KEY,
+                ""CustomerId"" INTEGER NOT NULL,
+                ""AgentId"" INTEGER NOT NULL,
+                ""PlanId"" INTEGER NOT NULL,
+                ""CompanyId"" INTEGER NOT NULL,
+                ""Status"" VARCHAR(20) DEFAULT 'pending',
+                ""RejectionReason"" TEXT,
+                ""CreatedAt"" TIMESTAMP DEFAULT NOW(),
+                ""ReviewedAt"" TIMESTAMP,
+                FOREIGN KEY (""CustomerId"") REFERENCES ""Customers""(""CustomerId"") ON DELETE RESTRICT,
+                FOREIGN KEY (""AgentId"") REFERENCES ""Agents""(""AgentId"") ON DELETE RESTRICT
+            );
+        ");
     }
     catch (Exception ex)
     {

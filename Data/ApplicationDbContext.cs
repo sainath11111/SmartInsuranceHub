@@ -26,6 +26,7 @@ namespace SmartInsuranceHub.Data
         public DbSet<Advertisement> Advertisements { get; set; }
         public DbSet<AdPayment> AdPayments { get; set; }
         public DbSet<CustomerAgentMessage> CustomerAgentMessages { get; set; }
+        public DbSet<PolicyRequest> PolicyRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -135,6 +136,24 @@ namespace SmartInsuranceHub.Data
                 .WithMany()
                 .HasForeignKey(p => p.advertisement_id)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PolicyRequest>()
+                .HasOne(pr => pr.Customer)
+                .WithMany()
+                .HasForeignKey(pr => pr.customer_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PolicyRequest>()
+                .HasOne(pr => pr.Agent)
+                .WithMany()
+                .HasForeignKey(pr => pr.agent_id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PolicyRequest>()
+                .HasOne(pr => pr.InsurancePlan)
+                .WithMany()
+                .HasForeignKey(pr => new { pr.plan_id, pr.company_id })
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Dynamically map snake_case properties to PascalCase DB columns
             foreach (var entity in modelBuilder.Model.GetEntityTypes())

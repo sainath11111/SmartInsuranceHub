@@ -1,0 +1,198 @@
+@model SmartInsuranceHub.Models.PolicyRequest
+@{
+    ViewData["Title"] = "Request Details";
+    var docs = ViewBag.CustomerDocs as List<SmartInsuranceHub.Models.UserDocument>;
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/Agent/Requests" class="text-decoration-none">Requests</a></li>
+            <li class="breadcrumb-item active">Request #@Model.request_id</li>
+        </ol>
+    </nav>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Customer Details -->
+        <div class="col-lg-8">
+            <div class="card dashboard-card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3">
+                        <h5 class="fw-bold mb-0">Policy Request Information</h5>
+                        <span class="text-muted small">Submitted on @Model.created_at.ToString("dd MMM yyyy, HH:mm")</span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-sm-6 mb-3">
+                            <label class="text-muted small fw-bold">Customer Name</label>
+                            <p class="fs-5 fw-semibold mb-0">@Model.Customer?.full_name</p>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <label class="text-muted small fw-bold">Customer City</label>
+                            <p class="fs-5 mb-0">@Model.Customer?.city</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-primary bg-opacity-10 rounded p-3 mb-4">
+                        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-shield-check me-2"></i>Requested Plan Details</h6>
+                        <div class="row">
+                            <div class="col-sm-6 mb-2">
+                                <label class="text-dark small">Plan Name</label>
+                                <p class="fw-bold mb-0">@Model.InsurancePlan?.plan_name</p>
+                            </div>
+                            <div class="col-sm-3 mb-2">
+                                <label class="text-dark small">Premium</label>
+                                <p class="fw-bold text-success mb-0">₹@Model.InsurancePlan?.premium_amount.ToString("N0")</p>
+                            </div>
+                            <div class="col-sm-3 mb-2">
+                                <label class="text-dark small">Coverage</label>
+                                <p class="fw-bold mb-0">₹@Model.InsurancePlan?.coverage_amount.ToString("N0")</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sensitive Info Revealed after Approval -->
+                    <h6 class="fw-bold mb-3 border-bottom pb-2">Verified Customer Information</h6>
+                    @if (Model.status == "approved")
+                    {
+                        <div class="alert alert-success d-flex flex-column gap-2 mb-4 text-dark border-success border-opacity-25" style="background-color: #f0fdf4;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-envelope me-2 text-success"></i>
+                                <span><strong>Email:</strong> @Model.Customer?.email</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-telephone me-2 text-success"></i>
+                                <span><strong>Phone:</strong> @Model.Customer?.phone</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar me-2 text-success"></i>
+                                <span><strong>Age/DOB:</strong> @Model.Customer?.age yrs (@Model.Customer?.dob.ToString("dd MMM yyyy"))</span>
+                            </div>
+                            <div class="mt-2 text-success small">
+                                <i class="bi bi-info-circle me-1"></i> A new policy has been automatically generated for this customer based on this approval. Please contact the customer to finalize payment via offline channels if necessary.
+                            </div>
+                        </div>
+
+                        <!-- Customer Documents -->
+                        <h6 class="fw-bold mt-4 mb-3">Customer KYC Documents</h6>
+                        @if (docs != null && docs.Any())
+                        {
+                            <div class="row g-2">
+                                @foreach (var doc in docs)
+                                {
+                                    <div class="col-md-6 mb-2">
+                                        <div class="border rounded p-3 d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center gap-2 text-truncate me-2">
+                                                <i class="bi bi-file-earmark-pdf text-danger fs-4"></i>
+                                                <div class="text-truncate">
+                                                    <p class="mb-0 fw-semibold text-truncate" title="@doc.document_name">@doc.document_name</p>
+                                                    <small class="text-muted">@doc.category</small>
+                                                </div>
+                                            </div>
+                                            <a href="/Document/ViewDocument/@doc.document_id" target="_blank" class="btn btn-sm btn-outline-secondary text-nowrap">View</a>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted font-monospace small">No verified documents available.</p>
+                        }
+                    }
+                    else if (Model.status == "pending")
+                    {
+                        <div class="alert alert-secondary d-flex align-items-center gap-3">
+                            <i class="bi bi-lock-fill fs-3 text-muted"></i>
+                            <div>
+                                <strong>Contact info hidden</strong>
+                                <p class="mb-0 small">Approve this request to view the customer's phone number, email, and KYC documents, and automatically issue the policy.</p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            <strong>Request Rejected.</strong>
+                            <p class="mb-0 mt-1 small">Reason: @Model.rejection_reason</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Panel -->
+        <div class="col-lg-4">
+            <div class="card dashboard-card shadow-sm border-0 sticky-top" style="top: 2rem;">
+                <div class="card-body p-4 text-center">
+                    @if (Model.status == "pending")
+                    {
+                        <h5 class="fw-bold mb-4">Action Required</h5>
+                        <p class="text-muted small mb-4">Review the requested plan and choose whether to proceed with this customer.</p>
+                        
+                        <form method="post" action="/Agent/ApproveRequest/@Model.request_id" class="mb-3">
+                            <button type="submit" class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="return confirm('Approving will automatically issue a policy for this customer. Proceed?')">
+                                <i class="bi bi-check-circle me-1"></i> Approve & Issue Policy
+                            </button>
+                        </form>
+                        
+                        <button type="button" class="btn btn-outline-danger w-100 rounded-pill py-2" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            <i class="bi bi-x-circle me-1"></i> Reject Request
+                        </button>
+                    }
+                    else if (Model.status == "approved")
+                    {
+                        <div class="rounded-circle bg-success text-white mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-check-lg fs-1"></i>
+                        </div>
+                        <h4 class="text-success fw-bold">Approved</h4>
+                        <p class="text-muted small mt-2">Policy was successfully issued on @Model.reviewed_at?.ToString("dd MMM yyyy, HH:mm")</p>
+                        <a href="/Agent/Policies" class="btn btn-outline-success mt-3 rounded-pill w-100">View Issued Policy</a>
+                    }
+                    else
+                    {
+                        <div class="rounded-circle bg-danger text-white mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-x-lg fs-1"></i>
+                        </div>
+                        <h4 class="text-danger fw-bold">Rejected</h4>
+                        <p class="text-muted small mt-2">Dismissed on @Model.reviewed_at?.ToString("dd MMM yyyy, HH:mm")</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+@if (Model.status == "pending")
+{
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-0">
+                <form method="post" action="/Agent/RejectRequest/@Model.request_id">
+                    <div class="modal-header bg-danger text-white border-0">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Reject Request</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p class="text-dark">Please provide a reason for rejecting this policy request. This will be shown to the customer.</p>
+                        <textarea name="reason" class="form-control" rows="3" placeholder="e.g., Unserviceable area, invalid pin code..." required></textarea>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Confirm Rejection</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -1,134 +1,250 @@
 @{
     ViewData["Title"] = "Customer Dashboard";
+    var isVerified = ViewBag.IsVerified ?? false;
+    var status = ViewBag.VerificationStatus ?? "unverified";
+    var completed = ViewBag.Completed ?? 0;
+    var total = ViewBag.Total ?? 1;
+    var percentage = ViewBag.Percentage ?? 0;
+    
+    var recommendations = ViewBag.Recommendations as List<SmartInsuranceHub.Models.InsurancePlan>;
+    var recentPayments = ViewBag.RecentPayments as List<SmartInsuranceHub.Models.Payment>;
 }
 
-@{
-    // We need verification status for the dashboard - fetch from TempData or a separate mechanism
-    // The controller passes it via ViewBag
-    var isVerified = ViewBag.IsVerified as bool? ?? false;
-    var verStatus = (string)(ViewBag.VerificationStatus ?? "unverified");
-    var completed = (int)(ViewBag.Completed ?? 0);
-    var total = (int)(ViewBag.Total ?? 0);
-    var percentage = (int)(ViewBag.Percentage ?? 0);
+<!-- Welcome Section -->
+<div class="row align-items-center mb-4" data-aos="fade-down">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1" style="font-family: 'Outfit', sans-serif;">Welcome back, @ViewBag.CustomerName! <span class="wave">👋</span></h2>
+        <p class="text-muted mb-0">Here's an overview of your insurance portfolio.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="/Customer/BrowsePlans" class="btn btn-primary-smart rounded-pill">
+            <i class="bi bi-search me-1"></i> Browse New Plans
+        </a>
+    </div>
+</div>
+
+<!-- Verification Banner -->
+@if (!isVerified)
+{
+    var alertClass = percentage == 100 ? "alert-info border-info" : (percentage > 0 ? "alert-warning border-warning" : "alert-danger border-danger");
+    var progressClass = percentage == 100 ? "bg-info" : (percentage > 0 ? "bg-warning" : "bg-danger");
+    var alertIcon = percentage == 100 ? "bi-info-circle" : (percentage > 0 ? "bi-exclamation-triangle" : "bi-x-circle");
+
+    <div class="card card-modern alert @alertClass mb-4" data-aos="fade-up">
+        <div class="card-body d-flex align-items-start gap-3 p-0" style="background: transparent;">
+            <i class="bi @alertIcon fs-3 flex-shrink-0 mt-1"></i>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong class="d-block mb-1">Document Profile (@percentage%) - Status: @status.ToUpper()</strong>
+                    <span class="badge bg-secondary">@completed / @total Documents</span>
+                </div>
+                
+                @if (percentage < 100)
+                {
+                    <span class="d-block mb-2 text-dark opacity-75">You must complete your KYC document verification before purchasing any insurance policy.</span>
+                }
+                else
+                {
+                    <span class="d-block mb-2 text-dark opacity-75">Your documents are uploaded and pending verification by our team. You will be notified once verified.</span>
+                }
+                
+                <div class="progress mb-3" style="height: 6px;">
+                    <div class="progress-bar @progressClass progress-bar-striped progress-bar-animated" role="progressbar" style="width: @percentage%"></div>
+                </div>
+                
+                <div>
+                    <a href="/Document/Profile" class="btn btn-sm btn-dark fw-bold rounded-pill px-3">
+                        <i class="bi bi-cloud-upload me-1"></i> Manage Documents
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 }
+
+<!-- Metrics Summary -->
+<div class="row mb-4">
+    <!-- Active Policies -->
+    <div class="col-md-3 mb-3 mb-md-0" data-aos="fade-up" data-aos-delay="100">
+        <div class="card-modern p-4 d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: var(--primary-bg); color: var(--primary);">
+                <i class="bi bi-shield-check fs-4"></i>
+            </div>
+            <div>
+                <p class="text-muted mb-0 small fw-bold text-uppercase">Active</p>
+                <h3 class="fw-bold mb-0 text-dark">@ViewBag.ActivePolicies</h3>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Total Policies -->
+    <div class="col-md-3 mb-3 mb-md-0" data-aos="fade-up" data-aos-delay="200">
+        <div class="card-modern p-4 d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.1); color: var(--accent);">
+                <i class="bi bi-file-earmark-text fs-4"></i>
+            </div>
+            <div>
+                <p class="text-muted mb-0 small fw-bold text-uppercase">Policies</p>
+                <h3 class="fw-bold mb-0 text-dark">@ViewBag.MyPolicies</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests -->
+    <div class="col-md-3 mb-3 mb-md-0" data-aos="fade-up" data-aos-delay="250">
+        <div class="card-modern p-4 d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                <i class="bi bi-hourglass-split fs-4"></i>
+            </div>
+            <div>
+                <p class="text-muted mb-0 small fw-bold text-uppercase">Pending</p>
+                <h3 class="fw-bold mb-0 text-dark">@ViewBag.PendingRequests</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Payments -->
+    <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+        <div class="card-modern p-4 d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i class="bi bi-currency-rupee fs-4"></i>
+            </div>
+            <div>
+                <p class="text-muted mb-0 small fw-bold text-uppercase">Paid</p>
+                <h3 class="fw-bold mb-0 text-dark">₹@ViewBag.TotalPayments.ToString("0.##k")</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: Recommendations & Actions -->
+    <div class="col-lg-8 mb-4">
+        <!-- Personalized Recommendations -->
+        @if (recommendations != null && recommendations.Any())
+        {
+            <div class="card-modern p-4 mb-4" data-aos="fade-up">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-stars text-warning me-2"></i>Recommended For You</h5>
+                    <a href="/Customer/BrowsePlans" class="btn btn-sm btn-outline-primary rounded-pill px-3">View All</a>
+                </div>
+                <p class="text-muted small mb-4">@ViewBag.RecReason</p>
+
+                <div class="row g-3">
+                    @foreach (var rec in recommendations.Take(2))
+                    {
+                        <div class="col-md-6">
+                            <div class="rec-card h-100 position-relative">
+                                @if(rec == recommendations.First()) {
+                                    <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 shadow-sm"><i class="bi bi-star-fill me-1"></i>Top Pick</span>
+                                }
+                                <div class="badge bg-primary bg-opacity-10 text-primary mb-2">@(rec.Company?.company_name ?? "—")</div>
+                                <h6 class="fw-bold mb-2">@rec.plan_name</h6>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="text-primary fw-bold">₹@rec.premium_amount.ToString("N0") <small class="text-muted">/yr</small></div>
+                                    <div class="text-muted small fw-semibold">Cov: ₹@rec.coverage_amount.ToString("N0")</div>
+                                </div>
+                                
+                                <a href="/Insurance/Purchase?planId=@rec.plan_id&companyId=@rec.company_id" class="btn btn-primary d-block rounded-pill btn-sm fw-bold">View Details</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Quick Actions -->
+        <h5 class="fw-bold mb-3" data-aos="fade-up"><i class="bi bi-lightning-charge text-primary me-2"></i>Quick Actions</h5>
+        <div class="row g-3" data-aos="fade-up">
+            <div class="col-sm-4">
+                <a href="/Customer/MyPolicies" class="card-modern card-lift text-decoration-none text-dark p-3 d-flex align-items-center gap-3 h-100">
+                    <div class="rounded bg-primary bg-opacity-10 text-primary p-2 fs-4"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Policies</h6>
+                        <small class="text-muted">View details</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-4">
+                <a href="/Customer/MyRequests" class="card-modern card-lift text-decoration-none text-dark p-3 d-flex align-items-center gap-3 h-100">
+                    <div class="rounded bg-warning bg-opacity-10 text-warning p-2 fs-4"><i class="bi bi-journal-text"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Requests</h6>
+                        <small class="text-muted">Track approvals</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-4">
+                <a href="/Customer/SubmitQuery" class="card-modern card-lift text-decoration-none text-dark p-3 d-flex align-items-center gap-3 h-100">
+                    <div class="rounded bg-info bg-opacity-10 text-info p-2 fs-4"><i class="bi bi-question-circle"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Support</h6>
+                        <small class="text-muted">Help & queries</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Recent Payments -->
+    <div class="col-lg-4" data-aos="fade-left">
+        <div class="card-modern p-4 h-100">
+            <h5 class="fw-bold mb-4"><i class="bi bi-clock-history text-secondary me-2"></i>Recent Payments</h5>
+            
+            @if (recentPayments != null && recentPayments.Any())
+            {
+                <div class="timeline-container">
+                    @foreach (var payment in recentPayments)
+                    {
+                        <div class="d-flex mb-3 position-relative pb-3 border-bottom">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-check-lg fs-5"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">₹@payment.amount.ToString("N0") Paid</h6>
+                                <p class="mb-0 text-muted small text-truncate" style="max-width: 200px;">
+                                    @(payment.Policy?.InsurancePlan?.plan_name ?? "Policy " + payment.policy_id)
+                                </p>
+                                <small class="text-muted d-block mt-1"><i class="bi bi-calendar-event me-1"></i>@payment.payment_date.ToString("MMM dd, yyyy")</small>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/Customer/MyPolicies" class="btn btn-sm btn-outline-secondary rounded-pill">View All Policies</a>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-receipt text-muted fs-3"></i>
+                    </div>
+                    <h6>No Payments Yet</h6>
+                    <p class="text-muted small">Your recent premium payments will appear here.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
 
 <style>
-    .stat-card { border-radius: 14px; border: none; transition: transform 0.2s, box-shadow 0.2s; }
-    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-    .verification-banner-verified {
-        background: linear-gradient(135deg, #065f46, #10b981);
-        border-radius: 14px; padding: 1.5rem; color: white; margin-bottom: 1.5rem;
-    }
-    .verification-banner-unverified {
-        background: linear-gradient(135deg, #92400e, #f59e0b);
-        border-radius: 14px; padding: 1.5rem; color: white; margin-bottom: 1.5rem;
-    }
-    .progress-bar-custom { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.3); overflow: hidden; }
-    .progress-bar-fill { height: 100%; border-radius: 4px; background: white; transition: width 0.6s ease; }
-    .quick-action-card { border-radius: 14px; border: 1px solid #e2e8f0; text-align: center; padding: 2rem 1.5rem; height: 100%; transition: all 0.2s; text-decoration: none; color: inherit; display: block; }
-    .quick-action-card:hover { border-color: #6366f1; box-shadow: 0 4px 15px rgba(99,102,241,0.15); color: inherit; transform: translateY(-2px); }
-    .quick-action-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.wave {
+    display: inline-block;
+    animation: wave-animation 2.5s infinite;
+    transform-origin: 70% 70%;
+}
+@@keyframes wave-animation {
+    0% { transform: rotate( 0.0deg) }
+   10% { transform: rotate(14.0deg) }
+   20% { transform: rotate(-8.0deg) }
+   30% { transform: rotate(14.0deg) }
+   40% { transform: rotate(-4.0deg) }
+   50% { transform: rotate(10.0deg) }
+   60% { transform: rotate( 0.0deg) }
+  100% { transform: rotate( 0.0deg) }
+}
 </style>
-
-@* ── Verification Status Banner ── *@
-@if (isVerified)
-{
-    <div class="verification-banner-verified d-flex align-items-center justify-content-between flex-wrap gap-3">
-        <div>
-            <h5 class="mb-1"><i class="bi bi-patch-check-fill me-2"></i>You are Verified!</h5>
-            <p class="mb-0 opacity-75 small">All documents approved. You can now purchase insurance policies.</p>
-        </div>
-        <a href="/Customer/BrowsePlans" class="btn btn-white fw-bold px-4" style="background:white; color:#065f46; border:none;">
-            Browse Plans <i class="bi bi-arrow-right ms-1"></i>
-        </a>
-    </div>
-}
-else
-{
-    <div class="verification-banner-unverified">
-        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
-            <div class="flex-grow-1">
-                <h5 class="mb-1"><i class="bi bi-shield-exclamation me-2"></i>Document Verification Required</h5>
-                <p class="mb-2 opacity-75 small">Upload and get your documents approved to unlock insurance purchasing.</p>
-                <div class="progress-bar-custom mb-1">
-                    <div class="progress-bar-fill" style="width: @(percentage)%"></div>
-                </div>
-                <small class="opacity-75">@completed / @total categories verified</small>
-            </div>
-            <a href="/Document/Profile" class="btn fw-bold px-4 align-self-center" style="background:white; color:#92400e; border:none;">
-                Upload Docs <i class="bi bi-cloud-upload ms-1"></i>
-            </a>
-        </div>
-    </div>
-}
-
-@* ── Stats Row ── *@
-<div class="row mb-4">
-    <div class="col-md-6 mb-3">
-        <div class="card stat-card bg-primary text-white h-100">
-            <div class="card-body d-flex justify-content-between align-items-center p-4">
-                <div>
-                    <h6 class="card-title text-white-50">My Policies</h6>
-                    <p class="card-text text-white display-6 mb-0">@ViewBag.MyPolicies</p>
-                </div>
-                <i class="bi bi-shield-check fs-1 opacity-50"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 mb-3">
-        <div class="card stat-card bg-success text-white h-100">
-            <div class="card-body d-flex justify-content-between align-items-center p-4">
-                <div>
-                    <h6 class="card-title text-white-50">Total Payments Done</h6>
-                    <p class="card-text text-white display-6 mb-0">₹@ViewBag.TotalPayments</p>
-                </div>
-                <i class="bi bi-wallet2 fs-1 opacity-50"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-@* ── Quick Actions ── *@
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <a href="/Customer/BrowsePlans" class="quick-action-card">
-            <div class="icon text-primary"><i class="bi bi-search"></i></div>
-            <h5>Browse Plans</h5>
-            <p class="text-muted small">Compare and purchase insurance policies suitable for your needs.</p>
-            @if (!isVerified)
-            {
-                <span class="badge bg-warning text-dark"><i class="bi bi-lock me-1"></i>Verify first</span>
-            }
-        </a>
-    </div>
-    <div class="col-md-4 mb-4">
-        <a href="/Customer/MyPolicies" class="quick-action-card">
-            <div class="icon text-success"><i class="bi bi-shield-lock"></i></div>
-            <h5>Manage Policies</h5>
-            <p class="text-muted small">View your active policies and proceed with premium payments.</p>
-        </a>
-    </div>
-    <div class="col-md-4 mb-4">
-        <a href="/Document/Profile" class="quick-action-card">
-            <div class="icon" style="color: @(isVerified ? "#10b981" : "#f59e0b")">
-                <i class="bi @(isVerified ? "bi-patch-check" : "bi-person-lines-fill")"></i>
-            </div>
-            <h5>Profile & Docs</h5>
-            <p class="text-muted small">
-                @if (isVerified) { <text>All documents verified. View your profile.</text> }
-                else { <text>Upload documents to get verified and unlock purchasing.</text> }
-            </p>
-            @if (!isVerified)
-            {
-                <span class="badge bg-warning text-dark">Action required</span>
-            }
-        </a>
-    </div>
-    <div class="col-md-4 mb-4">
-        <a href="/Customer/SubmitQuery" class="quick-action-card">
-            <div class="icon text-info"><i class="bi bi-headset"></i></div>
-            <h5>Support & Queries</h5>
-            <p class="text-muted small">Need help with claims or general queries? Contact our team.</p>
-        </a>
-    </div>
-</div>

@@ -504,15 +504,35 @@ namespace SmartInsuranceHub.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteAd(int id)
         {
-            var ad = await _context.Advertisements.FindAsync(id);
-            if (ad != null)
+            var connString = _context.Database.GetConnectionString();
+            using var conn = new Npgsql.NpgsqlConnection(connString);
+            await conn.OpenAsync();
+            var sql = @"
+                DELETE FROM ""AdPayments"" WHERE ""AdvertisementId"" = @id;
+                DELETE FROM ""Advertisements"" WHERE ""AdId"" = @id;
+            ";
+            
+            // Note: Postgres columns were defined with PascalCase via raw SQL in Program.cs
+            // EF Core translates them via snake_case, but raw SQL must use exact quoted PascalCase.
+            using var cmd = new Npgsql.NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("id", id);
+            
+            try
             {
-                // Delete related payments first
-                var payments = await _context.AdPayments.Where(p => p.advertisement_id == id).ToListAsync();
-                _context.AdPayments.RemoveRange(payments);
-                _context.Advertisements.Remove(ad);
-                await _context.SaveChangesAsync();
+                await cmd.ExecuteNonQueryAsync();
             }
+            catch (Exception)
+            {
+                // Fallback to snake_case column names if the DB table structure uses snake_case
+                var fallbackSql = @"
+                    DELETE FROM ""AdPayments"" WHERE advertisement_id = @id;
+                    DELETE FROM ""Advertisements"" WHERE ad_id = @id;
+                ";
+                using var cmdFallback = new Npgsql.NpgsqlCommand(fallbackSql, conn);
+                cmdFallback.Parameters.AddWithValue("id", id);
+                await cmdFallback.ExecuteNonQueryAsync();
+            }
+            
             return RedirectToAction("ManageAds");
         }
     }

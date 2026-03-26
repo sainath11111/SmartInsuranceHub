@@ -1,0 +1,89 @@
+@model IEnumerable<SmartInsuranceHub.Models.Agent>
+@{
+    var plan = ViewBag.Plan as SmartInsuranceHub.Models.InsurancePlan;
+    ViewData["Title"] = "Select an Agent - " + plan?.plan_name;
+    var city = ViewBag.City as string;
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/Customer/BrowsePlans" class="text-decoration-none">Insurance Plans</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Select Agent</li>
+        </ol>
+    </nav>
+
+    <!-- Plan Summary Header -->
+    <div class="card-modern p-4 mb-5 border-0 bg-primary bg-opacity-10" data-aos="fade-down">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-primary mb-2">Selected Plan</span>
+                <h3 class="fw-bold mb-1" style="font-family: 'Outfit', sans-serif;">@plan?.plan_name</h3>
+                <p class="text-muted mb-0">@plan?.description</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="d-inline-flex flex-column align-items-end">
+                    <div class="text-dark fw-bold fs-4">₹@plan?.premium_amount.ToString("N0") <small class="text-muted fs-6">/yr</small></div>
+                    <div class="text-muted"><i class="bi bi-shield-check text-primary me-1"></i> Coverage: ₹@plan?.coverage_amount.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Selection Area -->
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h4 class="fw-bold mb-0" style="font-family: 'Outfit', sans-serif;"><i class="bi bi-people text-primary me-2"></i>Available Agents in @city</h4>
+            <p class="text-muted small mb-0 mt-1">Select an agent from your city to process your policy request.</p>
+        </div>
+        <span class="badge bg-secondary">@Model.Count() Agents Found</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="bi bi-person-x text-muted fs-1"></i>
+            </div>
+            <h5 class="fw-bold text-dark">No Agents Found in Your City</h5>
+            <p class="text-muted">Currently, we don't have agents available for this company in @city.</p>
+            <a href="/Customer/BrowsePlans" class="btn btn-outline-primary rounded-pill mt-2">Browse Other Plans</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var agent in Model)
+            {
+                <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                    <div class="card-modern p-4 h-100 position-relative text-center">
+                        <!-- Profile Image Placeholder -->
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary mx-auto d-flex align-items-center justify-content-center mb-3 fw-bold fs-3" style="width: 80px; height: 80px;">
+                            @agent.full_name.Substring(0, 1).ToUpper()
+                        </div>
+
+                        <h5 class="fw-bold mb-1">@agent.full_name</h5>
+                        <p class="text-muted small mb-3">@agent.experience_years years experience</p>
+
+                        <div class="d-flex justify-content-center gap-2 mb-4">
+                            <span class="badge bg-light text-dark border"><i class="bi bi-telephone text-success me-1"></i> Contact Info Verified</span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-auto">
+                            <form method="post" action="/Customer/RequestPolicy">
+                                <input type="hidden" name="planId" value="@plan?.plan_id" />
+                                <input type="hidden" name="companyId" value="@plan?.company_id" />
+                                <input type="hidden" name="agentId" value="@agent.agent_id" />
+                                <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold" onclick="return confirm('You are about to send a policy purchase request to @agent.full_name. Continue?')">
+                                    <i class="bi bi-send-check me-1"></i> Select & Request
+                                </button>
+                            </form>
+                            <a href="/Customer/AgentProfile?agentId=@agent.agent_id" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">View Full Profile</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

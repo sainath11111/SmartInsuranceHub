@@ -38,8 +38,16 @@ namespace SmartInsuranceHub.Controllers
                 var customer = await _context.Customers.FindAsync(currentUserId);
                 var city = customer?.city ?? "";
                 var contacts = await _context.Agents
-                    .Where(a => a.approved_status && a.city.ToLower() == city.ToLower())
-                    .Select(a => new { Id = a.agent_id, Name = a.full_name, Role = "Agent", Avatar = a.profile_photo })
+                    .Include(a => a.Company)
+                    .Where(a => a.approved_status && (a.city ?? "").ToLower() == city.ToLower())
+                    .Select(a => new { 
+                        Id = a.agent_id, 
+                        Name = a.full_name, 
+                        Role = "Agent", 
+                        Avatar = a.profile_photo,
+                        City = a.city,
+                        CompanyName = a.Company.company_name
+                    })
                     .ToListAsync();
                 ViewBag.Contacts = contacts;
             }
@@ -48,8 +56,15 @@ namespace SmartInsuranceHub.Controllers
                 var agent = await _context.Agents.FindAsync(currentUserId);
                 var city = agent?.city ?? "";
                 var contacts = await _context.Customers
-                    .Where(c => c.status == "active" && c.city.ToLower() == city.ToLower())
-                    .Select(c => new { Id = c.customer_id, Name = c.full_name, Role = "Customer", Avatar = "" })
+                    .Where(c => c.status == "active" && (c.city ?? "").ToLower() == city.ToLower())
+                    .Select(c => new { 
+                        Id = c.customer_id, 
+                        Name = c.full_name, 
+                        Role = "Customer", 
+                        Avatar = "",
+                        City = c.city,
+                        CompanyName = ""
+                    })
                     .ToListAsync();
                 ViewBag.Contacts = contacts;
             }

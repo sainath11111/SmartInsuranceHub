@@ -3,47 +3,119 @@
     ViewData["Title"] = "My Policies";
 }
 
+<div class="d-flex align-items-center justify-content-between mb-4" data-aos="fade-down">
+    <div>
+        <h2 class="fw-bold mb-1" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.03em;">
+            <i class="bi bi-shield-check text-primary me-2"></i>My Policies
+        </h2>
+        <p class="text-muted mb-0">Manage and track your active insurance plans.</p>
+    </div>
+    <a href="/Customer/BrowsePlans" class="btn btn-outline-primary rounded-pill d-none d-md-block">
+        <i class="bi bi-plus-circle me-1"></i> Buy New Policy
+    </a>
+</div>
+
 <div class="row">
     @if(!Model.Any())
     {
-        <div class="col-12 text-center py-5 auth-card">
-            <h4 class="text-muted">You don't have any active policies.</h4>
-            <a href="/Customer/BrowsePlans" class="btn btn-primary mt-3">Browse Plans</a>
+        <div class="col-12" data-aos="fade-up">
+            <div class="card-modern text-center py-5">
+                <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-folder-x text-muted fs-1"></i>
+                </div>
+                <h4 class="fw-bold text-dark">No Active Policies</h4>
+                <p class="text-muted mb-4">You haven't purchased any insurance plans yet.</p>
+                <a href="/Customer/BrowsePlans" class="btn btn-primary-smart rounded-pill px-4">Browse Marketplace</a>
+            </div>
         </div>
     }
     
     @foreach(var item in Model)
     {
-        <div class="col-md-6 mb-4">
-            <div class="card dashboard-card border-success border-top border-4 h-100">
-                <div class="card-body position-relative">
-                    <span class="badge bg-success position-absolute top-0 end-0 m-3">@item.policy_status</span>
-                    <h5 class="card-title text-success mb-1">@item.policy_no</h5>
-                    <p class="text-dark fw-bold mb-3 fs-5">@item.InsurancePlan?.plan_name</p>
+        // Determine timeline stage
+        var isPending = item.policy_status == "pending";
+        var isActive = item.policy_status == "active";
+        
+        <div class="col-xl-6 mb-4" data-aos="fade-up">
+            <div class="card-modern h-100 d-flex flex-column">
+                <div class="p-4 border-bottom position-relative">
+                    @if(isActive) {
+                        <span class="badge bg-success bg-opacity-10 text-success position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Active</span>
+                    } else if (isPending) {
+                        <span class="badge bg-warning bg-opacity-10 text-warning position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                    } else {
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill">@item.policy_status</span>
+                    }
                     
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <small class="text-muted d-block">Start Date</small>
-                            <strong>@item.start_date.ToString("MMM dd, yyyy")</strong>
+                    <span class="text-muted small fw-bold text-uppercase letter-spacing-1">Policy #@item.policy_no</span>
+                    <h5 class="fw-bold mt-1 mb-0" style="font-family: 'Outfit', sans-serif;">@item.InsurancePlan?.plan_name</h5>
+                    
+                    <!-- Premium Timeline Tracker -->
+                    <div class="policy-timeline mt-4">
+                        <div class="timeline-step completed">
+                            <div class="step-dot"><i class="bi bi-file-earmark-check"></i></div>
+                            <span class="step-label">Applied</span>
                         </div>
-                        <div class="col-6">
-                            <small class="text-muted d-block">End Date</small>
-                            <strong>@item.end_date.ToString("MMM dd, yyyy")</strong>
+                        <div class="timeline-step @(isActive ? "completed" : "active")">
+                            <div class="step-dot"><i class="bi bi-shield-lock"></i></div>
+                            <span class="step-label">Verified</span>
+                        </div>
+                        <div class="timeline-step @(isActive ? "active" : "")">
+                            <div class="step-dot"><i class="bi bi-lightning-charge"></i></div>
+                            <span class="step-label">Active</span>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="step-dot"><i class="bi bi-arrow-repeat"></i></div>
+                            <span class="step-label">Renewal</span>
                         </div>
                     </div>
-                    
-                    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-3">
-                        <div>
-                            <small class="text-muted d-block">Premium Amount</small>
-                            <strong class="fs-5 text-dark">₹@item.premium_amount</strong>
+                </div>
+                
+                <div class="p-4 bg-light flex-grow-1">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="border rounded bg-white p-3 h-100 border-start border-4 border-primary">
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Coverage</small>
+                                <strong class="fs-5 text-dark">₹@item.InsurancePlan?.coverage_amount.ToString("N0")</strong>
+                            </div>
                         </div>
-                        <a href="/Payment/MakePayment?policyId=@item.policy_id" class="btn btn-sm btn-primary">Pay Premium</a>
+                        <div class="col-6">
+                            <div class="border rounded bg-white p-3 h-100 border-start border-4 border-success">
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Premium / Yr</small>
+                                <strong class="fs-5 text-dark">₹@item.premium_amount.ToString("N0")</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center small mb-2">
+                        <span class="text-muted"><i class="bi bi-calendar-event me-1"></i>Start Date</span>
+                        <strong class="text-dark">@item.start_date.ToString("MMM dd, yyyy")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center small mb-3 pb-3 border-bottom dashed">
+                        <span class="text-muted"><i class="bi bi-calendar-x me-1"></i>Valid Until</span>
+                        <strong class="text-dark">@item.end_date.ToString("MMM dd, yyyy")</strong>
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted"><i class="bi bi-person-badge"></i> Agent: @(item.Agent?.full_name ?? "Direct")</small>
-                        <a href="/Review/WriteReview?planId=@item.plan_id&companyId=@item.company_id" class="btn btn-sm btn-outline-info"><i class="bi bi-star-fill text-warning"></i> Write Review</a>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle bg-secondary bg-opacity-10 text-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                <i class="bi bi-headset"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block lh-1" style="font-size: 0.7rem;">Agent</small>
+                                <strong class="small text-dark">@(item.Agent?.full_name ?? "Direct Purchase")</strong>
+                            </div>
+                        </div>
+                        <a href="/Review/WriteReview?planId=@item.plan_id&companyId=@item.company_id" class="text-warning text-decoration-none small fw-bold align-items-center d-flex btn-hover-scale">
+                            <i class="bi bi-star-fill me-1"></i> Write Review
+                        </a>
                     </div>
+                </div>
+                
+                <div class="p-3 bg-white border-top">
+                    <a href="/Payment/MakePayment?policyId=@item.policy_id" class="btn btn-primary w-100 rounded-pill fw-bold pt-2 pb-2">
+                        <i class="bi bi-credit-card me-1"></i> Pay Premium
+                    </a>
                 </div>
             </div>
         </div>

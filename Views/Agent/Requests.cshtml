@@ -1,0 +1,75 @@
+@model IEnumerable<SmartInsuranceHub.Models.PolicyRequest>
+@{
+    ViewData["Title"] = "Policy Requests";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-bell-fill text-warning me-2"></i>Policy Requests</h2>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card dashboard-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Requested Plan</th>
+                        <th>Premium</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var req in Model)
+                    {
+                        <tr>
+                            <td>@req.created_at.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <div class="fw-bold">@req.Customer?.full_name</div>
+                                <small class="text-muted">@req.Customer?.city</small>
+                            </td>
+                            <td>
+                                <div>@req.InsurancePlan?.plan_name</div>
+                                <small class="text-muted">Cov: ₹@req.InsurancePlan?.coverage_amount.ToString("N0")</small>
+                            </td>
+                            <td class="fw-semibold">₹@req.InsurancePlan?.premium_amount.ToString("N0")</td>
+                            <td>
+                                @if (req.status == "pending")
+                                {
+                                    <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
+                                }
+                                else if (req.status == "approved")
+                                {
+                                    <span class="badge bg-success px-2 py-1"><i class="bi bi-check-circle me-1"></i> Approved</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger px-2 py-1"><i class="bi bi-x-circle me-1"></i> Rejected</span>
+                                }
+                            </td>
+                            <td>
+                                <a href="/Agent/RequestDetails/@req.request_id" class="btn btn-sm btn-outline-primary">View Output</a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No policy requests found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

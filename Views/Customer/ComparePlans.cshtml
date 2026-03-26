@@ -1,0 +1,171 @@
+@model List<SmartInsuranceHub.Models.InsurancePlan>
+@{
+    ViewData["Title"] = "Compare Plans";
+    var typeNames = ViewBag.TypeNames as Dictionary<int, string> ?? new Dictionary<int, string>();
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4" data-aos="fade-down">
+        <div>
+            <a href="/Customer/BrowsePlans" class="text-muted text-decoration-none small mb-2 d-inline-block">
+                <i class="bi bi-arrow-left me-1"></i> Back to Marketplace
+            </a>
+            <h2 class="fw-bold mb-0" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.03em;">
+                <i class="bi bi-layers text-primary me-2"></i>Plan Comparison
+            </h2>
+        </div>
+        <span class="badge bg-primary bg-opacity-10 text-primary fs-6 px-3 py-2 rounded-pill">
+            <i class="bi bi-check2-all me-1"></i>Comparing @Model.Count Plans
+        </span>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;" data-aos="fade-up">
+        <div class="table-responsive">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th class="label-col" style="text-align:left;">Feature</th>
+                        @foreach (var plan in Model)
+                        {
+                            <th style="min-width: 220px;">
+                                <div class="py-2">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary mb-2">@(plan.Company?.company_name ?? "—")</span>
+                                    <div class="fw-bold text-dark" style="font-family: 'Outfit', sans-serif;">@plan.plan_name</div>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Premium -->
+                    <tr>
+                        <td class="label-col"><i class="bi bi-currency-rupee text-primary me-2"></i>Premium (per year)</td>
+                        @{
+                            var minPremium = Model.Min(p => p.premium_amount);
+                        }
+                        @foreach (var plan in Model)
+                        {
+                            <td class="@(plan.premium_amount == minPremium ? "highlight" : "")">
+                                <span class="fw-bold fs-5">₹@plan.premium_amount.ToString("N0")</span>
+                                @if (plan.premium_amount == minPremium)
+                                {
+                                    <br /><span class="badge bg-success bg-opacity-10 text-success mt-1" style="font-size: 0.7rem;">
+                                        <i class="bi bi-trophy me-1"></i>Lowest
+                                    </span>
+                                }
+                            </td>
+                        }
+                    </tr>
+
+                    <!-- Coverage -->
+                    <tr>
+                        <td class="label-col"><i class="bi bi-shield-check text-primary me-2"></i>Coverage Amount</td>
+                        @{
+                            var maxCoverage = Model.Max(p => p.coverage_amount);
+                        }
+                        @foreach (var plan in Model)
+                        {
+                            <td class="@(plan.coverage_amount == maxCoverage ? "highlight" : "")">
+                                <span class="fw-bold fs-5">₹@plan.coverage_amount.ToString("N0")</span>
+                                @if (plan.coverage_amount == maxCoverage)
+                                {
+                                    <br /><span class="badge bg-primary bg-opacity-10 text-primary mt-1" style="font-size: 0.7rem;">
+                                        <i class="bi bi-trophy me-1"></i>Highest
+                                    </span>
+                                }
+                            </td>
+                        }
+                    </tr>
+
+                    <!-- Duration -->
+                    <tr>
+                        <td class="label-col"><i class="bi bi-calendar3 text-primary me-2"></i>Duration</td>
+                        @foreach (var plan in Model)
+                        {
+                            <td>
+                                <span class="fw-bold">@plan.duration_months Months</span>
+                                <br /><small class="text-muted">(@(Math.Round(plan.duration_months / 12.0, 1)) years)</small>
+                            </td>
+                        }
+                    </tr>
+
+                    <!-- Insurance Type -->
+                    <tr>
+                        <td class="label-col"><i class="bi bi-tags text-primary me-2"></i>Insurance Type</td>
+                        @foreach (var plan in Model)
+                        {
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                    @(typeNames.ContainsKey(plan.type_id) ? typeNames[plan.type_id] : "General")
+                                </span>
+                            </td>
+                        }
+                    </tr>
+
+                    <!-- Value Score (Coverage / Premium ratio) -->
+                    <tr>
+                        <td class="label-col"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Value Score</td>
+                        @{
+                            var maxScore = Model.Max(p => p.coverage_amount / p.premium_amount);
+                        }
+                        @foreach (var plan in Model)
+                        {
+                            var score = plan.premium_amount > 0 ? plan.coverage_amount / plan.premium_amount : 0;
+                            var percentage = maxScore > 0 ? (int)((score / maxScore) * 100) : 0;
+                            <td class="@(score == maxScore ? "highlight" : "")">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="fw-bold fs-5 text-primary">@percentage%</div>
+                                    <div class="progress mt-1" style="width: 80%; height: 6px; border-radius: 3px;">
+                                        <div class="progress-bar bg-primary" style="width: @percentage%"></div>
+                                    </div>
+                                    @if (score == maxScore)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success mt-2" style="font-size: 0.7rem;">
+                                            <i class="bi bi-star-fill me-1"></i>Best Value
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                        }
+                    </tr>
+
+                    <!-- Company -->
+                    <tr>
+                        <td class="label-col"><i class="bi bi-building text-primary me-2"></i>Company</td>
+                        @foreach (var plan in Model)
+                        {
+                            <td class="fw-semibold">@(plan.Company?.company_name ?? "—")</td>
+                        }
+                    </tr>
+
+                    <!-- Description -->
+                    <tr>
+                        <td class="label-col"><i class="bi bi-file-text text-primary me-2"></i>Description</td>
+                        @foreach (var plan in Model)
+                        {
+                            <td class="text-muted small" style="max-width: 250px;">
+                                @(plan.description ?? "Comprehensive insurance coverage tailored to your needs.")
+                            </td>
+                        }
+                    </tr>
+
+                    <!-- Action Buttons -->
+                    <tr style="border-bottom: none;">
+                        <td class="label-col"></td>
+                        @foreach (var plan in Model)
+                        {
+                            <td>
+                                <a href="/Insurance/Purchase?planId=@plan.plan_id&companyId=@plan.company_id"
+                                   class="btn btn-primary rounded-pill fw-bold px-4 py-2">
+                                    <i class="bi bi-shield-check me-1"></i> Purchase
+                                </a>
+                            </td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

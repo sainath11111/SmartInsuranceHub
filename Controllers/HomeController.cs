@@ -65,6 +65,14 @@ namespace SmartInsuranceHub.Controllers
             }
             ViewBag.AdPlanNames = adPlanNames;
 
+            // Featured Plans for the homepage carousel (highest value scores)
+            ViewBag.FeaturedPlans = await _context.InsurancePlans
+                .Include(p => p.Company)
+                .Where(p => p.status == "active" && p.premium_amount > 0)
+                .OrderByDescending(p => p.coverage_amount / p.premium_amount)
+                .Take(6)
+                .ToListAsync();
+
             return View(vm);
         }
 
