@@ -97,9 +97,9 @@
                     
                     <!-- City & Address -->
                     <div class="col-md-5">
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold text-muted ps-1"><i class="bi bi-geo-alt text-primary me-2"></i>Select City</label>
-                            <select name="SelectedCities" class="form-select border-0 shadow-sm" multiple required style="background-color: var(--bg-light); height: 120px;">
+                        <div class="form-floating mb-2">
+                            <select name="SelectedCities" class="form-select border-0 shadow-sm" required style="background-color: var(--bg-light);">
+                                <option value="" disabled selected>Select a city</option>
                                 @{
                                     var cities = ViewBag.Cities as List<SmartInsuranceHub.Models.City>;
                                 }
@@ -115,7 +115,7 @@
                                     <option disabled>No cities configured yet</option>
                                 }
                             </select>
-                            <div class="small text-muted mt-1" style="font-size: 0.70rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</div>
+                            <label><i class="bi bi-geo-alt text-primary me-2"></i>Select City</label>
                         </div>
                     </div>
 
