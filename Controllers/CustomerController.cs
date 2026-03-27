@@ -100,6 +100,21 @@ namespace SmartInsuranceHub.Controllers
             return View(plans);
         }
 
+        public async Task<IActionResult> PlanDetails(int id)
+        {
+            var plan = await _context.InsurancePlans.AsNoTracking()
+                .Include(p => p.Company)
+                .FirstOrDefaultAsync(p => p.plan_id == id);
+
+            if (plan == null) return NotFound();
+
+            var cid = GetCustomerId();
+            var customer = await _context.Customers.FindAsync(cid);
+            ViewBag.IsVerified = customer?.verification_status == "verified";
+
+            return View(plan);
+        }
+
         public async Task<IActionResult> ComparePlans(string ids)
         {
             if (string.IsNullOrWhiteSpace(ids))

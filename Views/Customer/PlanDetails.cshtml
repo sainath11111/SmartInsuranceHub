@@ -1,0 +1,189 @@
+@model SmartInsuranceHub.Models.InsurancePlan
+@{
+    ViewData["Title"] = "Plan Details - " + Model.plan_name;
+    var isVerified = ViewBag.IsVerified ?? false;
+}
+
+<div class="row justify-content-center">
+    <!-- Main Content -->
+    <div class="col-lg-8" data-aos="fade-up">
+        
+        <!-- Header Card -->
+        <div class="card card-modern border-0 shadow-sm mb-4">
+            <div class="card-body p-5">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold mb-3 px-3 py-2 lh-1" style="font-size: 0.85rem; border-radius: 8px;">
+                            <i class="bi bi-building me-1"></i> @(Model.Company?.company_name ?? "SmartInsurance Provider")
+                        </span>
+                        <h1 class="fw-bold mb-2" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.02em;">@Model.plan_name</h1>
+                        <p class="text-muted d-flex align-items-center gap-3">
+                            <span><i class="bi bi-shield-check text-success me-1"></i> Comprehensive Coverage</span>
+                            <span><i class="bi bi-clock text-secondary me-1"></i> @Model.duration_months Months Term</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row g-4 border-top pt-4 mt-2">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                                <i class="bi bi-shield-lock fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-muted mb-0 small text-uppercase fw-bold">Coverage Amount</p>
+                                <h3 class="fw-bold mb-0 text-dark">₹@Model.coverage_amount.ToString("N0")</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                                <i class="bi bi-currency-rupee fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-muted mb-0 small text-uppercase fw-bold">Premium</p>
+                                <h3 class="fw-bold mb-0 text-dark">₹@Model.premium_amount.ToString("N0") <span class="fs-6 text-muted fw-normal">/yr</span></h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Details Tabs -->
+        <div class="card card-modern border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                <ul class="nav nav-tabs nav-tabs-modern" id="planDetailsTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc" type="button" role="tab" aria-selected="true">Description</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="benefits-tab" data-bs-toggle="tab" data-bs-target="#benefits" type="button" role="tab" aria-selected="false">Key Benefits</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="terms-tab" data-bs-toggle="tab" data-bs-target="#terms" type="button" role="tab" aria-selected="false">Terms & Conditions</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-4 pt-4">
+                <div class="tab-content" id="planDetailsTabContent">
+                    <div class="tab-pane fade show active" id="desc" role="tabpanel" tabindex="0">
+                        <div class="text-muted" style="line-height: 1.8;">
+                            @(string.IsNullOrWhiteSpace(Model.description) ? "Comprehensive insurance coverage tailored to provide maximum security for you and your family." : Model.description)
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="benefits" role="tabpanel" tabindex="0">
+                        <ul class="list-unstyled mb-0 d-grid gap-3">
+                            <li class="d-flex gap-3 text-muted">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <div>
+                                    <strong class="text-dark d-block">Cashless Network</strong>
+                                    Access to over 5,000+ network hospitals/garages for seamless, cashless claims.
+                                </div>
+                            </li>
+                            <li class="d-flex gap-3 text-muted">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <div>
+                                    <strong class="text-dark d-block">Instant Online Renewal</strong>
+                                    Hassle-free, paperless policy renewals within minutes.
+                                </div>
+                            </li>
+                            <li class="d-flex gap-3 text-muted">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <div>
+                                    <strong class="text-dark d-block">24x7 Support</strong>
+                                    Round-the-clock dedicated customer assistance.
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane fade" id="terms" role="tabpanel" tabindex="0">
+                        <ul class="text-muted ps-3 mb-0" style="line-height: 1.8;">
+                            <li>Premiums are subject to change based on policy updates and applicable taxes.</li>
+                            <li>Pre-existing conditions may be subject to a waiting period as per company guidelines.</li>
+                            <li>Claims must be initiated within 30 days of the incident.</li>
+                            <li>Coverage validity relies on accurate disclosures made during the application process.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Sidebar (Action) -->
+    <div class="col-lg-4" data-aos="fade-left" data-aos-delay="100">
+        <div class="card card-modern border-0 shadow-sm sticky-top" style="top: 100px;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4" style="font-family: 'Outfit', sans-serif;">Action Center</h5>
+                
+                @if (isVerified)
+                {
+                    <div class="alert alert-success d-flex align-items-center gap-2 mb-4" style="border-radius: 12px; font-size: 0.9rem;">
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                        <span>Your KYC is verified. You can proceed with the purchase.</span>
+                    </div>
+
+                    <a href="/Customer/SelectAgent?planId=@Model.plan_id&companyId=@Model.company_id" class="btn btn-primary w-100 rounded-pill py-3 fw-bold mb-3 shadow-sm" style="font-size: 1.05rem;">
+                        <i class="bi bi-person-lines-fill me-2"></i> Request via Agent
+                    </a>
+                }
+                else
+                {
+                    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" style="border-radius: 12px; font-size: 0.9rem;">
+                        <i class="bi bi-shield-exclamation fs-5"></i>
+                        <span>KYC Document verification is required to purchase this policy.</span>
+                    </div>
+
+                    <button class="btn btn-secondary w-100 rounded-pill py-3 fw-bold mb-3 shadow-sm opacity-50" disabled style="cursor: not-allowed;">
+                        <i class="bi bi-lock me-2"></i> Verify KYC to Proceed
+                    </button>
+                    <a href="/Document/Profile" class="btn btn-outline-warning w-100 rounded-pill py-2 fw-semibold">
+                        <i class="bi bi-cloud-upload me-1"></i> Upload Documents now
+                    </a>
+                }
+
+                <div class="text-center mt-4 pt-3 border-top">
+                    <a href="/Review/PlanReviews?planId=@Model.plan_id&companyId=@Model.company_id" class="text-decoration-none fw-semibold">
+                        <i class="bi bi-star-fill text-warning me-1"></i> Read User Reviews
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern Nav Tabs */
+    .nav-tabs-modern {
+        border-bottom: 2px solid #f1f5f9;
+        gap: 1.5rem;
+    }
+    .nav-tabs-modern .nav-link {
+        color: #64748b;
+        border: none;
+        padding: 0.75rem 0.5rem;
+        background: transparent;
+        position: relative;
+        transition: color 0.2s;
+    }
+    .nav-tabs-modern .nav-link:hover {
+        color: #334155;
+    }
+    .nav-tabs-modern .nav-link.active {
+        color: var(--primary);
+        background: transparent;
+    }
+    .nav-tabs-modern .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary);
+        border-radius: 3px 3px 0 0;
+    }
+</style>
