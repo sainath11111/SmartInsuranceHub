@@ -167,17 +167,16 @@ namespace SmartInsuranceHub.Controllers
             }
 
             var city = customer.city ?? "";
-            
-            // Get agents in customer's city belonging to the plan's company
+
+            // Fetch ALL approved agents for this company
             var agents = await _context.Agents.AsNoTracking()
                 .Include(a => a.AgentCities)
-                .Where(a => a.company_id == companyId && a.approved_status && 
-                            (((a.city ?? "").ToLower() == city.ToLower()) || 
-                             a.AgentCities.Any(ac => ac.city_name.ToLower() == city.ToLower())))
+                .Where(a => a.company_id == companyId && a.approved_status)
                 .ToListAsync();
 
             ViewBag.Plan = plan;
             ViewBag.City = city;
+            ViewBag.CustomerCity = city;
             return View(agents);
         }
 

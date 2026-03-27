@@ -142,7 +142,11 @@ namespace SmartInsuranceHub.Controllers
         }
 
         [HttpGet]
-        public IActionResult RegisterCustomer() => View(new Customer());
+        public async Task<IActionResult> RegisterCustomer()
+        {
+            ViewBag.Cities = await _context.Cities.Where(c => c.is_active).OrderBy(c => c.city_name).ToListAsync();
+            return View(new Customer());
+        }
 
         private async Task<bool> IsEmailUniqueAsync(string email)
         {
@@ -197,6 +201,7 @@ namespace SmartInsuranceHub.Controllers
 
             if (!ModelState.IsValid)
             {
+                ViewBag.Cities = await _context.Cities.Where(c => c.is_active).OrderBy(c => c.city_name).ToListAsync();
                 return View(model);
             }
 
@@ -213,9 +218,10 @@ namespace SmartInsuranceHub.Controllers
         }
 
         [HttpGet]
-        public IActionResult RegisterAgent()
+        public async Task<IActionResult> RegisterAgent()
         {
             ViewBag.Companies = _context.Companies.Where(c => c.status == "approved").ToList();
+            ViewBag.Cities = await _context.Cities.Where(c => c.is_active).OrderBy(c => c.city_name).ToListAsync();
             return View(new Agent());
         }
 
@@ -272,6 +278,7 @@ namespace SmartInsuranceHub.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.Companies = _context.Companies.Where(c => c.status == "approved").ToList();
+                ViewBag.Cities = await _context.Cities.Where(c => c.is_active).OrderBy(c => c.city_name).ToListAsync();
                 return View(model);
             }
 

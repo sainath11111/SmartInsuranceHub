@@ -2,64 +2,205 @@
     ViewData["Title"] = "Agent Dashboard";
 }
 
-<div class="row mb-4">
-    <div class="col-md-4 mb-3">
-        <div class="card dashboard-card bg-primary text-white h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title text-white-50">Policies Sold</h6>
-                        <p class="card-text text-white display-6">@ViewBag.TotalPolicies</p>
-                    </div>
-                    <div>
-                        <i class="bi bi-file-earmark-check fs-1 opacity-50"></i>
-                    </div>
-                </div>
+<style>
+    .kpi-block {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid rgba(226,232,240,0.8);
+        padding: 1.6rem 1.5rem;
+        display: flex; align-items: center; gap: 1.2rem;
+        box-shadow: 0 4px 24px rgba(30,64,175,0.04);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        position: relative; overflow: hidden;
+        height: 100%;
+    }
+    .kpi-block::before {
+        content: ''; position: absolute;
+        top: 0; left: 0; right: 0; height: 3px; border-radius: 18px 18px 0 0;
+    }
+    .kpi-block.blue::before  { background: linear-gradient(90deg,#2563eb,#60a5fa); }
+    .kpi-block.amber::before { background: linear-gradient(90deg,#f59e0b,#fcd34d); }
+    .kpi-block.green::before { background: linear-gradient(90deg,#10b981,#34d399); }
+    .kpi-block:hover { transform: translateY(-5px); box-shadow: 0 12px 36px rgba(30,64,175,0.10); }
+    .kpi-blk-icon { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+    .kpi-lbl { font-size: 0.775rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 2px; }
+    .kpi-val { font-size: 1.9rem; font-weight: 800; color: #0f172a; font-family: 'Outfit', sans-serif; line-height: 1; }
+
+    .agent-banner {
+        background: linear-gradient(135deg, #065f46 0%, #059669 60%, #34d399 100%);
+        border-radius: 20px; padding: 2rem 2.5rem; color: #fff;
+        position: relative; overflow: hidden; margin-bottom: 1.75rem;
+    }
+    .agent-banner::after {
+        content: ''; position: absolute; right: -60px; top: -60px;
+        width: 220px; height: 220px; border-radius: 50%; background: rgba(255,255,255,0.06);
+    }
+
+    .action-card {
+        background: #fff; border-radius: 16px; border: 1px solid #e2e8f0;
+        padding: 1.5rem 1.25rem; text-decoration: none; color: #0f172a;
+        display: flex; align-items: center; gap: 1rem;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .action-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(37,99,235,0.10); border-color: #bfdbfe; color: #1e40af; }
+    .action-card-icon { width: 50px; height: 50px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0; }
+    .section-eyebrow { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; }
+    .section-title { font-size: 1.15rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: #0f172a; margin: 0; }
+</style>
+
+<!-- Welcome Banner -->
+<div class="agent-banner" data-aos="fade-down">
+    <div class="row align-items-center position-relative" style="z-index:1;">
+        <div class="col-md-8">
+            <p class="mb-1 fw-semibold" style="color:rgba(255,255,255,0.7); font-size:0.875rem;">Agent Panel</p>
+            <h2 class="fw-bold mb-1" style="font-family:'Outfit',sans-serif; font-size:1.75rem;">Welcome back, @User.Identity?.Name 👋</h2>
+            <p class="mb-0" style="color:rgba(255,255,255,0.75); font-size:0.95rem;">Your sales performance and pending tasks at a glance.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="/Agent/Requests" class="btn fw-bold px-4 py-2 rounded-pill shadow-sm"
+               style="background:#fff; color:#065f46; font-size:0.9rem;">
+                <i class="bi bi-bell-fill me-2"></i>View Requests
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4" data-aos="fade-up" data-aos-delay="50">
+        <div class="kpi-block blue">
+            <div class="kpi-blk-icon" style="background:rgba(37,99,235,0.10); color:#2563eb;">
+                <i class="bi bi-file-earmark-check-fill"></i>
+            </div>
+            <div>
+                <p class="kpi-lbl mb-0">Policies Sold</p>
+                <p class="kpi-val">@ViewBag.TotalPolicies</p>
+                <small class="text-muted">All time</small>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card dashboard-card bg-warning text-dark h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title text-dark-50 opacity-75">Pending Requests</h6>
-                        <p class="card-text text-dark display-6 fw-bold">@ViewBag.PendingRequests</p>
-                    </div>
-                    <div>
-                        <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
-                    </div>
-                </div>
+    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="kpi-block amber">
+            <div class="kpi-blk-icon" style="background:rgba(245,158,11,0.10); color:#f59e0b;">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+                <p class="kpi-lbl mb-0">Pending Requests</p>
+                <p class="kpi-val">@ViewBag.PendingRequests</p>
+                <small class="text-muted">Awaiting action</small>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card dashboard-card bg-success text-white h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title text-white-50">Payments Received</h6>
-                        <p class="card-text text-white display-6">₹@ViewBag.TotalPayments</p>
-                    </div>
-                    <div>
-                        <i class="bi bi-cash-coin fs-1 opacity-50"></i>
-                    </div>
-                </div>
+    <div class="col-md-4" data-aos="fade-up" data-aos-delay="150">
+        <div class="kpi-block green">
+            <div class="kpi-blk-icon" style="background:rgba(16,185,129,0.10); color:#10b981;">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+            <div>
+                <p class="kpi-lbl mb-0">Payments Received</p>
+                <p class="kpi-val">₹@ViewBag.TotalPayments</p>
+                <small class="text-muted">Total collected</small>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card dashboard-card h-100">
-            <div class="card-header bg-white border-0 pt-4 px-4">
-                <h5>Agent Actions</h5>
+<!-- Actions + Tips -->
+<div class="row g-4">
+    <div class="col-lg-6" data-aos="fade-up">
+        <div class="card-modern p-4 h-100">
+            <p class="section-eyebrow mb-0"><i class="bi bi-lightning-charge-fill me-1 text-primary"></i>Quick Access</p>
+            <h5 class="section-title mb-4">Agent Actions</h5>
+            <div class="d-flex flex-column gap-3">
+                <a href="/Agent/Requests" class="action-card">
+                    <div class="action-card-icon" style="background:rgba(245,158,11,0.10); color:#f59e0b;">
+                        <i class="bi bi-bell-fill"></i>
+                    </div>
+                    <div>
+                        <p class="fw-bold mb-0">View Pending Requests</p>
+                        <small class="text-muted">Review and approve customer policy requests</small>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted ms-auto"></i>
+                </a>
+                <a href="/Agent/Policies" class="action-card">
+                    <div class="action-card-icon" style="background:rgba(37,99,235,0.10); color:#2563eb;">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <div>
+                        <p class="fw-bold mb-0">View Policies Sold</p>
+                        <small class="text-muted">Track all policies and their premium status</small>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted ms-auto"></i>
+                </a>
+                <a href="/Agent/Profile" class="action-card">
+                    <div class="action-card-icon" style="background:rgba(124,58,237,0.10); color:#7c3aed;">
+                        <i class="bi bi-person-gear"></i>
+                    </div>
+                    <div>
+                        <p class="fw-bold mb-0">Edit Profile</p>
+                        <small class="text-muted">Update your service cities and personal info</small>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted ms-auto"></i>
+                </a>
+                <a href="/CustomerAgentChat" class="action-card">
+                    <div class="action-card-icon" style="background:rgba(14,165,233,0.10); color:#0ea5e9;">
+                        <i class="bi bi-chat-text-fill"></i>
+                    </div>
+                    <div>
+                        <p class="fw-bold mb-0">Customer Chat</p>
+                        <small class="text-muted">Respond to customer inquiries</small>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted ms-auto"></i>
+                </a>
             </div>
-            <div class="card-body p-4">
-                <a href="/Agent/Requests" class="btn btn-warning mb-2 w-100 fw-bold shadow-sm"><i class="bi bi-bell-fill"></i> View Pending Requests</a>
-                <a href="/Agent/Policies" class="btn btn-primary mb-2 w-100"><i class="bi bi-list-check"></i> View Sold Policies</a>
-                <p class="text-muted small mt-3">You can view all the policies associated with you and track their status and premium.</p>
+        </div>
+    </div>
+
+    <div class="col-lg-6" data-aos="fade-left">
+        <div class="card-modern p-4 h-100">
+            <p class="section-eyebrow mb-0"><i class="bi bi-info-circle-fill me-1 text-secondary"></i>Performance Summary</p>
+            <h5 class="section-title mb-4">Your Stats</h5>
+
+            <!-- Policies/Pending Ratio Visualizer -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="fw-semibold text-dark">Policies Conversion</small>
+                    @{
+                        int total = (int)(ViewBag.TotalPolicies ?? 0) + (int)(ViewBag.PendingRequests ?? 0);
+                        int pct   = total > 0 ? ((int)(ViewBag.TotalPolicies ?? 0) * 100 / total) : 0;
+                    }
+                    <small class="text-muted">@pct%</small>
+                </div>
+                <div class="progress" style="height:8px; border-radius:99px;">
+                    <div class="progress-bar" style="width:@pct%; background:linear-gradient(90deg,#2563eb,#60a5fa); border-radius:99px;"></div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="p-3 rounded-3" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                        <p class="text-muted mb-1" style="font-size:0.75rem; font-weight:700; text-transform:uppercase;">Sold</p>
+                        <h4 class="fw-bold mb-0" style="font-family:'Outfit',sans-serif; color:#2563eb;">@ViewBag.TotalPolicies</h4>
+                        <small class="text-muted">Policies</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded-3" style="background:#fffbeb; border:1px solid #fde68a;">
+                        <p class="text-muted mb-1" style="font-size:0.75rem; font-weight:700; text-transform:uppercase;">Pending</p>
+                        <h4 class="fw-bold mb-0" style="font-family:'Outfit',sans-serif; color:#f59e0b;">@ViewBag.PendingRequests</h4>
+                        <small class="text-muted">Requests</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 rounded-3 d-flex align-items-center gap-3"
+                 style="background:linear-gradient(135deg,#ecfdf5,#d1fae5); border:1px solid #6ee7b7;">
+                <i class="bi bi-lightbulb-fill fs-4" style="color:#10b981;"></i>
+                <div>
+                    <strong class="text-dark d-block" style="font-size:0.875rem;">Pro Tip</strong>
+                    <small class="text-muted">Respond to pending requests quickly to improve your approval rate.</small>
+                </div>
             </div>
         </div>
     </div>

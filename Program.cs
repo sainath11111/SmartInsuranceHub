@@ -201,6 +201,15 @@ using (var scope = app.Services.CreateScope())
         context.Database.ExecuteSqlRaw(@"
             ALTER TABLE ""InsurancePlans"" ALTER COLUMN ""AgentId"" DROP NOT NULL;
         ");
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""Cities"" (
+                ""CityId"" SERIAL PRIMARY KEY,
+                ""CityName"" VARCHAR(100) NOT NULL,
+                ""State"" VARCHAR(100),
+                ""IsActive"" BOOLEAN NOT NULL DEFAULT TRUE,
+                ""CreatedAt"" TIMESTAMP NOT NULL DEFAULT NOW()
+            );
+        ");
     }
     catch (Exception ex)
     {

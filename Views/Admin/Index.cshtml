@@ -3,157 +3,150 @@
 }
 
 <style>
-    .metric-card {
-        background: #ffffff;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-        padding: 1.5rem;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
+    .adm-kpi {
+        background: #ffffff; border-radius: 18px; border: 1px solid rgba(226,232,240,0.8);
+        padding: 1.5rem; box-shadow: 0 4px 24px rgba(30,64,175,0.04);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        position: relative; overflow: hidden; height: 100%;
     }
-    .metric-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-        border-color: #cbd5e1;
+    .adm-kpi::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 18px 18px 0 0;
     }
-    .metric-icon-box {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
+    .adm-kpi.blue::before   { background: linear-gradient(90deg,#2563eb,#60a5fa); }
+    .adm-kpi.green::before  { background: linear-gradient(90deg,#10b981,#34d399); }
+    .adm-kpi.slate::before  { background: linear-gradient(90deg,#475569,#94a3b8); }
+    .adm-kpi.amber::before  { background: linear-gradient(90deg,#f59e0b,#fcd34d); }
+    .adm-kpi.danger::before { background: linear-gradient(90deg,#ef4444,#fca5a5); }
+    .adm-kpi:hover { transform: translateY(-5px); box-shadow: 0 12px 36px rgba(30,64,175,0.10); }
+    .adm-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+    .adm-lbl { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; }
+    .adm-val { font-size: 2rem; font-weight: 800; color: #0f172a; font-family: 'Outfit', sans-serif; line-height: 1.1; }
+
+    .adm-action {
+        background: #fff; border-radius: 14px; border: 1px solid #e2e8f0;
+        padding: 1rem 1.25rem; text-decoration: none; color: #0f172a;
+        display: flex; align-items: center; gap: 0.875rem;
+        transition: all 0.25s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
-    .metric-title {
-        color: #64748b;
-        font-weight: 500;
-        font-size: 0.875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
-    }
-    .metric-value {
-        color: #0f172a;
-        font-size: 2rem;
-        font-weight: 700;
-        line-height: 1;
-        margin-bottom: 0;
-        font-family: 'Outfit', sans-serif;
-    }
+    .adm-action:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(37,99,235,.10); border-color: #93c5fd; color: #1d4ed8; }
+    .adm-action-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .section-eyebrow { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; }
+    .section-title { font-size: 1.15rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: #0f172a; margin: 0; }
 </style>
 
-<div class="row g-4 mb-4">
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="metric-card">
+<!-- Page Heading -->
+<div class="mb-4" data-aos="fade-down">
+    <p class="section-eyebrow mb-1"><i class="bi bi-speedometer2 me-1"></i> Admin Control Centre</p>
+    <h2 class="fw-bold mb-0" style="font-family:'Outfit',sans-serif; letter-spacing: -0.02em;">System Overview</h2>
+    <p class="text-muted mb-0 mt-1">Platform health and operational metrics — @DateTime.Now.ToString("dddd, d MMMM yyyy")</p>
+</div>
+
+<!-- Primary KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3" data-aos="fade-up" data-aos-delay="50">
+        <div class="adm-kpi blue">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="metric-icon-box bg-primary bg-opacity-10 text-primary">
+                <div class="adm-icon" style="background:rgba(37,99,235,0.10); color:#2563eb;">
                     <i class="bi bi-buildings-fill"></i>
                 </div>
-                <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-medium">+2 this week</span>
+                <span class="badge rounded-pill" style="background:rgba(16,185,129,0.1); color:#059669; font-size:0.7rem; font-weight:700;">+2 this week</span>
             </div>
-            <div class="mt-auto">
-                <h6 class="metric-title">Total Companies</h6>
-                <p class="metric-value">@ViewBag.TotalCompanies</p>
-            </div>
+            <p class="adm-lbl mb-1">Companies</p>
+            <p class="adm-val">@ViewBag.TotalCompanies</p>
         </div>
     </div>
-    
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="metric-card">
+    <div class="col-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="adm-kpi green">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="metric-icon-box" style="background: #f0fdf4; color: #16a34a;">
+                <div class="adm-icon" style="background:rgba(16,185,129,0.10); color:#10b981;">
                     <i class="bi bi-person-badge-fill"></i>
                 </div>
             </div>
-            <div class="mt-auto">
-                <h6 class="metric-title">Active Agents</h6>
-                <p class="metric-value">@ViewBag.TotalAgents</p>
-            </div>
+            <p class="adm-lbl mb-1">Active Agents</p>
+            <p class="adm-val">@ViewBag.TotalAgents</p>
         </div>
     </div>
-    
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="metric-card">
+    <div class="col-6 col-xl-3" data-aos="fade-up" data-aos-delay="150">
+        <div class="adm-kpi slate">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="metric-icon-box" style="background: #f8fafc; color: #475569;">
+                <div class="adm-icon" style="background:rgba(71,85,105,0.10); color:#475569;">
                     <i class="bi bi-people-fill"></i>
                 </div>
             </div>
-            <div class="mt-auto">
-                <h6 class="metric-title">Registered Customers</h6>
-                <p class="metric-value">@ViewBag.TotalCustomers</p>
-            </div>
+            <p class="adm-lbl mb-1">Customers</p>
+            <p class="adm-val">@ViewBag.TotalCustomers</p>
         </div>
     </div>
-    
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="metric-card">
+    <div class="col-6 col-xl-3" data-aos="fade-up" data-aos-delay="200">
+        <div class="adm-kpi amber">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="metric-icon-box" style="background: #fefce8; color: #ca8a04;">
+                <div class="adm-icon" style="background:rgba(245,158,11,0.10); color:#f59e0b;">
                     <i class="bi bi-file-earmark-text-fill"></i>
                 </div>
             </div>
-            <div class="mt-auto">
-                <h6 class="metric-title">Total Policies Sold</h6>
-                <p class="metric-value">@ViewBag.TotalPolicies</p>
-            </div>
+            <p class="adm-lbl mb-1">Policies Sold</p>
+            <p class="adm-val">@ViewBag.TotalPolicies</p>
         </div>
     </div>
 </div>
 
-<h5 class="fw-bold text-dark mb-3 mt-4" style="font-family: 'Outfit', sans-serif;">Verification Queue</h5>
-
+<!-- Verification Queue Alert -->
 @if ((int)ViewBag.PendingDocs > 0)
 {
-    <div class="alert alert-warning d-flex align-items-center mb-4" style="border-radius:12px; border: 1px solid #fde68a; background: #fffbeb; color: #92400e;">
-        <i class="bi bi-exclamation-circle-fill me-3 fs-4" style="color: #f59e0b;"></i>
+    <div class="d-flex align-items-start gap-3 p-3 rounded-3 mb-4"
+         style="background:linear-gradient(135deg,#fffbeb,#fef3c7); border:1.5px solid #f59e0b;"
+         data-aos="fade-up">
+        <i class="bi bi-exclamation-triangle-fill fs-3 flex-shrink-0" style="color:#f59e0b; margin-top:2px;"></i>
         <div class="flex-grow-1">
-            <strong class="d-block mb-1">Action Required</strong>
-            <span>@ViewBag.PendingDocs document(s) awaiting your review. Delaying reviews may affect agent/customer onboarding.</span>
+            <strong class="text-dark d-block mb-1">Action Required — Document Review Queue</strong>
+            <span class="text-muted" style="font-size:0.9rem;">
+                <strong class="text-dark">@ViewBag.PendingDocs</strong> document(s) are awaiting review. Delays may affect customer onboarding.
+            </span>
         </div>
-        <a href="/Admin/DocumentVerification?filter=pending" class="btn btn-sm text-white px-3 py-2 fw-medium rounded-3" style="background: #d97706;">Review Documents</a>
+        <a href="/Admin/DocumentVerification?filter=pending"
+           class="btn btn-sm fw-bold px-4 rounded-pill flex-shrink-0"
+           style="background:#f59e0b; color:#fff; white-space:nowrap;">
+            Review Now
+        </a>
     </div>
 }
 
-<div class="row g-4 mb-4">
-    <div class="col-12 col-md-4">
-        <div class="metric-card" style="border-top: 4px solid #f59e0b;">
+<!-- Verification Queue Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4" data-aos="fade-up" data-aos-delay="50">
+        <div class="adm-kpi amber" style="cursor:default;">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="metric-title mb-1">Pending Docs</h6>
-                    <p class="metric-value text-dark">@ViewBag.PendingDocs</p>
+                    <p class="adm-lbl mb-1">Pending Docs</p>
+                    <p class="adm-val">@ViewBag.PendingDocs</p>
                 </div>
-                <div class="metric-icon-box" style="background: #fffbeb; color: #f59e0b;">
+                <div class="adm-icon" style="background:rgba(245,158,11,0.10); color:#f59e0b;">
                     <i class="bi bi-hourglass-split"></i>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-4">
-        <div class="metric-card" style="border-top: 4px solid #10b981;">
+    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="adm-kpi green" style="cursor:default;">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="metric-title mb-1">Verified Customers</h6>
-                    <p class="metric-value text-dark">@ViewBag.VerifiedCustomers</p>
+                    <p class="adm-lbl mb-1">Verified Customers</p>
+                    <p class="adm-val">@ViewBag.VerifiedCustomers</p>
                 </div>
-                <div class="metric-icon-box" style="background: #ecfdf5; color: #10b981;">
+                <div class="adm-icon" style="background:rgba(16,185,129,0.10); color:#10b981;">
                     <i class="bi bi-check-circle-fill"></i>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-4">
-        <div class="metric-card" style="border-top: 4px solid #ef4444;">
+    <div class="col-md-4" data-aos="fade-up" data-aos-delay="150">
+        <div class="adm-kpi danger" style="cursor:default;">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="metric-title mb-1">Rejected Docs</h6>
-                    <p class="metric-value text-dark">@ViewBag.RejectedDocs</p>
+                    <p class="adm-lbl mb-1">Rejected Docs</p>
+                    <p class="adm-val">@ViewBag.RejectedDocs</p>
                 </div>
-                <div class="metric-icon-box" style="background: #fef2f2; color: #ef4444;">
+                <div class="adm-icon" style="background:rgba(239,68,68,0.10); color:#ef4444;">
                     <i class="bi bi-x-circle-fill"></i>
                 </div>
             </div>
@@ -161,24 +154,82 @@
     </div>
 </div>
 
-<div class="card border-0 shadow-sm mt-4" style="border-radius: 16px;">
-    <div class="card-header bg-white border-bottom border-light pt-4 px-4 pb-3">
-        <h5 class="mb-0 fw-bold" style="font-family: 'Outfit', sans-serif;">Quick Actions</h5>
-    </div>
-    <div class="card-body p-4 d-flex flex-wrap gap-3">
-        <a href="/Admin/Companies" class="btn btn-light border shadow-sm rounded-3 py-2 px-4 d-flex align-items-center gap-2 fw-medium text-dark action-btn">
-            <div class="bg-primary bg-opacity-10 text-primary rounded p-1"><i class="bi bi-building"></i></div> Manage Companies
-        </a>
-        <a href="/Admin/Agents" class="btn btn-light border shadow-sm rounded-3 py-2 px-4 d-flex align-items-center gap-2 fw-medium text-dark action-btn">
-            <div class="bg-success bg-opacity-10 text-success rounded p-1"><i class="bi bi-person-badge"></i></div> Manage Agents
-        </a>
-        <a href="/Admin/ManageAds" class="btn btn-light border shadow-sm rounded-3 py-2 px-4 d-flex align-items-center gap-2 fw-medium text-dark action-btn">
-            <div class="bg-warning bg-opacity-10 text-warning rounded p-1"><i class="bi bi-megaphone-fill"></i></div> Review Ads
-        </a>
+<!-- Quick Actions -->
+<div class="card-modern p-4" data-aos="fade-up">
+    <p class="section-eyebrow mb-0"><i class="bi bi-grid-fill me-1 text-primary"></i>Management</p>
+    <h5 class="section-title mb-4">Quick Actions</h5>
+    <div class="row g-3">
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/Admin/Companies" class="adm-action">
+                <div class="adm-action-icon" style="background:rgba(37,99,235,0.10); color:#2563eb;"><i class="bi bi-building"></i></div>
+                <div>
+                    <p class="fw-bold mb-0" style="font-size:0.875rem;">Companies</p>
+                    <small class="text-muted">Manage</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/Admin/Agents" class="adm-action">
+                <div class="adm-action-icon" style="background:rgba(16,185,129,0.10); color:#10b981;"><i class="bi bi-person-badge"></i></div>
+                <div>
+                    <p class="fw-bold mb-0" style="font-size:0.875rem;">Agents</p>
+                    <small class="text-muted">Manage</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/Admin/Customers" class="adm-action">
+                <div class="adm-action-icon" style="background:rgba(71,85,105,0.10); color:#475569;"><i class="bi bi-people"></i></div>
+                <div>
+                    <p class="fw-bold mb-0" style="font-size:0.875rem;">Customers</p>
+                    <small class="text-muted">Manage</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/Admin/ManageAds" class="adm-action">
+                <div class="adm-action-icon" style="background:rgba(245,158,11,0.10); color:#f59e0b;"><i class="bi bi-megaphone-fill"></i></div>
+                <div>
+                    <p class="fw-bold mb-0" style="font-size:0.875rem;">Advertisements</p>
+                    <small class="text-muted">Review</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/Admin/DocumentVerification" class="adm-action">
+                <div class="adm-action-icon" style="background:rgba(124,58,237,0.10); color:#7c3aed;"><i class="bi bi-shield-check"></i></div>
+                <div>
+                    <p class="fw-bold mb-0" style="font-size:0.875rem;">Doc Verify</p>
+                    <small class="text-muted">Review queue</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/Admin/InsuranceTypes" class="adm-action">
+                <div class="adm-action-icon" style="background:rgba(14,165,233,0.10); color:#0ea5e9;"><i class="bi bi-tags-fill"></i></div>
+                <div>
+                    <p class="fw-bold mb-0" style="font-size:0.875rem;">Categories</p>
+                    <small class="text-muted">Plan types</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/Query/Index" class="adm-action">
+                <div class="adm-action-icon" style="background:rgba(239,68,68,0.10); color:#ef4444;"><i class="bi bi-chat-left-text-fill"></i></div>
+                <div>
+                    <p class="fw-bold mb-0" style="font-size:0.875rem;">Support</p>
+                    <small class="text-muted">Queries</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/Admin/Cities" class="adm-action">
+                <div class="adm-action-icon" style="background:rgba(2,132,199,0.10); color:#0284c7;"><i class="bi bi-geo-alt-fill"></i></div>
+                <div>
+                    <p class="fw-bold mb-0" style="font-size:0.875rem;">Cities</p>
+                    <small class="text-muted">Service areas</small>
+                </div>
+            </a>
+        </div>
     </div>
 </div>
-
-<style>
-    .action-btn { transition: all 0.2s; }
-    .action-btn:hover { background: #f8fafc !important; transform: translateY(-2px); border-color: #cbd5e1 !important; }
-</style>

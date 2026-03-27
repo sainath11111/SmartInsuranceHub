@@ -201,6 +201,9 @@
             <a href="/Admin/InsuranceTypes" class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "InsuranceTypes" ? "active" : "")">
                 <i class="bi bi-tags"></i> Plan Categories
             </a>
+            <a href="/Admin/Cities" class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Cities" ? "active" : "")">
+                <i class="bi bi-geo-alt"></i> Manage Cities
+            </a>
             <a href="/Query/Index" class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Query" ? "active" : "")">
                 <i class="bi bi-envelope"></i> Support Queries
             </a>

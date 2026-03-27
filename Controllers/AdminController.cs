@@ -526,8 +526,6 @@ namespace SmartInsuranceHub.Controllers
                 DELETE FROM ""Advertisements"" WHERE ""AdId"" = @id;
             ";
             
-            // Note: Postgres columns were defined with PascalCase via raw SQL in Program.cs
-            // EF Core translates them via snake_case, but raw SQL must use exact quoted PascalCase.
             using var cmd = new Npgsql.NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("id", id);
             
@@ -537,7 +535,6 @@ namespace SmartInsuranceHub.Controllers
             }
             catch (Exception)
             {
-                // Fallback to snake_case column names if the DB table structure uses snake_case
                 var fallbackSql = @"
                     DELETE FROM ""AdPayments"" WHERE advertisement_id = @id;
                     DELETE FROM ""Advertisements"" WHERE ad_id = @id;
@@ -549,5 +546,120 @@ namespace SmartInsuranceHub.Controllers
             
             return RedirectToAction("ManageAds");
         }
+
+        // ========================================
+        // City Management
+        // ========================================
+        public async Task<IActionResult> Cities()
+        {
+            var cities = await _context.Cities.OrderBy(c => c.city_name).ToListAsync();
+            return View(cities);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddCity(string city_name, string? state)
+        {
+            if (!string.IsNullOrWhiteSpace(city_name))
+            {
+                var exists = await _context.Cities.AnyAsync(c => c.city_name.ToLower() == city_name.Trim().ToLower());
+                if (!exists)
+                {
+                    _context.Cities.Add(new City
+                    {
+                        city_name = city_name.Trim(),
+                        state = state?.Trim(),
+                        is_active = true,
+                        created_at = DateTime.UtcNow
+                    });
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = $"City '{city_name.Trim()}' added successfully.";
+                }
+                else
+                {
+                    TempData["Error"] = $"City '{city_name.Trim()}' already exists.";
+                }
+            }
+            return RedirectToAction("Cities");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditCity(int city_id, string city_name, string? state)
+        {
+            var city = await _context.Cities.FindAsync(city_id);
+            if (city != null && !string.IsNullOrWhiteSpace(city_name))
+            {
+                city.city_name = city_name.Trim();
+                city.state = state?.Trim();
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "City updated successfully.";
+            }
+            return RedirectToAction("Cities");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleCity(int city_id)
+        {
+            var city = await _context.Cities.FindAsync(city_id);
+            if (city != null)
+            {
+                city.is_active = !city.is_active;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("Cities");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCity(int city_id)
+        {
+            var city = await _context.Cities.FindAsync(city_id);
+            if (city != null)
+            {
+                _context.Cities.Remove(city);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"City '{city.city_name}' deleted.";
+            }
+            return RedirectToAction("Cities");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SeedCities()
+        {
+            var defaultCities = new[]
+            {
+                new City { city_name = "Mumbai", state = "Maharashtra", is_active = true },
+                new City { city_name = "Delhi", state = "Delhi", is_active = true },
+                new City { city_name = "Bangalore", state = "Karnataka", is_active = true },
+                new City { city_name = "Hyderabad", state = "Telangana", is_active = true },
+                new City { city_name = "Ahmedabad", state = "Gujarat", is_active = true },
+                new City { city_name = "Chennai", state = "Tamil Nadu", is_active = true },
+                new City { city_name = "Kolkata", state = "West Bengal", is_active = true },
+                new City { city_name = "Surat", state = "Gujarat", is_active = true },
+                new City { city_name = "Pune", state = "Maharashtra", is_active = true },
+                new City { city_name = "Jaipur", state = "Rajasthan", is_active = true }
+            };
+
+            int addedCount = 0;
+            foreach (var c in defaultCities)
+            {
+                if (!await _context.Cities.AnyAsync(x => x.city_name.ToLower() == c.city_name.ToLower()))
+                {
+                    _context.Cities.Add(c);
+                    addedCount++;
+                }
+            }
+
+            if (addedCount > 0)
+            {
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"Seeded {addedCount} new cities.";
+            }
+            else
+            {
+                TempData["Success"] = "Cities are already seeded.";
+            }
+
+            return RedirectToAction("Cities");
+        }
     }
 }
+

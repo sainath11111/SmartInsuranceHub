@@ -28,6 +28,8 @@ namespace SmartInsuranceHub.Data
         public DbSet<CustomerAgentMessage> CustomerAgentMessages { get; set; }
         public DbSet<PolicyRequest> PolicyRequests { get; set; }
         public DbSet<AgentCity> AgentCities { get; set; }
+        public DbSet<City> Cities { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
