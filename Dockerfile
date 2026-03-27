@@ -21,6 +21,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+# Set ASP.NET Core environment to Production
+ENV ASPNETCORE_ENVIRONMENT=Production
+
 # Set ASP.NET Core to listen on port 8080 (the modern default)
 ENV ASPNETCORE_HTTP_PORTS=8080
 
