@@ -26,6 +26,11 @@ namespace SmartInsuranceHub.Models
         
         public string? message { get; set; }
         
+        [MaxLength(20)]
+        public string status { get; set; } = "Pending";
+        
+        public string? reply { get; set; }
+        
         public DateTime send_date { get; set; } = DateTime.UtcNow;
     }
 }

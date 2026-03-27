@@ -123,7 +123,7 @@ namespace SmartInsuranceHub.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RejectPayment(int id)
+        public async Task<IActionResult> RejectPayment(int id, string reason)
         {
             var cid = GetCompanyId();
             var payment = await _context.Payments
@@ -132,10 +132,13 @@ namespace SmartInsuranceHub.Controllers
 
             if (payment?.Policy != null)
             {
-                payment.payment_status = "rejected";
-                payment.Policy.policy_status = "pending_payment"; // Revert so customer can try again
+                var rejectionMessage = string.IsNullOrWhiteSpace(reason) ? "Payment was rejected by the company." : reason;
+                
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"UPDATE ""Payments"" SET ""PaymentStatus"" = 'rejected', ""RejectionReason"" = {0} WHERE ""PaymentId"" = {1};
+                      UPDATE ""Policies"" SET ""PolicyStatus"" = 'pending_payment' WHERE ""PolicyId"" = {2};",
+                    rejectionMessage, payment.payment_id, payment.policy_id);
 
-                await _context.SaveChangesAsync();
                 TempData["Success"] = "Payment has been rejected. The policy remains strictly pending.";
             }
 

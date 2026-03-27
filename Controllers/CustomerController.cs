@@ -241,6 +241,8 @@ namespace SmartInsuranceHub.Controllers
         [HttpGet]
         public async Task<IActionResult> SubmitQuery()
         {
+            var cid = GetCustomerId();
+            ViewBag.Queries = await _context.Queries.AsNoTracking().Where(q => q.customer_id == cid).OrderByDescending(q => q.send_date).ToListAsync();
             return View();
         }
 
@@ -261,7 +263,8 @@ namespace SmartInsuranceHub.Controllers
             await _context.SaveChangesAsync();
 
             ViewBag.Message = "Query submitted successfully!";
-            return View();
+            ViewBag.Queries = await _context.Queries.AsNoTracking().Where(q => q.customer_id == cid).OrderByDescending(q => q.send_date).ToListAsync();
+            return View(new Query());
         }
     }
 }

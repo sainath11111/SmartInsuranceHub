@@ -141,6 +141,13 @@ using (var scope = app.Services.CreateScope())
             );
         ");
         context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Payments"" ADD COLUMN IF NOT EXISTS ""RejectionReason"" VARCHAR(255);
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""Queries"" ADD COLUMN IF NOT EXISTS ""Status"" VARCHAR(20) DEFAULT 'Pending';
+            ALTER TABLE ""Queries"" ADD COLUMN IF NOT EXISTS ""Reply"" TEXT;
+        ");
+        context.Database.ExecuteSqlRaw(@"
             ALTER TABLE ""Customers"" ADD COLUMN IF NOT EXISTS ""Dob"" TIMESTAMP NOT NULL DEFAULT '2000-01-01';
             DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Customers' AND column_name = 'dob') THEN ALTER TABLE ""Customers"" DROP COLUMN ""dob""; END IF; END $$;
         ");

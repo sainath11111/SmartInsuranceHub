@@ -159,9 +159,31 @@
                     
                     <!-- Location Details -->
                     <div class="col-md-6">
-                        <div class="form-floating mb-2">
-                            <input type="text" asp-for="city" class="form-control border-0 shadow-sm" required placeholder="City" style="background-color: var(--bg-light);" />
-                            <label><i class="bi bi-geo-alt text-primary me-2"></i>City</label>
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold text-muted ps-1"><i class="bi bi-geo-alt text-primary me-2"></i>Select Cities</label>
+                            <select name="SelectedCities" class="form-select border-0 shadow-sm" multiple required style="background-color: var(--bg-light); height: 100px;">
+                                <option value="Mumbai">Mumbai</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Hyderabad">Hyderabad</option>
+                                <option value="Ahmedabad">Ahmedabad</option>
+                                <option value="Chennai">Chennai</option>
+                                <option value="Kolkata">Kolkata</option>
+                                <option value="Surat">Surat</option>
+                                <option value="Pune">Pune</option>
+                                <option value="Jaipur">Jaipur</option>
+                                <option value="Lucknow">Lucknow</option>
+                                <option value="Kanpur">Kanpur</option>
+                                <option value="Nagpur">Nagpur</option>
+                                <option value="Indore">Indore</option>
+                                <option value="Thane">Thane</option>
+                                <option value="Bhopal">Bhopal</option>
+                                <option value="Visakhapatnam">Visakhapatnam</option>
+                                <option value="Patna">Patna</option>
+                                <option value="Vadodara">Vadodara</option>
+                                <option value="Ghaziabad">Ghaziabad</option>
+                            </select>
+                            <div class="small text-muted mt-1" style="font-size: 0.70rem;">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</div>
                         </div>
                     </div>
                     <div class="col-md-6">

@@ -33,5 +33,20 @@ namespace SmartInsuranceHub.Controllers
             }
             return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> ReplyQuery(int id, string reply)
+        {
+            var query = await _context.Queries.FindAsync(id);
+            if (query != null && !string.IsNullOrWhiteSpace(reply))
+            {
+                query.reply = reply;
+                query.status = "Resolved";
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Reply sent successfully.";
+            }
+            return RedirectToAction("Index");
+        }
     }
 }

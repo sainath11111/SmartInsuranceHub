@@ -111,8 +111,22 @@ namespace SmartInsuranceHub.Controllers
 
         public async Task<IActionResult> Queries()
         {
-            var queries = await _context.Queries.Include(q => q.Customer).ToListAsync();
+            var queries = await _context.Queries.Include(q => q.Customer).OrderByDescending(q => q.send_date).ToListAsync();
             return View(queries);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReplyQuery(int id, string reply)
+        {
+            var query = await _context.Queries.FindAsync(id);
+            if (query != null && !string.IsNullOrWhiteSpace(reply))
+            {
+                query.reply = reply;
+                query.status = "Resolved";
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Reply sent successfully.";
+            }
+            return RedirectToAction("Queries");
         }
 
         // ========================================

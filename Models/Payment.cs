@@ -26,6 +26,9 @@ namespace SmartInsuranceHub.Models
         [MaxLength(20)]
         public string payment_status { get; set; } = "completed";
         
+        [MaxLength(255)]
+        public string? rejection_reason { get; set; }
+        
         public int? received_by_agent { get; set; }
         [ForeignKey("received_by_agent")]
         public virtual Agent? Agent { get; set; }

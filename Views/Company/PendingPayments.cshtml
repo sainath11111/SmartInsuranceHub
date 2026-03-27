@@ -63,8 +63,9 @@
                                             <input type="hidden" name="id" value="@payment.payment_id" />
                                             <button type="submit" class="btn btn-sm btn-success fw-bold"><i class="bi bi-check-lg"></i> Approve</button>
                                         </form>
-                                        <form asp-action="RejectPayment" method="post">
+                                        <form asp-action="RejectPayment" method="post" onsubmit="return submitReject(this);">
                                             <input type="hidden" name="id" value="@payment.payment_id" />
+                                            <input type="hidden" name="reason" value="" class="reason-input" />
                                             <button type="submit" class="btn btn-sm btn-danger fw-bold"><i class="bi bi-x-lg"></i> Reject</button>
                                         </form>
                                     </div>
@@ -77,3 +78,17 @@
         }
     </div>
 </div>
+
+<script>
+    function submitReject(form) {
+        var reason = prompt("Enter the reason for rejecting this payment:");
+        if (reason === null) {
+            return false; // User clicked Cancel
+        }
+        if (reason.trim() === '') {
+            reason = "Payment was rejected by the company.";
+        }
+        form.querySelector('.reason-input').value = reason;
+        return true;
+    }
+</script>

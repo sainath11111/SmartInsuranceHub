@@ -155,8 +155,12 @@ namespace SmartInsuranceHub.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegisterCustomer(Customer model)
+        public async Task<IActionResult> RegisterCustomer(Customer model, string[] SelectedCities)
         {
+            if (SelectedCities != null && SelectedCities.Length > 0)
+            {
+                model.city = string.Join(", ", SelectedCities);
+            }
             // Unique Email Validation
             if (!await IsEmailUniqueAsync(model.email))
             {
@@ -216,8 +220,12 @@ namespace SmartInsuranceHub.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegisterAgent(Agent model, IFormFile? profilePhotoFile)
+        public async Task<IActionResult> RegisterAgent(Agent model, IFormFile? profilePhotoFile, string[] SelectedCities)
         {
+            if (SelectedCities != null && SelectedCities.Length > 0)
+            {
+                model.city = string.Join(", ", SelectedCities);
+            }
             // Profile Photo Validation (Before DB Save)
             if (profilePhotoFile != null)
             {

@@ -13,9 +13,9 @@
     .profile-hero {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
         border-radius: 16px;
-        padding: 2.5rem;
+        padding: 1.5rem;
         color: white;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         position: relative;
         overflow: hidden;
     }
@@ -178,7 +178,6 @@
         </div>
     </div>
 </div>
-</div>
 
 <!-- Alerts -->
 @if (TempData["Success"] != null) {
@@ -231,25 +230,34 @@ else if (percentage > 0)
     <div class="tab-pane fade" id="info" role="tabpanel">
         <div class="card border-0 shadow-sm" style="border-radius:14px;">
             <div class="card-body p-4">
-                <h5 class="mb-4"><i class="bi bi-info-circle me-2"></i>Personal Information</h5>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="text-muted small">Full Name</label>
-                        <p class="fw-semibold">@ViewBag.UserName</p>
+                <h5 class="mb-4"><i class="bi bi-person-gear me-2"></i>Edit Personal Information</h5>
+                <form asp-controller="Document" asp-action="UpdateProfile" method="post">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small fw-semibold">Full Name</label>
+                            <input type="text" name="fullName" class="form-control" value="@ViewBag.UserName" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small fw-semibold">Email (Read-only)</label>
+                            <input type="email" class="form-control bg-light" value="@ViewBag.UserEmail" disabled />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small fw-semibold">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" value="@ViewBag.UserPhone" placeholder="Enter phone..." />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small fw-semibold">City</label>
+                            <input type="text" name="city" class="form-control" value="@ViewBag.UserCity" placeholder="Enter city..." />
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label text-muted small fw-semibold">Account Role</label>
+                            <p class="fw-bold mb-0">@userType</p>
+                        </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="text-muted small">Email</label>
-                        <p class="fw-semibold">@ViewBag.UserEmail</p>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm"><i class="bi bi-save me-2"></i>Save Changes</button>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="text-muted small">Phone</label>
-                        <p class="fw-semibold">@(ViewBag.UserPhone ?? "Not provided")</p>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="text-muted small">Role</label>
-                        <p class="fw-semibold">@userType</p>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>

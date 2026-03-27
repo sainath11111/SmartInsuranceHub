@@ -45,6 +45,7 @@ namespace SmartInsuranceHub.Controllers
                 ViewBag.UserName = customer.full_name;
                 ViewBag.UserEmail = customer.email;
                 ViewBag.UserPhone = customer.phone;
+                ViewBag.UserCity = customer.city;
                 ViewBag.VerificationStatus = customer.verification_status;
             }
             else
@@ -55,6 +56,7 @@ namespace SmartInsuranceHub.Controllers
                 ViewBag.UserName = agent.full_name;
                 ViewBag.UserEmail = agent.email;
                 ViewBag.UserPhone = agent.phone;
+                ViewBag.UserCity = agent.city;
                 ViewBag.VerificationStatus = agent.verification_status;
             }
 
@@ -72,6 +74,39 @@ namespace SmartInsuranceHub.Controllers
             ViewBag.RequiredDocs = requiredDocs;
 
             return View();
+        }
+
+        // ========================================
+        // Update Profile Details
+        // ========================================
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(string fullName, string phone, string city)
+        {
+            var (userType, userId) = GetCurrentUser();
+            if (userType == "Customer")
+            {
+                var cust = await _context.Customers.FindAsync(userId);
+                if (cust != null)
+                {
+                    cust.full_name = fullName;
+                    cust.phone = phone;
+                    cust.city = city;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            else if (userType == "Agent")
+            {
+                var agent = await _context.Agents.FindAsync(userId);
+                if (agent != null)
+                {
+                    agent.full_name = fullName;
+                    agent.phone = phone;
+                    agent.city = city;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            TempData["Success"] = "Profile details updated successfully!";
+            return RedirectToAction("Profile");
         }
 
         // ========================================

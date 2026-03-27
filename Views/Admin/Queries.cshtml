@@ -1,6 +1,6 @@
 @model IEnumerable<SmartInsuranceHub.Models.Query>
 @{
-    ViewData["Title"] = "Contact Messages & Queries";
+    ViewData["Title"] = "Support Queries";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
@@ -15,7 +15,7 @@
     <div class="alert alert-success mt-2">@TempData["Success"]</div>
 }
 
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm">
     <div class="card-body">
         @if (!Model.Any())
         {
@@ -35,7 +35,7 @@
                             <th>Customer Info</th>
                             <th>Subject & Message</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,12 +43,12 @@
                         {
                             <tr>
                                 <td>
-                                    <span class="text-dark fw-medium">@query.send_date.ToString("MMM dd, yyyy")</span><br />
+                                    <small class="text-muted">@query.send_date.ToString("MMM dd, yyyy")</small><br />
                                     <small class="text-muted">@query.send_date.ToString("HH:mm")</small>
                                 </td>
                                 <td>
                                     <strong>@query.name</strong><br />
-                                    <a class="text-decoration-none small text-primary" href="mailto:@query.email">@query.email</a><br />
+                                    <a class="text-decoration-none small" href="mailto:@query.email">@query.email</a><br />
                                     @if(!string.IsNullOrEmpty(query.phone)){ <small class="text-muted">@query.phone</small> }
                                 </td>
                                 <td>
@@ -58,21 +58,16 @@
                                     </p>
                                     @if(query.status == "Resolved")
                                     {
-                                        <div class="p-2 bg-success text-white rounded small mt-1">
-                                            <strong>Reply:</strong> @query.reply
-                                        </div>
+                                        <p class="small text-success mb-0"><strong>Reply:</strong> @query.reply</p>
                                     }
                                 </td>
                                 <td>
-                                    <span class="badge @(query.status == "Resolved" ? "bg-success" : "bg-warning text-dark")">@(string.IsNullOrEmpty(query.status) ? "Pending" : query.status)</span>
+                                    <span class="badge @(query.status == "Resolved" ? "bg-success" : "bg-warning text-dark")">@query.status</span>
                                 </td>
                                 <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#replyModal-@query.query_id">
-                                            @(query.status == "Resolved" ? "Edit Reply" : "Reply")
-                                        </button>
-                                        <a href="/Query/Delete/@query.query_id" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this query?');"><i class="bi bi-trash"></i></a>
-                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#replyModal-@query.query_id">
+                                        @(query.status == "Resolved" ? "View / Edit Reply" : "Reply")
+                                    </button>
 
                                     <!-- Reply Modal -->
                                     <div class="modal fade" id="replyModal-@query.query_id" tabindex="-1">
