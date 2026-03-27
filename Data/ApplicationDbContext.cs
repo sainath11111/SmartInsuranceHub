@@ -27,6 +27,7 @@ namespace SmartInsuranceHub.Data
         public DbSet<AdPayment> AdPayments { get; set; }
         public DbSet<CustomerAgentMessage> CustomerAgentMessages { get; set; }
         public DbSet<PolicyRequest> PolicyRequests { get; set; }
+        public DbSet<AgentCity> AgentCities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +42,12 @@ namespace SmartInsuranceHub.Data
                 .HasKey(ip => new { ip.plan_id, ip.company_id });
 
             // Relationships
+            modelBuilder.Entity<AgentCity>()
+                .HasOne(ac => ac.Agent)
+                .WithMany(a => a.AgentCities)
+                .HasForeignKey(ac => ac.agent_id)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Agent>()
                 .HasOne(a => a.Company)
                 .WithMany()

@@ -41,6 +41,80 @@ namespace SmartInsuranceHub.Controllers
         }
 
         // ========================================
+        // Agent Profile
+        // ========================================
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var aid = GetAgentId();
+            var agent = await _context.Agents
+                .Include(a => a.AgentCities)
+                .Include(a => a.Company)
+                .FirstOrDefaultAsync(a => a.agent_id == aid);
+
+            if (agent == null) return NotFound();
+            
+            // Re-fetch documents to show in profile
+            ViewBag.Documents = await _context.UserDocuments
+                .Where(d => d.user_type == "Agent" && d.user_id == aid)
+                .ToListAsync();
+
+            return View(agent);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Profile(string full_name, string email, string phone, int experience_years, 
+            string aadhaar, string pan, DateTime dob, List<string> cities, IFormFile? profilePhoto)
+        {
+            var aid = GetAgentId();
+            var agent = await _context.Agents
+                .Include(a => a.AgentCities)
+                .FirstOrDefaultAsync(a => a.agent_id == aid);
+
+            if (agent == null) return NotFound();
+
+            agent.full_name = full_name;
+            agent.email = email;
+            agent.phone = phone;
+            agent.experience_years = experience_years;
+            agent.aadhaar = aadhaar;
+            agent.pan = pan;
+            if (dob != default) agent.dob = dob;
+
+            // Handle cities update using raw SQL to bypass Npgsql batching bug
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"AgentCities\" WHERE \"AgentId\" = {0}", aid);
+
+            if (cities != null && cities.Any())
+            {
+                foreach (var city in cities)
+                {
+                    if (!string.IsNullOrWhiteSpace(city))
+                    {
+                        var c = city.Trim();
+                        await _context.Database.ExecuteSqlRawAsync("INSERT INTO \"AgentCities\" (\"AgentId\", \"CityName\") VALUES ({0}, {1})", aid, c);
+                    }
+                }
+            }
+            
+            // Handle Profile Photo upload
+            if (profilePhoto != null && profilePhoto.Length > 0)
+            {
+                var r2Service = HttpContext.RequestServices.GetRequiredService<SmartInsuranceHub.Services.R2StorageService>();
+                var (url, error) = await r2Service.UploadFileAsync(profilePhoto, "Agent", aid, "profile_photo");
+                
+                if (url != null)
+                {
+                    agent.profile_photo = url;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Profile updated successfully!";
+            
+            return RedirectToAction("Profile");
+        }
+
+        // ========================================
         // Policy Requests Management
         // ========================================
         public async Task<IActionResult> Requests()
@@ -98,7 +172,7 @@ namespace SmartInsuranceHub.Controllers
                     INSERT INTO ""Policies"" 
                     (""PolicyNo"", ""CustomerId"", ""AgentId"", ""PlanId"", ""CompanyId"", ""StartDate"", ""EndDate"", ""PolicyStatus"", ""PremiumAmount"", ""CreatedBy"")
                     VALUES 
-                    ({0}, {1}, {2}, {3}, {4}, {5}, {6}, 'active', {7}, 'Agent')",
+                    ({0}, {1}, {2}, {3}, {4}, {5}, {6}, 'pending_payment', {7}, 'Agent')",
                     policyNo, req.customer_id, req.agent_id, req.plan_id, req.company_id, startDate, endDate, req.InsurancePlan.premium_amount);
                 
                 try

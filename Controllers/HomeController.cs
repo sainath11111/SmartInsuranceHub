@@ -28,10 +28,10 @@ namespace SmartInsuranceHub.Controllers
             vm.YearsExperience = 15; // Mocked stat as requested by generic "Years of experience"
             
             // Insurance Types
-            vm.InsuranceTypes = await _context.InsuranceTypes.Where(t => t.status == "active").ToListAsync();
+            vm.InsuranceTypes = await _context.InsuranceTypes.AsNoTracking().Where(t => t.status == "active").ToListAsync();
             
             // Companies logic (fetch top 6 for the grid)
-            var companiesList = await _context.Companies
+            var companiesList = await _context.Companies.AsNoTracking()
                 .Where(c => c.status == "approved")
                 .Take(6)
                 .Select(c => new CompanyViewModel {
@@ -46,7 +46,7 @@ namespace SmartInsuranceHub.Controllers
 
             // Active Advertisements (approved, within date range, ordered by amount for priority)
             var now = DateTime.UtcNow;
-            vm.Advertisements = await _context.Advertisements
+            vm.Advertisements = await _context.Advertisements.AsNoTracking()
                 .Include(a => a.Company)
                 .Where(a => a.status == "approved" && a.start_date <= now && a.end_date >= now)
                 .OrderByDescending(a => a.amount_paid)
@@ -66,7 +66,7 @@ namespace SmartInsuranceHub.Controllers
             ViewBag.AdPlanNames = adPlanNames;
 
             // Featured Plans for the homepage carousel (highest value scores)
-            ViewBag.FeaturedPlans = await _context.InsurancePlans
+            ViewBag.FeaturedPlans = await _context.InsurancePlans.AsNoTracking()
                 .Include(p => p.Company)
                 .Where(p => p.status == "active" && p.premium_amount > 0)
                 .OrderByDescending(p => p.coverage_amount / p.premium_amount)
@@ -89,14 +89,14 @@ namespace SmartInsuranceHub.Controllers
         [Route("insurance")]
         public async Task<IActionResult> Insurance()
         {
-            var types = await _context.InsuranceTypes.Where(t => t.status == "active").ToListAsync();
+            var types = await _context.InsuranceTypes.AsNoTracking().Where(t => t.status == "active").ToListAsync();
             return View(types);
         }
 
         [Route("companies")]
         public async Task<IActionResult> Companies()
         {
-            var companiesList = await _context.Companies
+            var companiesList = await _context.Companies.AsNoTracking()
                 .Where(c => c.status == "approved")
                 .Select(c => new CompanyViewModel {
                     CompanyId = c.company_id,

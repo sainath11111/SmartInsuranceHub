@@ -46,7 +46,7 @@ namespace SmartInsuranceHub.Controllers
             ViewBag.PendingRequests = await _context.PolicyRequests.Where(r => r.customer_id == cid && r.status == "pending").CountAsync();
 
             // Recent payment history (last 5)
-            ViewBag.RecentPayments = await _context.Payments
+            ViewBag.RecentPayments = await _context.Payments.AsNoTracking()
                 .Include(p => p.Policy).ThenInclude(p => p!.InsurancePlan)
                 .Where(p => p.customer_id == cid)
                 .OrderByDescending(p => p.payment_date)
@@ -55,7 +55,7 @@ namespace SmartInsuranceHub.Controllers
 
             // Personalized Recommendations based on age
             var age = customer?.age ?? 25;
-            IQueryable<InsurancePlan> recQuery = _context.InsurancePlans
+            IQueryable<InsurancePlan> recQuery = _context.InsurancePlans.AsNoTracking()
                 .Include(p => p.Company)
                 .Where(p => p.status == "active");
 
@@ -89,11 +89,11 @@ namespace SmartInsuranceHub.Controllers
             var customer = await _context.Customers.FindAsync(cid);
             ViewBag.IsVerified = customer?.verification_status == "verified";
 
-            var plans = await _context.InsurancePlans.Include(p => p.Company).Where(p => p.status == "active").ToListAsync();
+            var plans = await _context.InsurancePlans.AsNoTracking().Include(p => p.Company).Where(p => p.status == "active").ToListAsync();
             
             // Pass filter data
-            ViewBag.InsuranceTypes = await _context.InsuranceTypes.Where(t => t.status == "active").ToListAsync();
-            ViewBag.Companies = await _context.Companies.Where(c => c.status == "approved").ToListAsync();
+            ViewBag.InsuranceTypes = await _context.InsuranceTypes.AsNoTracking().Where(t => t.status == "active").ToListAsync();
+            ViewBag.Companies = await _context.Companies.AsNoTracking().Where(c => c.status == "approved").ToListAsync();
             ViewBag.MaxPremium = plans.Any() ? plans.Max(p => p.premium_amount) : 50000;
             ViewBag.MaxCoverage = plans.Any() ? plans.Max(p => p.coverage_amount) : 5000000;
             
@@ -114,7 +114,7 @@ namespace SmartInsuranceHub.Controllers
             var plans = new List<InsurancePlan>();
             foreach (var pair in idPairs.Take(3))
             {
-                var plan = await _context.InsurancePlans
+                var plan = await _context.InsurancePlans.AsNoTracking()
                     .Include(p => p.Company)
                     .FirstOrDefaultAsync(p => p.plan_id == pair.PlanId && p.company_id == pair.CompanyId);
                 if (plan != null) plans.Add(plan);
@@ -154,8 +154,11 @@ namespace SmartInsuranceHub.Controllers
             var city = customer.city ?? "";
             
             // Get agents in customer's city belonging to the plan's company
-            var agents = await _context.Agents
-                .Where(a => a.company_id == companyId && a.approved_status && (a.city ?? "").ToLower() == city.ToLower())
+            var agents = await _context.Agents.AsNoTracking()
+                .Include(a => a.AgentCities)
+                .Where(a => a.company_id == companyId && a.approved_status && 
+                            (((a.city ?? "").ToLower() == city.ToLower()) || 
+                             a.AgentCities.Any(ac => ac.city_name.ToLower() == city.ToLower())))
                 .ToListAsync();
 
             ViewBag.Plan = plan;
@@ -165,10 +168,10 @@ namespace SmartInsuranceHub.Controllers
 
         public async Task<IActionResult> AgentProfile(int agentId)
         {
-            var agent = await _context.Agents.Include(a => a.Company).FirstOrDefaultAsync(a => a.agent_id == agentId);
+            var agent = await _context.Agents.AsNoTracking().Include(a => a.Company).FirstOrDefaultAsync(a => a.agent_id == agentId);
             if (agent == null) return NotFound();
 
-            var plans = await _context.InsurancePlans
+            var plans = await _context.InsurancePlans.AsNoTracking()
                 .Where(p => p.company_id == agent.company_id && p.status == "active")
                 .ToListAsync();
 
@@ -217,7 +220,7 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> MyRequests()
         {
             var cid = GetCustomerId();
-            var requests = await _context.PolicyRequests
+            var requests = await _context.PolicyRequests.AsNoTracking()
                 .Include(r => r.InsurancePlan)
                 .Include(r => r.Agent).ThenInclude(a => a!.Company)
                 .Where(r => r.customer_id == cid)
@@ -230,7 +233,7 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> MyPolicies()
         {
             var cid = GetCustomerId();
-            var policies = await _context.Policies.Include(p => p.InsurancePlan).Include(p => p.Agent)
+            var policies = await _context.Policies.AsNoTracking().Include(p => p.InsurancePlan).Include(p => p.Agent)
                 .Where(p => p.customer_id == cid).ToListAsync();
             return View(policies);
         }

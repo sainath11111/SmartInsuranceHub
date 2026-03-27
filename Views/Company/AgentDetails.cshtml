@@ -1,0 +1,305 @@
+@model SmartInsuranceHub.Models.Agent
+@{
+    ViewData["Title"] = "Agent Details";
+    var docs = ViewBag.Documents as IEnumerable<SmartInsuranceHub.Models.UserDocument>;
+    var totalPolicies = ViewBag.TotalPoliciesSold;
+    var totalRevenue = ViewBag.TotalRevenue;
+}
+
+<div class="container-fluid py-4">
+    <!-- Back Navigation -->
+    <a href="/Company/Agents" class="text-decoration-none text-muted mb-3 d-inline-block hover-primary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Agents
+    </a>
+
+    <div class="row mb-4">
+        <div class="col" data-aos="fade-right">
+            <h2 class="fw-bold mb-1 text-dark">Agent Profile</h2>
+            <p class="text-muted mb-0">Review @Model.full_name's performance, operating zones, and credentials.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Agent Overview Card -->
+        <div class="col-lg-4" data-aos="fade-up">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4 text-center">
+                    <div class="position-relative d-inline-block mb-3">
+                        <div class="shadow-sm rounded-circle p-1 bg-white mx-auto" style="width: 120px; height: 120px;">
+                            @if (!string.IsNullOrEmpty(Model.profile_photo))
+                            {
+                                <img src="/api/avatar/@Model.profile_photo" alt="Profile" class="rounded-circle w-100 h-100" style="object-fit: cover; border: 3px solid var(--bs-light);">
+                            }
+                            else
+                            {
+                                <div class="rounded-circle w-100 h-100 bg-light text-secondary d-flex justify-content-center align-items-center fw-bold display-4" style="border: 3px solid #e9ecef;">
+                                    @(Model.full_name?.Substring(0, 1)?.ToUpper() ?? "A")
+                                </div>
+                            }
+                        </div>
+                        @if(Model.verification_status == "verified") {
+                            <span class="position-absolute bottom-0 end-0 p-2 bg-success border border-light rounded-circle" data-bs-toggle="tooltip" title="Verified Agent"></span>
+                        }
+                    </div>
+                    <h4 class="fw-bold mb-1">@Model.full_name</h4>
+                    <p class="text-muted small mb-3">Exp: @Model.experience_years Years</p>
+
+                    <div class="row gx-2 mb-3">
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded-3">
+                                <h5 class="fw-bold mb-0 text-primary">@totalPolicies</h5>
+                                <small class="text-muted" style="font-size: 0.65rem;">Policies Sold</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded-3">
+                                <h5 class="fw-bold mb-0 text-success">₹@(((decimal)totalRevenue).ToString("N0"))</h5>
+                                <small class="text-muted" style="font-size: 0.65rem;">Revenue</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <ul class="list-group list-group-flush text-start mt-2">
+                        <li class="list-group-item px-0 border-light"><i class="bi bi-envelope text-muted me-2"></i> @Model.email</li>
+                        <li class="list-group-item px-0 border-light"><i class="bi bi-telephone text-muted me-2"></i> @Model.phone</li>
+                    </ul>
+
+                    <!-- Action Panel -->
+                    <div class="d-flex flex-column gap-2 mt-4">
+                        <form asp-action="ToggleAgentStatus" method="post" class="w-100">
+                            <input type="hidden" name="id" value="@Model.agent_id" />
+                            @if(Model.approved_status) {
+                                <button type="submit" class="btn btn-warning w-100 fw-semibold shadow-sm"><i class="bi bi-pause-circle me-1"></i> Deactivate</button>
+                            } else {
+                                <button type="submit" class="btn btn-success w-100 fw-semibold shadow-sm"><i class="bi bi-play-circle me-1"></i> Activate</button>
+                            }
+                        </form>
+                        <form asp-action="DeleteAgent" method="post" class="w-100">
+                            <input type="hidden" name="id" value="@Model.agent_id" />
+                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to permanently remove this agent? This action cannot be undone.');"><i class="bi bi-trash me-1"></i> Delete Agent</button>
+                        </form>
+                        <a href="#policiesLedger" class="btn btn-outline-secondary w-100 mt-1"><i class="bi bi-list-columns-reverse me-1"></i> View Brokered Policies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operating Cities & Documents -->
+        <div class="col-lg-8" data-aos="fade-up" data-aos-delay="100">
+            <!-- Operating Cities Card -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-pin-map me-2 text-primary"></i> Operating Zones</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap gap-2">
+                        @if(Model.AgentCities != null && Model.AgentCities.Any()) {
+                            foreach(var city in Model.AgentCities) {
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 fs-6 rounded-pill">
+                                    <i class="bi bi-building me-1"></i> @city.city_name
+                                </span>
+                            }
+                        } else if (!string.IsNullOrEmpty(Model.city)) {
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 fs-6 rounded-pill">
+                                <i class="bi bi-building me-1"></i> @Model.city
+                            </span>
+                        } else {
+                            <p class="text-muted small mb-0 w-100 text-center py-2">No operating cities defined.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Card -->
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-folder2-open me-2 text-primary"></i> Uploaded Documents</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        @if (docs != null && docs.Any())
+                        {
+                            foreach (var doc in docs)
+                            {
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center p-3 border border-light rounded-3 bg-light">
+                                        <div class="fs-2 text-primary me-3"><i class="bi bi-file-earmark-pdf"></i></div>
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <h6 class="mb-0 text-truncate fw-semibold" style="max-width: 180px;">@doc.document_name</h6>
+                                            <small class="text-muted text-uppercase" style="font-size: 0.65rem;">@doc.category</small>
+                                        </div>
+                                        <div>
+                                            <a href="/Document/Preview/@doc.document_id" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill"><i class="bi bi-eye"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-1 mb-2"></i>
+                                <p class="small mb-0">No documents found for this agent.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Charts Row -->
+    <div class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="150">
+        <!-- Monthly Revenue Chart -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-graph-up text-primary me-2"></i> Sales Performance (Monthly Revenue)</h6>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="agentRevenueChart" style="max-height: 320px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Policy Status Chart -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-pie-chart text-primary me-2"></i> Policy Distribution</h6>
+                </div>
+                <div class="card-body p-4 d-flex justify-content-center align-items-center">
+                    <canvas id="agentDistributionChart" style="max-height: 280px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brokered Policies Ledger -->
+    <div class="row mb-5" id="policiesLedger" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-file-earmark-text text-primary me-2"></i> Brokered Policies Ledger</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Policy No</th>
+                                    <th>Customer</th>
+                                    <th>Plan Name</th>
+                                    <th>Premium</th>
+                                    <th>Status</th>
+                                    <th class="pe-4">Purchase Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                @if (ViewBag.AgentPolicies != null)
+                                {
+                                    var policies = (IEnumerable<SmartInsuranceHub.Models.Policy>)ViewBag.AgentPolicies;
+                                    if (policies.Any()) {
+                                        foreach (var p in policies)
+                                        {
+                                            <tr>
+                                                <td class="ps-4 fw-semibold">
+                                                    @if(string.IsNullOrEmpty(p.policy_no)) { <span class="text-muted">Draft</span> } else { @p.policy_no }
+                                                </td>
+                                                <td>
+                                                    <a href="/Company/CustomerDetails/@p.customer_id" class="text-decoration-none text-muted">
+                                                        <i class="bi bi-person me-1"></i> @p.Customer?.full_name
+                                                    </a>
+                                                </td>
+                                                <td class="fw-semibold text-primary">@p.InsurancePlan?.plan_name</td>
+                                                <td class="fw-semibold">₹@p.premium_amount.ToString("N2")</td>
+                                                <td>
+                                                    @if(p.policy_status == "active") { <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2">Active</span> }
+                                                    else if (p.policy_status == "expired") { <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2">Expired</span> }
+                                                    else { <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-2">Pending</span> }
+                                                </td>
+                                                <td class="pe-4 text-muted small">@p.start_date.ToString("MMM dd, yyyy")</td>
+                                            </tr>
+                                        }
+                                    } else {
+                                        <tr><td colspan="6" class="text-center py-4 text-muted">No policies brokered by this agent yet.</td></tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prep Distribution Data
+            const activeCount = @ViewBag.ActivePoliciesCount;
+            const pendingCount = @ViewBag.PendingPoliciesCount;
+            const expiredCount = @ViewBag.ExpiredPoliciesCount;
+            
+            if (activeCount > 0 || pendingCount > 0 || expiredCount > 0) {
+                const ctxDist = document.getElementById('agentDistributionChart').getContext('2d');
+                new Chart(ctxDist, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Active', 'Pending', 'Expired'],
+                        datasets: [{
+                            data: [activeCount, pendingCount, expiredCount],
+                            backgroundColor: ['rgba(25, 135, 84, 0.85)', 'rgba(255, 193, 7, 0.85)', 'rgba(108, 117, 125, 0.85)'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        cutout: '65%'
+                    }
+                });
+            } else {
+                document.getElementById('agentDistributionChart').parentElement.innerHTML = '<p class="text-muted small">No policy data to chart.</p>';
+            }
+
+            // Prep Monthly Revenue Data
+            const monthlySalesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.MonthlySales));
+            if (monthlySalesData && monthlySalesData.length > 0) {
+                const ctxRev = document.getElementById('agentRevenueChart').getContext('2d');
+                const labelsMap = {1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'};
+                const labels = monthlySalesData.map(d => labelsMap[d.Month] + ' ' + d.Year);
+                const data = monthlySalesData.map(d => d.Revenue);
+
+                new Chart(ctxRev, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Revenue (₹)',
+                            data: data,
+                            backgroundColor: 'rgba(13, 110, 253, 0.8)',
+                            borderRadius: 6,
+                            barPercentage: 0.6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { borderDash: [4, 4], color: '#e9ecef' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            } else {
+                document.getElementById('agentRevenueChart').parentElement.innerHTML = '<p class="text-muted small text-center mt-5">No active revenue generated organically yet.</p>';
+            }
+        });
+    </script>
+}

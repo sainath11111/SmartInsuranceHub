@@ -41,6 +41,7 @@
                         else if (User.IsInRole("Company"))
                         {
                             <li class="nav-item"><a class="nav-link" href="/Company/Index"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/Company/Analytics"><i class="bi bi-graph-up me-1"></i> Analytics</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Insurance/Index"><i class="bi bi-shield-check me-1"></i> Our Plans</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Advertisement/MyAds"><i class="bi bi-megaphone me-1"></i> Advertisements</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Company/Agents"><i class="bi bi-person-badge me-1"></i> My Agents</a></li>
@@ -53,14 +54,14 @@
                                 <button class="nav-link btn btn-link text-decoration-none" onclick="openAgentChat()"><i class="bi bi-chat-dots me-1"></i> Company Chat</button>
                             </li>
                             <li class="nav-item"><a class="nav-link" href="/CustomerAgentChat"><i class="bi bi-chat-text me-1"></i> Customer Chat</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/Document/Profile"><i class="bi bi-person-lines-fill me-1"></i> Profile & Docs</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/Agent/Profile"><i class="bi bi-person-gear me-1"></i> Edit Profile</a></li>
                         }
                         else if (User.IsInRole("Customer"))
                         {
                             <li class="nav-item"><a class="nav-link" href="/Customer/Index"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Customer/BrowsePlans"><i class="bi bi-search me-1"></i> Browse Plans</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Customer/MyPolicies"><i class="bi bi-shield-check me-1"></i> My Policies</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/CustomerAgentChat"><i class="bi bi-chat-text me-1"></i> Agent Chat</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/CustomerAgentChat"><i class="bi bi-person-lines-fill me-1"></i> Nearest Agents</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Customer/SubmitQuery"><i class="bi bi-question-circle me-1"></i> Support</a></li>
                             <li class="nav-item"><a class="nav-link" href="/Document/Profile"><i class="bi bi-person-lines-fill me-1"></i> Profile & Docs</a></li>
                         }
@@ -99,6 +100,10 @@
                                 else if (User.IsInRole("Company"))
                                 {
                                     <li><a class="dropdown-item py-2" href="/Company/Index"><i class="bi bi-person me-2 text-primary"></i> My Profile</a></li>
+                                }
+                                else if (User.IsInRole("Agent"))
+                                {
+                                    <li><a class="dropdown-item py-2" href="/Agent/Profile"><i class="bi bi-person me-2 text-primary"></i> My Profile</a></li>
                                 }
                                 else
                                 {

@@ -183,6 +183,17 @@ using (var scope = app.Services.CreateScope())
                 FOREIGN KEY (""AgentId"") REFERENCES ""Agents""(""AgentId"") ON DELETE RESTRICT
             );
         ");
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""AgentCities"" (
+                ""Id"" SERIAL PRIMARY KEY,
+                ""AgentId"" INTEGER NOT NULL,
+                ""CityName"" VARCHAR(100) NOT NULL,
+                FOREIGN KEY (""AgentId"") REFERENCES ""Agents""(""AgentId"") ON DELETE CASCADE
+            );
+        ");
+        context.Database.ExecuteSqlRaw(@"
+            ALTER TABLE ""InsurancePlans"" ALTER COLUMN ""AgentId"" DROP NOT NULL;
+        ");
     }
     catch (Exception ex)
     {

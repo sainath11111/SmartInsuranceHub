@@ -25,6 +25,7 @@
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Experience</th>
+                    <th>Policies Sold</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -45,10 +46,19 @@
                         <td>@item.phone</td>
                         <td>@item.experience_years Yrs</td>
                         <td>
-                            @if(item.approved_status) {
+                            @{
+                                var performance = ViewBag.AgentPerformance as System.Collections.Generic.Dictionary<int, int>;
+                                int soldCount = performance != null && performance.ContainsKey(item.agent_id) ? performance[item.agent_id] : 0;
+                            }
+                            <span class="badge bg-info text-dark rounded-pill px-3">@soldCount Policies</span>
+                        </td>
+                        <td>
+                            @if(item.approved_status && item.verification_status == "verified") {
                                 <span class="badge bg-success">Active</span>
+                            } else if(item.approved_status) {
+                                <span class="badge bg-info text-dark">Approved</span>
                             } else {
-                                <span class="badge bg-warning text-dark">Pending Admin Approval</span>
+                                <span class="badge bg-warning text-dark">Pending</span>
                             }
                         </td>
                         <td>
@@ -61,6 +71,10 @@
                                         <input type="hidden" name="id" value="@item.agent_id" />
                                         <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-circle"></i> Approve</button>
                                     </form>
+                                }
+                                else
+                                {
+                                    <a href="/Company/AgentDetails/@item.agent_id" class="btn btn-sm btn-outline-info"><i class="bi bi-person-lines-fill"></i> View Details</a>
                                 }
 
                                 <form asp-action="DeleteAgent" method="post" class="d-inline">

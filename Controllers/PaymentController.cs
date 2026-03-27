@@ -41,12 +41,15 @@ namespace SmartInsuranceHub.Controllers
                 amount = amount,
                 method = method,
                 payment_date = DateTime.UtcNow,
-                payment_status = "completed",
+                payment_status = "pending",
                 received_by_agent = policy.agent_id
             };
             
             _context.Payments.Add(payment);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // Save payment first to bypass Npgsql batching bug
+            
+            policy.policy_status = "pending_approval";
+            await _context.SaveChangesAsync(); // Save policy update separately
             
             return RedirectToAction("Index", "Customer");
         }

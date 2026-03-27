@@ -38,18 +38,21 @@ namespace SmartInsuranceHub.Controllers
                 var customer = await _context.Customers.FindAsync(currentUserId);
                 var city = customer?.city ?? "";
                 var contacts = await _context.Agents
+                    .AsNoTracking()
                     .Include(a => a.Company)
-                    .Where(a => a.approved_status && (a.city ?? "").ToLower() == city.ToLower())
+                    .Where(a => a.approved_status)
                     .Select(a => new { 
                         Id = a.agent_id, 
                         Name = a.full_name, 
                         Role = "Agent", 
                         Avatar = a.profile_photo,
                         City = a.city,
-                        CompanyName = a.Company.company_name
+                        CompanyName = a.Company != null ? a.Company.company_name : ""
                     })
                     .ToListAsync();
                 ViewBag.Contacts = contacts;
+                ViewBag.CustomerCity = city;
+                ViewBag.OnlineAgentIds = SmartInsuranceHub.Hubs.ChatHub.OnlineAgents.Keys.ToList();
             }
             else if (role == "Agent")
             {

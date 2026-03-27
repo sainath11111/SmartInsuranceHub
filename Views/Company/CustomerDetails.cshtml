@@ -1,0 +1,145 @@
+@model SmartInsuranceHub.Models.Customer
+@{
+    ViewData["Title"] = "Customer Details";
+    var policies = ViewBag.Policies as IEnumerable<SmartInsuranceHub.Models.Policy>;
+    var docs = ViewBag.Documents as IEnumerable<SmartInsuranceHub.Models.UserDocument>;
+}
+
+<div class="container-fluid py-4">
+    <!-- Back Navigation -->
+    <a href="/Company/Analytics" class="text-decoration-none text-muted mb-3 d-inline-block hover-primary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Analytics
+    </a>
+
+    <div class="row mb-4">
+        <div class="col" data-aos="fade-right">
+            <h2 class="fw-bold mb-1 text-dark">Customer Portfolio</h2>
+            <p class="text-muted mb-0">Review @Model.full_name's purchased policies and verification documents.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Customer Info Card -->
+        <div class="col-lg-4" data-aos="fade-up">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4 text-center">
+                    <div class="position-relative d-inline-block mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-1 mx-auto" style="width: 100px; height: 100px;">
+                            @(Model.full_name?.Substring(0, 1)?.ToUpper() ?? "C")
+                        </div>
+                        @if(Model.verification_status == "verified") {
+                            <span class="position-absolute bottom-0 end-0 p-2 bg-success border border-light rounded-circle" data-bs-toggle="tooltip" title="Verified Customer"></span>
+                        }
+                    </div>
+                    <h4 class="fw-bold mb-1">@Model.full_name</h4>
+                    <p class="text-muted small mb-3">Joined @Model.created_at.ToString("MMMM yyyy")</p>
+                    
+                    <ul class="list-group list-group-flush text-start mt-4">
+                        <li class="list-group-item px-0 border-light"><i class="bi bi-envelope text-muted me-2"></i> @Model.email</li>
+                        <li class="list-group-item px-0 border-light"><i class="bi bi-telephone text-muted me-2"></i> @Model.phone</li>
+                        <li class="list-group-item px-0 border-light"><i class="bi bi-geo-alt text-muted me-2"></i> @(string.IsNullOrEmpty(Model.city) ? "N/A" : Model.city)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Card -->
+        <div class="col-lg-8" data-aos="fade-up" data-aos-delay="100">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-folder2-open me-2 text-primary"></i> Uploaded Documents</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        @if (docs != null && docs.Any())
+                        {
+                            foreach (var doc in docs)
+                            {
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center p-3 border border-light rounded-3 bg-light">
+                                        <div class="fs-2 text-primary me-3"><i class="bi bi-file-earmark-pdf"></i></div>
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <h6 class="mb-0 text-truncate fw-semibold" style="max-width: 180px;">@doc.document_name</h6>
+                                            <small class="text-muted text-uppercase" style="font-size: 0.65rem;">@doc.category</small>
+                                        </div>
+                                        <div>
+                                            <a href="/Document/Preview/@doc.document_id" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill"><i class="bi bi-eye"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-1 mb-2"></i>
+                                <p class="small mb-0">No documents found for this customer.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchased Policies Table -->
+    <div class="row" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold">Purchased Policies Ledger</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Policy No</th>
+                                    <th>Plan Name</th>
+                                    <th>Assisted By Agent</th>
+                                    <th>Premium</th>
+                                    <th>Status</th>
+                                    <th class="pe-4">Validity</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                @if (policies != null && policies.Any())
+                                {
+                                    foreach (var p in policies)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 fw-semibold">@p.policy_no</td>
+                                            <td class="fw-semibold text-primary">@p.InsurancePlan?.plan_name</td>
+                                            <td>
+                                                <a href="/Company/AgentDetails/@p.agent_id" class="text-decoration-none text-muted">
+                                                    <i class="bi bi-person-badge me-1"></i> @p.Agent?.full_name
+                                                </a>
+                                            </td>
+                                            <td class="fw-semibold">₹@p.premium_amount.ToString("N2")</td>
+                                            <td>
+                                                @if(p.policy_status == "active") { <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2">Active</span> }
+                                                else if (p.policy_status == "expired") { <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2">Expired</span> }
+                                                else { <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-2">Pending</span> }
+                                            </td>
+                                            <td class="pe-4 text-muted small">
+                                                @if(p.policy_status == "active") {
+                                                    @p.start_date.ToString("MMM yyyy") <span> - </span> @p.end_date.ToString("MMM yyyy")
+                                                } else {
+                                                    <span>N/A</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="6" class="text-center py-4 text-muted">No policies purchased yet.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

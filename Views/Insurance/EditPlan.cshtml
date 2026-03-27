@@ -18,16 +18,7 @@
                         <input type="text" asp-for="plan_name" class="form-control" required />
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Select Agent</label>
-                            <select asp-for="agent_id" class="form-select">
-                                <option value="">-- No specific agent --</option>
-                                @foreach(var agent in ViewBag.Agents)
-                                {
-                                    <option value="@agent.agent_id" selected="@(Model.agent_id == agent.agent_id ? "selected" : null)">@agent.full_name</option>
-                                }
-                            </select>
-                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Select Category</label>
                             <select asp-for="type_id" class="form-select" required>

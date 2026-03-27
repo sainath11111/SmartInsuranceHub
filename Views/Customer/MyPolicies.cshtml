@@ -34,15 +34,23 @@
     {
         // Determine timeline stage
         var isPending = item.policy_status == "pending";
+        var isPendingPayment = item.policy_status == "pending_payment";
+        var isPendingApproval = item.policy_status == "pending_approval";
         var isActive = item.policy_status == "active";
+        var isExpired = item.policy_status == "active" && item.end_date < DateTime.UtcNow;
+        if (isExpired) isActive = false;
         
         <div class="col-xl-6 mb-4" data-aos="fade-up">
             <div class="card-modern h-100 d-flex flex-column">
                 <div class="p-4 border-bottom position-relative">
                     @if(isActive) {
                         <span class="badge bg-success bg-opacity-10 text-success position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Active</span>
-                    } else if (isPending) {
-                        <span class="badge bg-warning bg-opacity-10 text-warning position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                    } else if (isExpired) {
+                        <span class="badge bg-danger bg-opacity-10 text-danger position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill"><i class="bi bi-exclamation-circle-fill me-1"></i>Expired</span>
+                    } else if (isPendingPayment) {
+                        <span class="badge bg-warning bg-opacity-10 text-warning position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill"><i class="bi bi-credit-card me-1"></i>Awaiting Payment</span>
+                    } else if (isPendingApproval) {
+                        <span class="badge bg-info bg-opacity-10 text-info position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Company Review</span>
                     } else {
                         <span class="badge bg-secondary bg-opacity-10 text-secondary position-absolute top-0 end-0 m-4 px-3 py-2 rounded-pill">@item.policy_status</span>
                     }
@@ -112,11 +120,14 @@
                     </div>
                 </div>
                 
-                <div class="p-3 bg-white border-top">
-                    <a href="/Payment/MakePayment?policyId=@item.policy_id" class="btn btn-primary w-100 rounded-pill fw-bold pt-2 pb-2">
-                        <i class="bi bi-credit-card me-1"></i> Pay Premium
-                    </a>
-                </div>
+                @if (isPendingPayment || isExpired)
+                {
+                    <div class="p-3 bg-white border-top">
+                        <a href="/Payment/MakePayment?policyId=@item.policy_id" class="btn btn-primary w-100 rounded-pill fw-bold pt-2 pb-2">
+                            <i class="bi bi-credit-card me-1"></i> @(isExpired ? "Renew Policy" : "Pay Premium")
+                        </a>
+                    </div>
+                }
             </div>
         </div>
     }

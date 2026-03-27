@@ -1,0 +1,234 @@
+@model IEnumerable<SmartInsuranceHub.Models.Policy>
+@{
+    ViewData["Title"] = "Company Analytics Dashboard";
+    var monthlySales = ViewBag.MonthlySales as IEnumerable<dynamic>;
+    var topAgents = ViewBag.TopAgents as IEnumerable<dynamic>;
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col" data-aos="fade-right">
+            <h2 class="fw-bold mb-1 text-dark">Performance Analytics</h2>
+            <p class="text-muted mb-0">Track policies sold, revenue, and agent success rates.</p>
+        </div>
+    </div>
+
+    <!-- Top KPI Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="50">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted fw-semibold mb-0">Total Policies Sold</h6>
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-3 text-primary"><i class="bi bi-shield-check fs-5"></i></div>
+                    </div>
+                    <h3 class="fw-bold mb-0">@Model.Count(p => p.policy_status == "active")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted fw-semibold mb-0">Total Revenue</h6>
+                        <div class="bg-success bg-opacity-10 p-2 rounded-3 text-success"><i class="bi bi-currency-rupee fs-5"></i></div>
+                    </div>
+                    <h3 class="fw-bold mb-0">₹@Model.Where(p => p.policy_status == "active").Sum(p => p.premium_amount).ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="150">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted fw-semibold mb-0">Approved Requests</h6>
+                        <div class="bg-info bg-opacity-10 p-2 rounded-3 text-info"><i class="bi bi-file-earmark-check fs-5"></i></div>
+                    </div>
+                    <h3 class="fw-bold mb-0">@ViewBag.ApprovedRequests</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted fw-semibold mb-0">Rejected Requests</h6>
+                        <div class="bg-danger bg-opacity-10 p-2 rounded-3 text-danger"><i class="bi bi-x-circle fs-5"></i></div>
+                    </div>
+                    <h3 class="fw-bold mb-0">@ViewBag.RejectedRequests</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Monthly Sales Bar Chart -->
+        <div class="col-lg-8" data-aos="fade-up" data-aos-delay="300">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold">Monthly Revenue Progress</h6>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="monthlySalesChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Rate Pie Chart -->
+        <div class="col-lg-4" data-aos="fade-up" data-aos-delay="400">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold">Agent Success Rate</h6>
+                </div>
+                <div class="card-body p-4 d-flex align-items-center justify-content-center">
+                    <div style="height: 250px; width: 100%;">
+                        <canvas id="successRateChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy List & Top Agents Row -->
+    <div class="row g-4">
+        <div class="col-lg-8" data-aos="fade-up" data-aos-delay="500">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-semibold">Complete Policy Ledger</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Policy No</th>
+                                    <th>Customer</th>
+                                    <th>Agent</th>
+                                    <th>Premium</th>
+                                    <th>Status</th>
+                                    <th class="pe-4">Start Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                @foreach (var p in Model)
+                                {
+                                    <tr>
+                                        <td class="ps-4 fw-semibold">@p.policy_no</td>
+                                        <td><a href="/Company/CustomerDetails/@p.customer_id" class="text-decoration-none fw-semibold">@p.Customer?.full_name</a></td>
+                                        <td><a href="/Company/AgentDetails/@p.agent_id" class="text-decoration-none text-muted">@p.Agent?.full_name</a></td>
+                                        <td class="fw-semibold">₹@p.premium_amount.ToString("N2")</td>
+                                        <td>
+                                            @if(p.policy_status == "active") { <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2">Active</span> }
+                                            else if (p.policy_status == "expired") { <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2">Expired</span> }
+                                            else { <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-2">Pending</span> }
+                                        </td>
+                                        <td class="pe-4 text-muted small">@p.start_date.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                                @if(!Model.Any()) {
+                                    <tr><td colspan="6" class="text-center py-4 text-muted">No policies sold yet.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4" data-aos="fade-up" data-aos-delay="600">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-semibold"><i class="bi bi-star-fill text-warning me-2"></i> Top Performing Agents</h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush border-top-0">
+                        @if (topAgents != null)
+                        {
+                            foreach (var agent in topAgents)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-dark">@agent.Name</span>
+                                        <span class="text-muted small">@agent.PoliciesSold Policies</span>
+                                    </div>
+                                    <span class="badge bg-success rounded-pill">₹@agent.Revenue.ToString("N0")</span>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prep Monthly Data
+            const monthlySalesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(monthlySales));
+            const ctxSales = document.getElementById('monthlySalesChart').getContext('2d');
+            
+            const labelsMap = {1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'};
+            const labels = [];
+            const revenueData = [];
+            if(monthlySalesData && monthlySalesData.length > 0) {
+                monthlySalesData.forEach(m => {
+                    labels.push(labelsMap[m.Month] + " '" + m.Year.toString().substring(2));
+                    revenueData.push(m.Revenue);
+                });
+            }
+
+            new Chart(ctxSales, {
+                type: 'bar', // Aesthetically pleasing Bar graph for revenue
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: revenueData,
+                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { dash: [4, 4] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Prep Success Pie Chart
+            const appReqs = parseInt('@ViewBag.ApprovedRequests') || 0;
+            const rejReqs = parseInt('@ViewBag.RejectedRequests') || 0;
+            const ctxRate = document.getElementById('successRateChart').getContext('2d');
+
+            new Chart(ctxRate, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Approved', 'Rejected'],
+                    datasets: [{
+                        data: [appReqs, rejReqs],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        });
+    </script>
+}

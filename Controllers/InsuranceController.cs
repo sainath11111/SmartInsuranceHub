@@ -21,7 +21,7 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> Index()
         {
             var cid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            var plans = await _context.InsurancePlans.Include(p => p.Agent).Where(p => p.company_id == cid).ToListAsync();
+            var plans = await _context.InsurancePlans.Include(p => p.Agent).AsNoTracking().Where(p => p.company_id == cid).ToListAsync();
             return View(plans);
         }
 
@@ -29,8 +29,7 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> CreatePlan()
         {
             var cid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            ViewBag.Agents = await _context.Agents.Where(a => a.company_id == cid && a.approved_status).ToListAsync();
-            ViewBag.Types = await _context.InsuranceTypes.Where(t => t.status == "active").ToListAsync();
+            ViewBag.Types = await _context.InsuranceTypes.AsNoTracking().Where(t => t.status == "active").ToListAsync();
             return View();
         }
 
@@ -39,8 +38,9 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> CreatePlan(InsurancePlan model)
         {
             model.company_id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            model.agent_id = null;
             
-            var maxPlanId = await _context.InsurancePlans.AnyAsync() 
+            var maxPlanId = await _context.InsurancePlans.AnyAsync()  
                 ? await _context.InsurancePlans.MaxAsync(p => p.plan_id) 
                 : 0;
             model.plan_id = maxPlanId + 1;
@@ -61,11 +61,10 @@ namespace SmartInsuranceHub.Controllers
         public async Task<IActionResult> EditPlan(int id)
         {
             var cid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            var plan = await _context.InsurancePlans.FirstOrDefaultAsync(p => p.plan_id == id && p.company_id == cid);
+            var plan = await _context.InsurancePlans.AsNoTracking().FirstOrDefaultAsync(p => p.plan_id == id && p.company_id == cid);
             if (plan == null) return NotFound();
 
-            ViewBag.Agents = await _context.Agents.Where(a => a.company_id == cid && a.approved_status).ToListAsync();
-            ViewBag.Types = await _context.InsuranceTypes.Where(t => t.status == "active").ToListAsync();
+            ViewBag.Types = await _context.InsuranceTypes.AsNoTracking().Where(t => t.status == "active").ToListAsync();
             return View(plan);
         }
 
@@ -81,7 +80,6 @@ namespace SmartInsuranceHub.Controllers
             if (plan == null) return NotFound();
 
             plan.plan_name = model.plan_name;
-            plan.agent_id = model.agent_id;
             plan.type_id = model.type_id;
             plan.premium_amount = model.premium_amount;
             plan.coverage_amount = model.coverage_amount;

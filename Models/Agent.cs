@@ -53,5 +53,7 @@ namespace SmartInsuranceHub.Models
 
         [MaxLength(20)]
         public string verification_status { get; set; } = "unverified";
+        
+        public virtual ICollection<AgentCity> AgentCities { get; set; } = new List<AgentCity>();
     }
 }
