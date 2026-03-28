@@ -1,5 +1,5 @@
 # Use the official .NET SDK image to build and publish the app
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-jammy AS build
 WORKDIR /src
 
 # Copy the csproj file and restore dependencies
@@ -17,7 +17,7 @@ FROM build AS publish
 RUN dotnet publish "SmartInsuranceHub.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Use the official ASP.NET Core runtime image for the final stage
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-jammy AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
