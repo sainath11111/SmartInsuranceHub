@@ -41,7 +41,7 @@ namespace SmartInsuranceHub.Controllers
                     .AsNoTracking()
                     .Include(a => a.Company)
                     .Where(a => a.approved_status)
-                    .Select(a => new { 
+                    .Select(a => new ChatContactViewModel { 
                         Id = a.agent_id, 
                         Name = a.full_name, 
                         Role = "Agent", 
@@ -60,7 +60,7 @@ namespace SmartInsuranceHub.Controllers
                 var city = agent?.city ?? "";
                 var contacts = await _context.Customers
                     .Where(c => c.status == "active" && (c.city ?? "").ToLower() == city.ToLower())
-                    .Select(c => new { 
+                    .Select(c => new ChatContactViewModel { 
                         Id = c.customer_id, 
                         Name = c.full_name, 
                         Role = "Customer", 
@@ -134,5 +134,15 @@ namespace SmartInsuranceHub.Controllers
     public class CAChatMessageDto
     {
         public string MessageText { get; set; } = "";
+    }
+
+    public class ChatContactViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Role { get; set; }
+        public string Avatar { get; set; }
+        public string City { get; set; }
+        public string CompanyName { get; set; }
     }
 }

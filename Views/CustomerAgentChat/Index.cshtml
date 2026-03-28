@@ -3,7 +3,7 @@
     ViewData["Title"] = currentUserRole == "Customer" ? "Nearest Agents" : "Messages";
     Layout = "_Layout";
     
-    var contacts = ViewBag.Contacts as IEnumerable<dynamic>;
+    var contacts = ViewBag.Contacts as IEnumerable<SmartInsuranceHub.Controllers.ChatContactViewModel>;
     var currentUserId = ViewBag.CurrentUserId as int?;
     var onlineAgentIds = ViewBag.OnlineAgentIds as List<int> ?? new List<int>();
     var customerCity = ViewBag.CustomerCity as string ?? "";
@@ -14,8 +14,7 @@
     {
         foreach (var contact in contacts)
         {
-            var cityProp = contact.GetType().GetProperty("City");
-            var cname = cityProp != null ? cityProp.GetValue(contact) as string : "";
+            var cname = contact.City ?? "";
             if (!string.IsNullOrEmpty(cname) && !allCities.Contains(cname))
             {
                 allCities.Add(cname);
@@ -61,15 +60,13 @@
                 {
                     foreach (var contact in contacts)
                     {
-                        var contactId = (int)contact.GetType().GetProperty("Id").GetValue(contact);
-                        var contactName = contact.GetType().GetProperty("Name").GetValue(contact) as string;
-                        var contactRole = contact.GetType().GetProperty("Role").GetValue(contact) as string;
-                        var avatar = contact.GetType().GetProperty("Avatar").GetValue(contact) as string;
+                        var contactId = contact.Id;
+                        var contactName = contact.Name;
+                        var contactRole = contact.Role;
+                        var avatar = contact.Avatar;
                         
-                        var cityProp = contact.GetType().GetProperty("City");
-                        var city = cityProp != null ? cityProp.GetValue(contact) as string : "";
-                        var companyProp = contact.GetType().GetProperty("CompanyName");
-                        var companyName = companyProp != null ? companyProp.GetValue(contact) as string : "";
+                        var city = contact.City ?? "";
+                        var companyName = contact.CompanyName ?? "";
                         
                         var initials = string.Join("", (contactName ?? "U").Split(' ').Take(2).Select(s => s.FirstOrDefault())).ToUpper();
 
