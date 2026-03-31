@@ -4,16 +4,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartInsuranceHub.Data;
 
+using SmartInsuranceHub.Services;
+
 namespace SmartInsuranceHub.Controllers
 {
     [Authorize(Policy = "CompanyOnly")]
     public class CompanyController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly DocumentService _docService;
 
-        public CompanyController(ApplicationDbContext context)
+        public CompanyController(ApplicationDbContext context, DocumentService docService)
         {
             _context = context;
+            _docService = docService;
         }
 
         private int GetCompanyId()
@@ -73,6 +77,12 @@ namespace SmartInsuranceHub.Controllers
             var agent = await _context.Agents.FindAsync(id);
             if (agent != null && agent.company_id == GetCompanyId())
             {
+                if (string.IsNullOrWhiteSpace(agent.license_number))
+                {
+                    TempData["Error"] = "Cannot approve agent: License number must be provided first.";
+                    return RedirectToAction("Agents");
+                }
+
                 agent.approved_status = true;
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Agent successfully approved and is now Active.";
@@ -247,11 +257,65 @@ namespace SmartInsuranceHub.Controllers
             var agent = await _context.Agents.FirstOrDefaultAsync(a => a.agent_id == id && a.company_id == cid);
             if (agent != null)
             {
+                if (!agent.approved_status && string.IsNullOrWhiteSpace(agent.license_number))
+                {
+                    TempData["Error"] = "Cannot activate agent: License number must be provided first.";
+                    return RedirectToAction("AgentDetails", new { id = id });
+                }
+
                 agent.approved_status = !agent.approved_status;
                 await _context.SaveChangesAsync();
                 TempData["Success"] = agent.approved_status ? "Agent activated successfully." : "Agent deactivated successfully.";
             }
             return RedirectToAction("AgentDetails", new { id = id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveAgentDocument(int id, int agentId)
+        {
+            var cid = GetCompanyId();
+            var doc = await _context.UserDocuments.FirstOrDefaultAsync(d => d.document_id == id && d.user_type == "Agent" && d.user_id == agentId);
+            
+            if (doc != null)
+            {
+                var agent = await _context.Agents.FirstOrDefaultAsync(a => a.agent_id == agentId && a.company_id == cid);
+                if (agent != null)
+                {
+                    doc.status = "approved";
+                    // use CompanyId as reviewed_by for now
+                    doc.reviewed_by = cid; 
+                    doc.reviewed_at = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    
+                    await _docService.UpdateVerificationStatusAsync("Agent", agentId);
+                    TempData["Success"] = "Agent document approved successfully.";
+                }
+            }
+            return RedirectToAction("AgentDetails", new { id = agentId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectAgentDocument(int id, int agentId, string reason)
+        {
+            var cid = GetCompanyId();
+            var doc = await _context.UserDocuments.FirstOrDefaultAsync(d => d.document_id == id && d.user_type == "Agent" && d.user_id == agentId);
+            
+            if (doc != null)
+            {
+                var agent = await _context.Agents.FirstOrDefaultAsync(a => a.agent_id == agentId && a.company_id == cid);
+                if (agent != null)
+                {
+                    doc.status = "rejected";
+                    doc.rejection_reason = reason;
+                    doc.reviewed_by = cid;
+                    doc.reviewed_at = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    
+                    await _docService.UpdateVerificationStatusAsync("Agent", agentId);
+                    TempData["Success"] = "Agent document rejected.";
+                }
+            }
+            return RedirectToAction("AgentDetails", new { id = agentId });
         }
 
         public async Task<IActionResult> CustomerDetails(int id)

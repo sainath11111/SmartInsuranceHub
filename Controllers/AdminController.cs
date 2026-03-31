@@ -65,17 +65,37 @@ namespace SmartInsuranceHub.Controllers
             return View(agents);
         }
 
-        public async Task<IActionResult> ApproveAgent(int id)
+        [HttpPost]
+        public async Task<IActionResult> DeleteAgent(int id)
         {
             var agent = await _context.Agents.FindAsync(id);
-            if (agent != null) { agent.approved_status = true; await _context.SaveChangesAsync(); }
+            if (agent != null)
+            {
+                _context.Agents.Remove(agent);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Agent deleted successfully.";
+            }
             return RedirectToAction("Agents");
         }
+
 
         public async Task<IActionResult> Customers()
         {
             var customers = await _context.Customers.ToListAsync();
             return View(customers);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCustomer(int id)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+            if (customer != null)
+            {
+                _context.Customers.Remove(customer);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Customer deleted successfully.";
+            }
+            return RedirectToAction("Customers");
         }
 
         public async Task<IActionResult> InsuranceTypes()
@@ -222,93 +242,6 @@ namespace SmartInsuranceHub.Controllers
             return View(documents);
         }
 
-        // ========================================
-        // Approve Document (with Audit Log)
-        // ========================================
-        [HttpPost]
-        public async Task<IActionResult> ApproveDocument(int id, string? returnUserId, string? returnUserType)
-        {
-            var doc = await _context.UserDocuments.FindAsync(id);
-            if (doc != null)
-            {
-                var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-                var adminName = User.FindFirstValue(ClaimTypes.Name) ?? "Admin";
-
-                doc.status = "approved";
-                doc.reviewed_by = adminId;
-                doc.reviewed_at = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-
-                // Write audit log via raw SQL to avoid DbContext state issues
-                try
-                {
-                    await _context.Database.ExecuteSqlRawAsync(
-                        @"INSERT INTO ""AuditLogs"" (""ActionType"", ""EntityType"", ""EntityId"", ""PerformedBy"", ""PerformedByName"", ""Details"", ""CreatedAt"")
-                          VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
-                        "ApproveDocument", "UserDocument", doc.document_id, adminId, adminName,
-                        $"Approved '{doc.document_name}' ({doc.category}) for {doc.user_type} #{doc.user_id}",
-                        DateTime.UtcNow);
-                }
-                catch (Exception ex)
-                {
-                    // Audit log failure should not block the approval
-                    System.Diagnostics.Debug.WriteLine($"Audit log write failed: {ex.Message}");
-                }
-
-                // Recompute verification status
-                await _docService.UpdateVerificationStatusAsync(doc.user_type, doc.user_id);
-            }
-
-            // Return to per-user view if we came from there
-            if (!string.IsNullOrEmpty(returnUserId) && !string.IsNullOrEmpty(returnUserType))
-                return RedirectToAction("UserDocuments", new { userId = returnUserId, userType = returnUserType });
-
-            return RedirectToAction("DocumentVerification");
-        }
-
-        // ========================================
-        // Reject Document (with Audit Log)
-        // ========================================
-        [HttpPost]
-        public async Task<IActionResult> RejectDocument(int id, string? reason, string? returnUserId, string? returnUserType)
-        {
-            var doc = await _context.UserDocuments.FindAsync(id);
-            if (doc != null)
-            {
-                var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-                var adminName = User.FindFirstValue(ClaimTypes.Name) ?? "Admin";
-                var rejectionReason = reason ?? "Document rejected by admin.";
-
-                doc.status = "rejected";
-                doc.rejection_reason = rejectionReason;
-                doc.reviewed_by = adminId;
-                doc.reviewed_at = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-
-                // Write audit log via raw SQL to avoid DbContext state issues
-                try
-                {
-                    await _context.Database.ExecuteSqlRawAsync(
-                        @"INSERT INTO ""AuditLogs"" (""ActionType"", ""EntityType"", ""EntityId"", ""PerformedBy"", ""PerformedByName"", ""Details"", ""CreatedAt"")
-                          VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6})",
-                        "RejectDocument", "UserDocument", doc.document_id, adminId, adminName,
-                        $"Rejected '{doc.document_name}' ({doc.category}) for {doc.user_type} #{doc.user_id}: {rejectionReason}",
-                        DateTime.UtcNow);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Audit log write failed: {ex.Message}");
-                }
-
-                // Recompute verification status
-                await _docService.UpdateVerificationStatusAsync(doc.user_type, doc.user_id);
-            }
-
-            if (!string.IsNullOrEmpty(returnUserId) && !string.IsNullOrEmpty(returnUserType))
-                return RedirectToAction("UserDocuments", new { userId = returnUserId, userType = returnUserType });
-
-            return RedirectToAction("DocumentVerification");
-        }
 
         // ========================================
         // Audit Log View

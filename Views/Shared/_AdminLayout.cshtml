@@ -252,7 +252,12 @@
         </header>
 
         <!-- Main Content -->
-        <main class="admin-content">
+        <main class="admin-content" style="position: relative;">
+            <div class="mb-3 d-flex justify-content-start">
+                <button type="button" class="btn btn-outline-secondary bg-white btn-sm shadow-sm rounded-pill fw-medium px-3" onclick="window.history.back();" style="transition: all 0.2s ease;">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                </button>
+            </div>
             @RenderBody()
         </main>
         

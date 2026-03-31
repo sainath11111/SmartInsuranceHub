@@ -79,7 +79,6 @@
                             <th>Status</th>
                             <th>Uploaded</th>
                             <th>Preview</th>
-                            <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -105,47 +104,6 @@
                                     <a href="/Document/Preview/@doc.document_id" target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-eye"></i> View
                                     </a>
-                                </td>
-                                <td class="text-end pe-4">
-                                    @if (doc.status != "approved")
-                                    {
-                                        <form method="post" action="/Admin/ApproveDocument" class="d-inline">
-                                            <input type="hidden" name="id" value="@doc.document_id" />
-                                            <input type="hidden" name="returnUserId" value="" />
-                                            <input type="hidden" name="returnUserType" value="" />
-                                            <button type="submit" class="action-btn approve-btn"><i class="bi bi-check-lg"></i> Approve</button>
-                                        </form>
-                                    }
-                                    @if (doc.status != "rejected")
-                                    {
-                                        <button type="button" class="action-btn reject-btn ms-1" data-bs-toggle="modal" data-bs-target="#rejectModal-@doc.document_id">
-                                            <i class="bi bi-x-lg"></i> Reject
-                                        </button>
-                                        <div class="modal fade" id="rejectModal-@doc.document_id" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <form method="post" action="/Admin/RejectDocument">
-                                                        <input type="hidden" name="id" value="@doc.document_id" />
-                                                        <input type="hidden" name="returnUserId" value="" />
-                                                        <input type="hidden" name="returnUserType" value="" />
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Reject Document</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body text-start">
-                                                            <p>Rejecting <strong>@doc.document_name</strong> by <strong>@userName</strong>.</p>
-                                                            <label class="form-label">Reason for rejection</label>
-                                                            <textarea name="reason" class="form-control" rows="3" placeholder="e.g., Document is blurry, please re-upload a clear copy."></textarea>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" class="btn btn-danger">Reject</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
                                 </td>
                             </tr>
                         }

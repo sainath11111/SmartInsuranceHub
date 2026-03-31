@@ -67,6 +67,28 @@ namespace SmartInsuranceHub.Services
         }
 
         // ============================================================
+        // Upload Completion (for "Verify to Request" gate)
+        // ============================================================
+
+        /// <summary>
+        /// Checks if all required categories have at least one uploaded document (any status).
+        /// Used to gate the "Request via Agent" button — customer must upload all 7 before requesting.
+        /// </summary>
+        public async Task<(int Uploaded, int Total, bool AllUploaded)> GetUploadCompletionAsync(string userType, int userId)
+        {
+            var requiredCategories = GetRequiredCategories(userType);
+            var total = requiredCategories.Count;
+
+            var uploadedCategories = await _context.UserDocuments
+                .Where(d => d.user_type == userType && d.user_id == userId)
+                .Select(d => d.category)
+                .Distinct()
+                .CountAsync();
+
+            return (uploadedCategories, total, uploadedCategories >= total);
+        }
+
+        // ============================================================
         // Progress & Verification
         // ============================================================
 

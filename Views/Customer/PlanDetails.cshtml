@@ -2,6 +2,9 @@
 @{
     ViewData["Title"] = "Plan Details - " + Model.plan_name;
     var isVerified = ViewBag.IsVerified ?? false;
+    var allDocsUploaded = (bool)(ViewBag.AllDocsUploaded ?? false);
+    var docsUploadedCount = (int)(ViewBag.DocsUploadedCount ?? 0);
+    var docsTotalCount = (int)(ViewBag.DocsTotalCount ?? 7);
 }
 
 <div class="row justify-content-center">
@@ -119,11 +122,11 @@
             <div class="card-body p-4">
                 <h5 class="fw-bold mb-4" style="font-family: 'Outfit', sans-serif;">Action Center</h5>
                 
-                @if (isVerified)
+                @if (isVerified || allDocsUploaded)
                 {
                     <div class="alert alert-success d-flex align-items-center gap-2 mb-4" style="border-radius: 12px; font-size: 0.9rem;">
                         <i class="bi bi-check-circle-fill fs-5"></i>
-                        <span>Your KYC is verified. You can proceed with the purchase.</span>
+                        <span>@(isVerified ? "Your KYC is verified." : "All your documents are uploaded.") You can proceed with the purchase.</span>
                     </div>
 
                     <a href="/Customer/SelectAgent?planId=@Model.plan_id&companyId=@Model.company_id" class="btn btn-primary w-100 rounded-pill py-3 fw-bold mb-3 shadow-sm" style="font-size: 1.05rem;">
@@ -134,11 +137,11 @@
                 {
                     <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" style="border-radius: 12px; font-size: 0.9rem;">
                         <i class="bi bi-shield-exclamation fs-5"></i>
-                        <span>KYC Document verification is required to purchase this policy.</span>
+                        <span>All KYC Document categories must be uploaded to request this policy.</span>
                     </div>
 
                     <button class="btn btn-secondary w-100 rounded-pill py-3 fw-bold mb-3 shadow-sm opacity-50" disabled style="cursor: not-allowed;">
-                        <i class="bi bi-lock me-2"></i> Verify KYC to Proceed
+                        <i class="bi bi-lock me-2"></i> Verify KYC to Proceed (@docsUploadedCount/@docsTotalCount)
                     </button>
                     <a href="/Document/Profile" class="btn btn-outline-warning w-100 rounded-pill py-2 fw-semibold">
                         <i class="bi bi-cloud-upload me-1"></i> Upload Documents now

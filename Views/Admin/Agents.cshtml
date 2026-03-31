@@ -34,9 +34,10 @@
                             }
                         </td>
                         <td>
-                            @if(!item.approved_status) {
-                                <a href="/Admin/ApproveAgent/@item.agent_id" class="btn btn-sm btn-success">Approve</a>
-                            }
+                            <form method="post" action="/Admin/DeleteAgent" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this agent?');">
+                                <input type="hidden" name="id" value="@item.agent_id" />
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
                         </td>
                     </tr>
                 }

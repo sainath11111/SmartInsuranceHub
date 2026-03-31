@@ -88,6 +88,12 @@ namespace SmartInsuranceHub.Controllers
             var cid = GetCustomerId();
             var customer = await _context.Customers.FindAsync(cid);
             ViewBag.IsVerified = customer?.verification_status == "verified";
+            
+            var docService = HttpContext.RequestServices.GetRequiredService<DocumentService>();
+            var uploadStatus = await docService.GetUploadCompletionAsync("Customer", cid);
+            ViewBag.AllDocsUploaded = uploadStatus.AllUploaded;
+            ViewBag.DocsUploadedCount = uploadStatus.Uploaded;
+            ViewBag.DocsTotalCount = uploadStatus.Total;
 
             var plans = await _context.InsurancePlans.AsNoTracking().Include(p => p.Company).Where(p => p.status == "active").ToListAsync();
             
@@ -111,6 +117,12 @@ namespace SmartInsuranceHub.Controllers
             var cid = GetCustomerId();
             var customer = await _context.Customers.FindAsync(cid);
             ViewBag.IsVerified = customer?.verification_status == "verified";
+
+            var docService = HttpContext.RequestServices.GetRequiredService<DocumentService>();
+            var uploadStatus = await docService.GetUploadCompletionAsync("Customer", cid);
+            ViewBag.AllDocsUploaded = uploadStatus.AllUploaded;
+            ViewBag.DocsUploadedCount = uploadStatus.Uploaded;
+            ViewBag.DocsTotalCount = uploadStatus.Total;
 
             return View(plan);
         }
@@ -160,9 +172,12 @@ namespace SmartInsuranceHub.Controllers
             var cid = GetCustomerId();
             var customer = await _context.Customers.FindAsync(cid);
 
-            if (customer == null || customer.verification_status != "verified")
+            var docService = HttpContext.RequestServices.GetRequiredService<DocumentService>();
+            var uploadStatus = await docService.GetUploadCompletionAsync("Customer", cid);
+
+            if (customer == null || (!uploadStatus.AllUploaded && customer.verification_status != "verified"))
             {
-                TempData["Error"] = "Complete document verification before requesting insurance.";
+                TempData["Error"] = "Upload all required documents before requesting insurance.";
                 return RedirectToAction("BrowsePlans");
             }
 

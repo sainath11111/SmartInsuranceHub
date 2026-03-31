@@ -32,22 +32,24 @@ namespace SmartInsuranceHub.Controllers
         {
             List<Claim>? claims = null;
 
-            if (role == "Admin")
+            // 1. Always check for Admin first, ignoring the 'role' dropdown
+            var admin = await _context.Admins.FirstOrDefaultAsync(x => x.email == email);
+            if (admin != null && BCrypt.Net.BCrypt.Verify(password, admin.password))
             {
-                var admin = await _context.Admins.FirstOrDefaultAsync(x => x.email == email);
-                if (admin != null && BCrypt.Net.BCrypt.Verify(password, admin.password))
+                admin.last_login = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                claims = new List<Claim>
                 {
-                    admin.last_login = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
-                    claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, admin.admin_id.ToString()),
-                        new Claim(ClaimTypes.Name, admin.full_name),
-                        new Claim(ClaimTypes.Email, admin.email),
-                        new Claim(ClaimTypes.Role, "Admin")
-                    };
-                }
+                    new Claim(ClaimTypes.NameIdentifier, admin.admin_id.ToString()),
+                    new Claim(ClaimTypes.Name, admin.full_name),
+                    new Claim(ClaimTypes.Email, admin.email),
+                    new Claim(ClaimTypes.Role, "Admin")
+                };
+                
+                // Override role for redirection
+                role = "Admin";
             }
+            // 2. Only check other roles if this wasn't an Admin login
             else if (role == "Company")
             {
                 Company? company = null;
@@ -87,7 +89,7 @@ namespace SmartInsuranceHub.Controllers
                 {
                     if (!agent.approved_status)
                     {
-                        ViewBag.Error = "Your agent account is pending Admin approval.";
+                        ViewBag.Error = "Your agent account is pending Company approval.";
                         return View();
                     }
                     claims = new List<Claim>
@@ -301,7 +303,7 @@ namespace SmartInsuranceHub.Controllers
                 }
             }
 
-            TempData["Success"] = "Registration successful! Awaiting Admin approval.";
+            TempData["Success"] = "Registration successful! Awaiting Company approval.";
             return RedirectToAction("Login");
         }
 

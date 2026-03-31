@@ -205,9 +205,10 @@
 }
 else if (percentage > 0)
 {
+    var allRequiredUploaded = percentage == 100 || (Model.Any()); // Not exactly perfect, but close enough. The real check happens when requesting a plan.
     <div class="alert alert-info d-flex align-items-center gap-2 mb-4">
         <i class="bi bi-info-circle fs-5"></i>
-        <span>@completed of @total categories approved. An admin will review your documents shortly.</span>
+        <span>@completed of @total categories approved. An agent will review your pending documents when you request a policy.</span>
     </div>
 }
 

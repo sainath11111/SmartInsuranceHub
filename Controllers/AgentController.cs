@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartInsuranceHub.Data;
 using SmartInsuranceHub.Models;
+using SmartInsuranceHub.Services;
 
 namespace SmartInsuranceHub.Controllers
 {
@@ -11,10 +12,12 @@ namespace SmartInsuranceHub.Controllers
     public class AgentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly DocumentService _docService;
 
-        public AgentController(ApplicationDbContext context)
+        public AgentController(ApplicationDbContext context, DocumentService docService)
         {
             _context = context;
+            _docService = docService;
         }
 
         private int GetAgentId()
@@ -140,12 +143,9 @@ namespace SmartInsuranceHub.Controllers
 
             if (req == null) return NotFound();
 
-            if (req.status == "approved")
-            {
-                ViewBag.CustomerDocs = await _context.UserDocuments
-                    .Where(d => d.user_type == "Customer" && d.user_id == req.customer_id)
-                    .ToListAsync();
-            }
+            ViewBag.CustomerDocs = await _context.UserDocuments
+                .Where(d => d.user_type == "Customer" && d.user_id == req.customer_id)
+                .ToListAsync();
 
             return View(req);
         }
@@ -208,6 +208,73 @@ namespace SmartInsuranceHub.Controllers
             }
 
             return RedirectToAction("Requests");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveCustomerDocument(int id, int requestId)
+        {
+            var aid = GetAgentId();
+            var doc = await _context.UserDocuments.FindAsync(id);
+            if (doc != null && doc.user_type == "Customer")
+            {
+                // Verify the agent has a request from this customer
+                var hasRequest = await _context.PolicyRequests.AnyAsync(r => r.agent_id == aid && r.customer_id == doc.user_id);
+                if (hasRequest)
+                {
+                    doc.status = "approved";
+                    doc.reviewed_by = aid;
+                    doc.reviewed_at = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    
+                    await _docService.UpdateVerificationStatusAsync("Customer", doc.user_id);
+                    TempData["Success"] = "Customer document approved successfully.";
+                }
+            }
+            return RedirectToAction("RequestDetails", new { id = requestId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectCustomerDocument(int id, int requestId, string reason)
+        {
+            var aid = GetAgentId();
+            var doc = await _context.UserDocuments.FindAsync(id);
+            if (doc != null && doc.user_type == "Customer")
+            {
+                var hasRequest = await _context.PolicyRequests.AnyAsync(r => r.agent_id == aid && r.customer_id == doc.user_id);
+                if (hasRequest)
+                {
+                    doc.status = "rejected";
+                    doc.rejection_reason = reason;
+                    doc.reviewed_by = aid;
+                    doc.reviewed_at = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    
+                    await _docService.UpdateVerificationStatusAsync("Customer", doc.user_id);
+                    TempData["Success"] = "Customer document rejected.";
+                }
+            }
+            return RedirectToAction("RequestDetails", new { id = requestId });
+        }
+        [HttpPost]
+        public async Task<IActionResult> DeleteCustomerDocument(int id, int requestId)
+        {
+            var aid = GetAgentId();
+            var doc = await _context.UserDocuments.FindAsync(id);
+            if (doc != null && doc.user_type == "Customer")
+            {
+                var hasRequest = await _context.PolicyRequests.AnyAsync(r => r.agent_id == aid && r.customer_id == doc.user_id);
+                if (hasRequest)
+                {
+                    var r2 = HttpContext.RequestServices.GetRequiredService<R2StorageService>();
+                    await r2.DeleteFileAsync(doc.file_url);
+                    _context.UserDocuments.Remove(doc);
+                    await _context.SaveChangesAsync();
+                    
+                    await _docService.UpdateVerificationStatusAsync("Customer", doc.user_id);
+                    TempData["Success"] = "Customer document deleted successfully.";
+                }
+            }
+            return RedirectToAction("RequestDetails", new { id = requestId });
         }
     }
 }
