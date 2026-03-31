@@ -38,7 +38,7 @@
                 <div class="accordion shadow-sm" id="queriesAccordion">
                     @{
                         int index = 0;
-                        foreach (var q in ViewBag.Queries as IEnumerable<SmartInsuranceHub.Models.Query>)
+                        foreach (var q in (IEnumerable<SmartInsuranceHub.Models.Query>)ViewBag.Queries!)
                         {
                             var headerId = "heading" + index;
                             var collapseId = "collapse" + index;
