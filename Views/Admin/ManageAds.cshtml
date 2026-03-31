@@ -98,7 +98,7 @@ else
                     {
                         var adBanner = ad.banner_url.StartsWith("http") ? ad.banner_url : "/api/avatar/" + ad.banner_url;
                         <div style="height: 160px; overflow: hidden; border-bottom: 1px solid #e2e8f0;">
-                            <img src="@adBanner" alt="Banner" class="w-100 h-100" style="object-fit: cover;" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'d-flex align-items-center justify-content-center flex-column gap-1\' style=\'height: 160px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-bottom: 1px solid #e2e8f0;\'><i class=\'bi bi-image text-secondary fs-1 opacity-25\'></i><small class=\'text-muted fw-medium\' style=\'font-size: 0.75rem;\'>No Banner Available</small></div>';" />
+                            <img src="@adBanner" alt="Banner" class="w-100 h-100 bg-light" style="object-fit: contain; padding: 0.25rem;" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'d-flex align-items-center justify-content-center flex-column gap-1\' style=\'height: 160px; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-bottom: 1px solid #e2e8f0;\'><i class=\'bi bi-image text-secondary fs-1 opacity-25\'></i><small class=\'text-muted fw-medium\' style=\'font-size: 0.75rem;\'>No Banner Available</small></div>';" />
                         </div>
                     }
                     else

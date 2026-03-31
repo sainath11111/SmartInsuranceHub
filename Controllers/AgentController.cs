@@ -44,6 +44,24 @@ namespace SmartInsuranceHub.Controllers
         }
 
         // ========================================
+        // Agent Company Plans
+        // ========================================
+        public async Task<IActionResult> CompanyPlans()
+        {
+            var aid = GetAgentId();
+            var agent = await _context.Agents.FirstOrDefaultAsync(a => a.agent_id == aid);
+            if (agent == null) return NotFound();
+
+            var plans = await _context.InsurancePlans
+                .Include(p => p.Company)
+                .Where(p => p.company_id == agent.company_id && p.status == "active")
+                .OrderByDescending(p => p.created_date)
+                .ToListAsync();
+
+            return View(plans);
+        }
+
+        // ========================================
         // Agent Profile
         // ========================================
         [HttpGet]

@@ -1,0 +1,89 @@
+@model IEnumerable<SmartInsuranceHub.Models.InsurancePlan>
+
+@{
+    ViewData["Title"] = "Company Insurance Plans";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2 border-primary border-opacity-10" data-aos="fade-down">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark position-relative" style="font-family: 'Outfit', sans-serif;">
+                <span class="bg-primary text-white p-2 rounded-3 me-2 shadow-sm d-inline-block" style="width: 45px; height: 45px; text-align: center;"><i class="bi bi-shield-check fs-4 lh-1"></i></span>
+                Company Plans
+            </h2>
+            <p class="text-muted mb-0 ms-5 ps-3">View all insurance plans offered by your assigned company.</p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5" data-aos="fade-up">
+            <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-3" style="width: 80px; height: 80px;">
+                <i class="bi bi-file-earmark-x fs-1 text-muted opacity-50"></i>
+            </div>
+            <h4 class="fw-bold text-secondary">No Plans Available</h4>
+            <p class="text-muted">Your company has not published any active insurance plans yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var plan in Model)
+            {
+                <div class="col-lg-4 col-md-6" data-aos="fade-up">
+                    <div class="card h-100 border-0 shadow-sm hover-lift" style="border-radius: 16px; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                        <div class="bg-light p-4 border-bottom position-relative">
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold mb-2 rounded-pill px-3 py-2">
+                                <i class="bi bi-building me-1"></i> @(plan.Company?.company_name ?? "Company Plan")
+                            </span>
+                            <h4 class="fw-bold mb-0 text-dark" style="font-family: 'Outfit', sans-serif;">@plan.plan_name</h4>
+                        </div>
+                        
+                        <div class="card-body p-4 bg-white">
+                            <div class="mb-4 text-center p-3 rounded-4" style="background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(37,99,235,0.1) 100%); border: 1px solid rgba(37,99,235,0.1);">
+                                <h3 class="fw-bold text-primary mb-0 mt-1">₹@plan.premium_amount.ToString("N0") <span class="fs-6 text-muted fw-normal">/yr</span></h3>
+                            </div>
+                            
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded p-2 me-3 text-secondary">
+                                        <i class="bi bi-shield-check fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block lh-1 mb-1">Coverage Amount</small>
+                                        <span class="fw-semibold text-dark">₹@plan.coverage_amount.ToString("N0")</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded p-2 me-3 text-secondary">
+                                        <i class="bi bi-calendar3 fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block lh-1 mb-1">Duration</small>
+                                        <span class="fw-semibold text-dark">@plan.duration_months Months</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="text-muted opacity-25">
+                            
+                            <h6 class="fw-bold text-dark mt-3 mb-2">Description</h6>
+                            <p class="text-muted small mb-0 lh-lg">
+                                @(string.IsNullOrWhiteSpace(plan.description) ? "No detailed description provided by the company." : plan.description)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+</style>
