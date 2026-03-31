@@ -1,34 +1,33 @@
-# Use the official .NET SDK image to build and publish the app
-FROM mcr.microsoft.com/dotnet/sdk:10.0-jammy AS build
+# ----------- BUILD STAGE -----------
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the csproj file and restore dependencies
+# Copy csproj and restore
 COPY ["SmartInsuranceHub.csproj", "./"]
 RUN dotnet restore "SmartInsuranceHub.csproj"
 
-# Copy the rest of the application code
+# Copy all files
 COPY . .
 
-# Build the application
+# Build
 RUN dotnet build "SmartInsuranceHub.csproj" -c Release -o /app/build
 
-# Publish the application
-FROM build AS publish
+# Publish
 RUN dotnet publish "SmartInsuranceHub.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Use the official ASP.NET Core runtime image for the final stage
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-jammy AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
 
-# Set ASP.NET Core environment to Production
+# ----------- RUNTIME STAGE -----------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+
+# Copy published files
+COPY --from=build /app/publish .
+
+# 🔥 IMPORTANT for Render (dynamic port)
+ENV ASPNETCORE_URLS=http://+:$PORT
+
+# Optional (production mode)
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Set ASP.NET Core to listen on port 8080 (the modern default)
-ENV ASPNETCORE_HTTP_PORTS=8080
-
-# Expose port 8080 so Render knows where to route traffic
-EXPOSE 8080
-
-# Start the application
+# Start app
 ENTRYPOINT ["dotnet", "SmartInsuranceHub.dll"]
