@@ -10,10 +10,10 @@ RUN dotnet restore "SmartInsuranceHub.csproj"
 COPY . .
 
 # Build explicitly targeting net8.0 since the csproj now multi-targets
-RUN dotnet build "SmartInsuranceHub.csproj" -f net8.0 -c Release -o /app/build
+RUN dotnet build "SmartInsuranceHub.csproj" -c Release -o /app/build
 
 # Publish explicitly targeting net8.0
-RUN dotnet publish "SmartInsuranceHub.csproj" -f net8.0 -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "SmartInsuranceHub.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 
 # ----------- RUNTIME STAGE -----------
